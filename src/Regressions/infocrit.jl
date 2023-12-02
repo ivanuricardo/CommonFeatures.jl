@@ -30,7 +30,7 @@ println("Information Criteria Table: ", result.ictable)
 ```
 """
 function infocrit(mardata::AbstractArray, p::Int; r̄::AbstractVector=[mardata[1], mardata[2], mardata[1], mardata[2]])
-    initest = mar(mardata, p)
+    initest = art(mardata, p)
     # Each row is associated with either AIC, BIC, and the assocaited rank
     infocritest = fill(NaN, 6, prod(r̄))
     origy, lagy = tlag(mardata, p)
