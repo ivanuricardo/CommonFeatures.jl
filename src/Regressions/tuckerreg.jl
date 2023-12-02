@@ -10,8 +10,8 @@ Uses the gradient descent algorithm of Wang, Zhang, and Li 2024.
 - `ranks::AbstractVector`: Vector specifying the desired ranks of the Tucker decomposition.
 - `initest::AbstractArray`: Initial coefficient value (usually MAR)
 - `eta::AbstractFloat`: Learning rate for gradient descent (default: 1e-04).
-- `a::AbstractFloat`: Regularization parameter (default: 1).
-- `b::AbstractFloat`: Regularization parameter (default: 1).
+- `a::Real`: Regularization parameter (default: 1).
+- `b::Real`: Regularization parameter (default: 1).
 - `ϵ::AbstractFloat`: Convergence threshold for stopping criteria (default: 1e-04).
 - `maxiter::Int`: Maximum number of iterations for gradient descent (default: 3000).
 
@@ -22,7 +22,7 @@ A tuple containing the Tucker decomposition components:
 - `initest`: Full Tucker decomposition tensor.
 - `iters`: Number of iterations performed.
 """
-function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, initest::AbstractArray=art(mardata, 1), eta::AbstractFloat=1e-05, a::AbstractFloat=1, b::AbstractFloat=1, ϵ::AbstractFloat=1e-01, maxiter::Int=3000)
+function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, initest::AbstractArray=art(mardata, 1), eta::AbstractFloat=1e-05, a::Real=1, b::Real=1, ϵ::AbstractFloat=1e-01, maxiter::Int=3000)
     origy, lagy = tlag(mardata, 1)
     N1, N2, obs = size(mardata)
 

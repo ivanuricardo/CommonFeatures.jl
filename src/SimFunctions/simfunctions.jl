@@ -42,7 +42,7 @@ Simulate Tucker data with specified dimensions, ranks, observation count, and sc
 - `dimvals::AbstractVector`: Dimensions of the tensor (dimvals[1] for the first mode, dimvals[2] for the second mode).
 - `ranks::AbstractVector`: Tucker ranks for the four modes.
 - `obs::Int`: Number of observations to simulate.
-- `scale::Float64`: Scaling factor for the Tucker decomposition.
+- `scale::Real`: Scaling factor for the Tucker decomposition.
 
 # Returns
 A named tuple containing:
@@ -55,7 +55,7 @@ A named tuple containing:
 result = simulatetuckerdata([5, 4], [2, 3, 2, 3], 100, 1.0)
 ```
 """
-function simulatetuckerdata(dimvals::AbstractVector, ranks::AbstractVector, obs::Int, scale::AbstractFloat)
+function simulatetuckerdata(dimvals::AbstractVector, ranks::AbstractVector, obs::Int, scale::Real)
     A = fill(NaN, dimvals[1], dimvals[2], dimvals[1], dimvals[2])
     stabit = 0
     while true
@@ -89,7 +89,7 @@ Simulate matrix autoregressive (MAR) data with specified dimensions, observation
 # Arguments
 - `dimvals::AbstractVector`: Dimensions of the MAR tensor (dimvals[1] for the first mode, dimvals[2] for the second mode).
 - `obs::Int`: Number of observations to simulate.
-- `scale::Float64`: Scaling factor for the MAR data.
+- `scale::Real`: Scaling factor for the MAR data.
 
 # Returns
 A named tuple containing:
@@ -102,7 +102,7 @@ A named tuple containing:
 result = simulatemardata([5, 4], 100, 1.0)
 ```
 """
-function simulatemardata(dimvals::AbstractVector, obs::Int, scale::AbstractFloat)
+function simulatemardata(dimvals::AbstractVector, obs::Int, scale::Real)
     A = fill(NaN, dimvals[1], dimvals[2], dimvals[1], dimvals[2])
     stabit = 0
     while true
