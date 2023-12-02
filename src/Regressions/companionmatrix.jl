@@ -1,26 +1,12 @@
-@doc """
+"""
     makecompanion(B::AbstractMatrix{T}) where {T}
     
 Create the VAR companion matrix.
 
-Given a VAR of the form
+Given a VAR of the form yₜ = b₀ + B₁ y_t-1 + … + Bₚy_t-p + εₜ
 
-```math
-y_t = b_0 + B_1 y_{t-1} + ... + B_p y_{t-p} + \varepsilon_t
-```
 
-The companion matrix is given by 
-
-```math
-C = \begin{bmatrix}
-    B_1 & B_2 & \dots & B_{p-1} & B_p \\
-    I_n & O & \dots & O & O \\
-    O & I_n & & O & O \\
-    \vdots & & \ddots & \vdots & \vdots \\ 
-    O & O & \dots & I_n & O
-\end{bmatrix}
-```
-
+Create the companion matrix.
 Thus, ``B`` is a ``np\times np`` matrix. 
 
 ## Arguments
@@ -45,7 +31,7 @@ function makecompanion(B::AbstractMatrix{T}) where {T}
     return companion
 end
 
-@doc """
+"""
     isstable(var)
 
 Check the stability of a VAR (Vector Autoregressive) model.
