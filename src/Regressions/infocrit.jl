@@ -1,5 +1,46 @@
 
 """
+    tuckerpar(dimvals::AbstractVector, ranks::AbstractVector, P::Integer=1)
+
+Compute the Tucker compression parameter for a tensor with specified dimensions and Tucker ranks.
+
+# Arguments
+- `dimvals::AbstractVector`: A vector representing the dimensions of the original tensor.
+- `ranks::AbstractVector`: A vector representing the Tucker ranks for compression.
+- `P::Integer=1`: An optional parameter representing the mode-n unfolding size (default is 1).
+
+# Output
+- Returns the Tucker compression parameter for the given input.
+
+# Formula
+The Tucker compression parameter is calculated using the formula:
+\[ \text{{totalsum}} = \prod_{i=1}^{2k} \text{{ranks}}_i + \sum_{i=1}^{k} \text{{ranks}}_i \cdot (\text{{dimvals}}_i - \text{{ranks}}_i) + \sum_{i=1}^{k-1} \text{{ranks}}_{k+i} \cdot (\text{{dimvals}}_i - \text{{ranks}}_{k+i}) + \text{{ranks}}_{2k} \cdot (\text{{dimvals}}_k \cdot P - \text{{ranks}}_{2k}) \]
+
+# Examples
+```julia
+dimvals = [3, 4, 5]
+ranks = [2, 3, 2, 4]
+P = 2
+result = tuckerpar(dimvals, ranks, P)
+println(result)
+```
+# References
+- Tucker, L. R. (1966). Some mathematical notes on three-mode factor analysis. Psychometrika, 31(3), 279-311.
+"""
+function tuckerpar(dimvals::AbstractVector, ranks::AbstractVector, P::Integer=1)
+    k = length(ranks) ÷ 2
+    totalsum = prod(ranks)
+    for i in 1:k
+        totalsum += ranks[i] * (dimvals[i] - ranks[i])
+    end
+    for i in 1:(k-1)
+        totalsum += ranks[k+i] * (dimvals[i] - ranks[k+i])
+    end
+    totalsum += ranks[2*k] * (dimvals[k] * P - ranks[2*k])
+    return totalsum
+end
+
+"""
     infocrit(mardata, p, r̄)
 
 Calculate information criteria (AIC and BIC) for different combinations of Tucker ranks in a matrix autoregressive (MAR) model.
@@ -29,7 +70,7 @@ println("AIC Chosen Ranks: ", result.AIC)
 println("Information Criteria Table: ", result.ictable)
 ```
 """
-function infocrit(mardata::AbstractArray, p::Int; r̄::AbstractVector=nothing)
+function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=nothing)
     if isnothing(r̄)
         r̄ = [mardata[1], mardata[2], mardata[1], mardata[2]]
     end

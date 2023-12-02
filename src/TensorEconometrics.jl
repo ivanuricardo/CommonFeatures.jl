@@ -7,7 +7,7 @@ using LinearAlgebra
 export tensorols, art
 export tlag, ridgerankselect
 export makecompanion, isstable
-export infocrit
+export infocrit, tuckerpar
 export tuckerreg, clipgradient!
 include("./Regressions/MatrixAR.jl")
 include("./Regressions/utils.jl")
