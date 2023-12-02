@@ -29,7 +29,10 @@ println("AIC Chosen Ranks: ", result.AIC)
 println("Information Criteria Table: ", result.ictable)
 ```
 """
-function infocrit(mardata::AbstractArray, p::Int; r̄::AbstractVector)
+function infocrit(mardata::AbstractArray, p::Int; r̄::AbstractVector=nothing)
+    if isnothing(r̄)
+        r̄ = [mardata[1], mardata[2], mardata[1], mardata[2]]
+    end
     initest = art(mardata, p)
     # Each row is associated with either AIC, BIC, and the assocaited rank
     infocritest = fill(NaN, 6, prod(r̄))
