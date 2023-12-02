@@ -1,4 +1,4 @@
-"""
+@doc """
     makecompanion(B::AbstractMatrix{T}) where {T}
     
 Create the VAR companion matrix.
@@ -45,7 +45,7 @@ function makecompanion(B::AbstractMatrix{T}) where {T}
     return companion
 end
 
-"""
+@doc """
     isstable(var)
 
 Check the stability of a VAR (Vector Autoregressive) model.
