@@ -51,7 +51,7 @@ A tuple containing the Tucker decomposition components:
 - `initest`: Full Tucker decomposition tensor.
 - `iters`: Number of iterations performed.
 """
-function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, initest::AbstractArray=art(mardata, 1), eta::AbstractFloat=1e-05, a::Real=1, b::Real=1, ϵ::AbstractFloat=1e-01, maxiter::Int=3000)
+function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, initest::AbstractArray=art(mardata, 1), eta::AbstractFloat=1e-05, a::Real=1, b::Real=1, ϵ::AbstractFloat=1e-01, maxiter::Int=3000, maxnorm::Real=1)
     origy, lagy = tlag(mardata, 1)
     N1, N2, obs = size(mardata)
 
@@ -75,7 +75,7 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, initest::Abstr
         end
         dlbar .= dlbar ./ obs
 
-        clipgradient!(dlbar, 1)
+        clipgradient!(dlbar, maxnorm)
 
         kronU1 = kron(U4new, kron(U3new, U2new)) * tenmat(Gnew, row=1)'
         regularizeU1 = a * (U1new * (U1new'U1new - (b^2 * I)))
