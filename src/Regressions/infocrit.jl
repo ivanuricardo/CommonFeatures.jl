@@ -12,10 +12,6 @@ Compute the Tucker compression parameter for a tensor with specified dimensions 
 # Output
 - Returns the Tucker compression parameter for the given input.
 
-# Formula
-The Tucker compression parameter is calculated using the formula:
-\[ \text{{totalsum}} = \prod_{i=1}^{2k} \text{{ranks}}_i + \sum_{i=1}^{k} \text{{ranks}}_i \cdot (\text{{dimvals}}_i - \text{{ranks}}_i) + \sum_{i=1}^{k-1} \text{{ranks}}_{k+i} \cdot (\text{{dimvals}}_i - \text{{ranks}}_{k+i}) + \text{{ranks}}_{2k} \cdot (\text{{dimvals}}_k \cdot P - \text{{ranks}}_{2k}) \]
-
 # Examples
 ```julia
 dimvals = [3, 4, 5]
