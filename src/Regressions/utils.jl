@@ -32,3 +32,47 @@ function tlag(ten_data::AbstractArray, p=1)
     return original, lagged
 
 end
+
+"""
+    ridgerankselect(est::AbstractArray, c::Real, r̄=collect(size(est)))::Vector{Int}
+
+Used to provide an initial guess of the ranks for a Tucker regression using the framework of Lam and Yao (2011) and Wang et. al (2023).
+Given a four-dimensional initial estimate `est` (typically from the art function), this function performs ridge rank selection on each mode of the tensor using a ridge parameter `c`.
+The result is a vector of integers representing the selected ranks for each mode.
+
+# Arguments
+- `est::AbstractArray`: The input four-dimensional array (tensor) for ridge rank selection.
+- `c::Real`: Ridge parameter controlling regularization strength.
+- `r̄::Vector{Int} = collect(size(est))`: Vector specifying the maximum ranks to consider
+  for each mode. Default is the size of the corresponding mode in `est`.
+
+# Returns
+- `Vector{Int}`: A vector containing the selected ranks for each mode of the input tensor.
+
+# Example
+```julia
+est = rand(3, 4, 5, 6)
+c = 0.1
+selected_ranks = ridgerankselect(est, c)
+```
+
+# References
+
+- Lam, Clifford, and Qiwei Yao. "Factor modeling for high-dimensional time series: inference for the number of factors." The Annals of Statistics (2012): 694-726.
+- Wang, Di, et al. "High-dimensional vector autoregressive time series modeling via tensor decomposition." Journal of the American Statistical Association 117.539 (2022): 1338-1356.
+"""
+function ridgerankselect(est::AbstractArray, c::Real, r̄=collect(size(est)))::Vector{Int}
+    S1 = svd(tenmat(est, 1)).S
+    S2 = svd(tenmat(est, 2)).S
+    S3 = svd(tenmat(est, 3)).S
+    S4 = svd(tenmat(est, 4)).S
+
+    r1 = findmax((S1[1:(r̄[1]-1)] .+ c) ./ (S1[2:r̄[1]] .+ c))[2]
+    r2 = findmax((S2[1:(r̄[2]-1)] .+ c) ./ (S2[2:r̄[2]] .+ c))[2]
+    r3 = findmax((S3[1:(r̄[3]-1)] .+ c) ./ (S3[2:r̄[3]] .+ c))[2]
+    r4 = findmax((S4[1:(r̄[4]-1)] .+ c) ./ (S4[2:r̄[4]] .+ c))[2]
+
+    return [r1, r2, r3, r4]
+end
+
+
