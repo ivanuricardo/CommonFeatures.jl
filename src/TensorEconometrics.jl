@@ -6,8 +6,8 @@ using LinearAlgebra
 
 export tensorols
 export tlag
-include("MatrixAR/MatrixAR.jl")
-include("./MatrixAR/utils.jl")
+include("./Regressions/MatrixAR.jl")
+include("./Regressions/utils.jl")
 
 
 end
