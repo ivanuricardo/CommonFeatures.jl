@@ -1,5 +1,34 @@
 
 """
+    clipgradient!(grad, maxnorm)
+
+Clip the gradient vector in-place to have a maximum Euclidean norm of `maxnorm`.
+
+# Arguments
+- `grad::AbstractArray`: The gradient vector to be clipped.
+- `maxnorm::Real`: The maximum Euclidean norm allowed for the gradient.
+
+# Returns
+- `grad::AbstractArray`: The clipped gradient vector.
+
+# Example
+```julia
+grad = [1.0, 2.0, 3.0]
+maxnorm = 2.5
+# In this example, if the Euclidean norm of grad is greater than maxnorm, the vector is scaled to have a norm of maxnorm.
+clipgradient!(grad, maxnorm)
+```
+"""
+function clipgradient!(grad, maxnorm)
+    normg = norm(grad)
+    if normg > maxnorm
+        grad .= grad ./ normg * maxnorm
+    end
+
+    return grad
+end
+
+"""
     tuckerreg(mardata, A, ranks::AbstractVector, eta=1e-04, a=1, b=1, ϵ=1e-04, maxiter=600)
 
 Perform a matrix autoregression with one lag (MAR(1)) with a reduced tucker rank along the coefficients.
