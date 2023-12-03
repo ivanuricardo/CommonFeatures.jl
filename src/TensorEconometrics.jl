@@ -15,7 +15,7 @@ include("./Regressions/companionmatrix.jl")
 include("./Regressions/infocrit.jl")
 include("./Regressions/tuckerreg.jl")
 
-export simulatetuckerdata, simulatemardata
+export simulatetuckerdata, simulatemardata, simstats
 include("./SimFunctions/simfunctions.jl")
 
 end

@@ -1,6 +1,6 @@
 using TensorEconometrics
 using Test
+using LinearAlgebra, Statistics
 
-@testset "TensorEconometrics.jl" begin
-    # Write your tests here.
-end
+
+include("./Regressions/test-infocrit.jl")
