@@ -75,6 +75,7 @@ function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[])
         r̄ = [N1, N2, N1, N2]
     end
     infocritest = fill(NaN, 6, prod(r̄))
+    regiters = fill(NaN, prod(r̄))
     counter = 0
     for i in 1:r̄[1]
         for j in 1:r̄[2]
@@ -88,7 +89,7 @@ function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[])
                         infocritest[5, counter] = k
                         infocritest[6, counter] = l
                     else
-                        tuckest = tuckerreg(mardata, [i, j, k, l], initest, 1e-05, 1, 1, 0.1, 1000)
+                        tuckest = tuckerreg(mardata, [i, j, k, l], initest, 1e-06, 1, 1, 0.1, 1000)
                         ϵ = origy - contract(tuckest.A, [3, 4], lagy, [1, 2])
                         flatϵ = tenmat(ϵ, col=3)
                         detcov = det(flatϵ * flatϵ')
@@ -98,6 +99,7 @@ function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[])
                         infocritest[4, counter] = j
                         infocritest[5, counter] = k
                         infocritest[6, counter] = l
+                        regiters[counter] = tuckest.iters
                     end
                 end
             end
@@ -110,5 +112,5 @@ function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[])
     BICvec = argmin(filteredic[2, :])
     BICchosen = filteredic[3:end, BICvec]
 
-    return (BIC=BICchosen, AIC=AICchosen, ictable=infocritest)
+    return (BIC=BICchosen, AIC=AICchosen, ictable=infocritest, regiters=regiters)
 end
