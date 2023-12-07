@@ -66,7 +66,7 @@ println("AIC Chosen Ranks: ", result.AIC)
 println("Information Criteria Table: ", result.ictable)
 ```
 """
-function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], tuckiter::Int=500, tucketa=1e-05)
+function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], tuckiter::Int=500, tucketa::Real=1e-05)
     initest = art(mardata, p)
     # Each row is associated with either AIC, BIC, and the assocaited rank
     origy, lagy = tlag(mardata, p)
