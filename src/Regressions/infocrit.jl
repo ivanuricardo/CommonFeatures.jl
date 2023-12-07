@@ -45,6 +45,8 @@ Calculate information criteria (AIC and BIC) for different combinations of Tucke
 - `mardata::AbstractArray`: The matrix-valued time series data.
 - `p::Int`: The order of the autoregressive model.
 - `r̄::AbstractVector`: A vector specifying the maximum Tucker ranks for each mode. Default is all possible combinations.
+- `tuckiter::Int`: An integer specifying the number of iterations the Tucker regression should run. Default value is 500.
+- `tucketa::Real`: A real value specifying the step size for the Tucker regression. Default value is 1e-05
 
 # Output
 A tuple with the following elements:
