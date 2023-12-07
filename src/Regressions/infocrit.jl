@@ -66,7 +66,7 @@ println("AIC Chosen Ranks: ", result.AIC)
 println("Information Criteria Table: ", result.ictable)
 ```
 """
-function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], tuckiter::Int=500)
+function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], tuckiter::Int=500, tucketa=1e-05)
     initest = art(mardata, p)
     # Each row is associated with either AIC, BIC, and the assocaited rank
     origy, lagy = tlag(mardata, p)
@@ -89,7 +89,7 @@ function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], tuckit
                         infocritest[5, counter] = k
                         infocritest[6, counter] = l
                     else
-                        tuckest = tuckerreg(mardata, [i, j, k, l], initest, 1e-06, 1, 1, 0.1, tuckiter)
+                        tuckest = tuckerreg(mardata, [i, j, k, l], initest, tucketa, 1, 1, 0.1, tuckiter)
                         ϵ = origy - contract(tuckest.A, [3, 4], lagy, [1, 2])
                         flatϵ = tenmat(ϵ, col=3)
                         detcov = det(flatϵ * flatϵ')
