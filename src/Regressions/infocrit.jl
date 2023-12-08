@@ -91,7 +91,7 @@ function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], tuckit
                         infocritest[5, counter] = k
                         infocritest[6, counter] = l
                     else
-                        tuckest = tuckerreg(mardata, [i, j, k, l], initest, tucketa, 1, 1, 0.1, tuckiter)
+                        tuckest = tuckerreg(mardata, [i, j, k, l], initest, tucketa, 1, 1, 0.001, tuckiter)
                         ϵ = origy - contract(tuckest.A, [3, 4], lagy, [1, 2])
                         flatϵ = tenmat(ϵ, col=3)
                         detcov = det(flatϵ * flatϵ')

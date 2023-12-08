@@ -51,7 +51,7 @@ A tuple containing the Tucker decomposition components:
 - `initest`: Full Tucker decomposition tensor.
 - `iters`: Number of iterations performed.
 """
-function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, initest::AbstractArray=art(mardata, 1), eta::AbstractFloat=1e-05, a::Real=1, b::Real=1, ϵ::AbstractFloat=1e-01, maxiter::Int=3000, maxnorm::Real=1)
+function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, initest::AbstractArray=art(mardata, 1), eta::AbstractFloat=1e-05, a::Real=1, b::Real=1, ϵ::AbstractFloat=1e-01, maxiter::Int=3000, maxnorm::Real=1, maxeta::AbstractFloat=1e-08)
     origy, lagy = tlag(mardata, 1)
     N1, N2, obs = size(mardata)
 
@@ -63,6 +63,11 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, initest::Abstr
     U2new = hosvdinit.fmat[2]
     U3new = hosvdinit.fmat[3]
     U4new = hosvdinit.fmat[4]
+
+    trackU1 = fill(NaN, maxiter)
+    trackU2 = fill(NaN, maxiter)
+    trackU3 = fill(NaN, maxiter)
+    trackU4 = fill(NaN, maxiter)
 
     iters = 0
     for s in 1:maxiter
@@ -81,36 +86,44 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, initest::Abstr
         regularizeU1 = a * (U1new * (U1new'U1new - (b^2 * I)))
         ∇U1 = tenmat(dlbar, row=1) * kronU1
         U1new -= eta * ∇U1 - eta * regularizeU1
+        trackU1[s] = norm(∇U1)
 
         kronU2 = kron(U4new, kron(U3new, U1new)) * tenmat(Gnew, row=2)'
         regularizeU2 = a * (U2new * (U2new'U2new - (b^2 * I)))
         ∇U2 = tenmat(dlbar, row=2) * kronU2
         U2new -= eta * ∇U2 - eta * regularizeU2
+        trackU2[s] = norm(∇U2)
 
         kronU3 = kron(U4new, kron(U2new, U1new)) * tenmat(Gnew, row=3)'
         regularizeU3 = a * (U3new * (U3new'U3new - (b^2 * I)))
         ∇U3 = tenmat(dlbar, row=3) * kronU3
         U3new -= eta * ∇U3 - eta * regularizeU3
+        trackU3[s] = norm(∇U3)
 
         kronU4 = kron(U3new, kron(U2new, U1new)) * tenmat(Gnew, row=4)'
         regularizeU4 = a * (U4new * (U4new'U4new - (b^2 * I)))
         ∇U4 = tenmat(dlbar, row=4) * kronU4
         U4new -= eta * ∇U4 - eta * regularizeU4
+        trackU4[s] = norm(∇U4)
 
         facmat = [Matrix(U1new'), Matrix(U2new'), Matrix(U3new'), Matrix(U4new')]
         Gnew -= eta * full(ttensor(dlbar, facmat))
 
         Anew = full(ttensor(Gnew, [U1new, U2new, U3new, U4new]))
 
+        eta = eta / sqrt(sum(∇U1 .^ 2) + sum(∇U2 .^ 2) + sum(∇U3 .^ 2) + sum(∇U4 .^ 2) + sum(dlbar .^ 2))
+
         # Stopping Condition
-        if norm(∇U1) < ϵ || norm(∇U2) < ϵ || norm(∇U3) < ϵ || norm(∇U4) < ϵ
+        if norm(∇U1) < ϵ || norm(∇U2) < ϵ || norm(∇U3) < ϵ || norm(∇U4) < ϵ || eta < maxeta
+            fullgrads = hcat(trackU1, trackU2, trackU3, trackU4)
             A = hosvd(Anew; reqrank=ranks)
             return (G=A.cten, U1=A.fmat[1], U2=A.fmat[2], U3=A.fmat[3],
-                U4=A.fmat[4], A=full(A), iters=iters)
+                U4=A.fmat[4], A=full(A), iters=iters, fullgrads=fullgrads)
         elseif iters == maxiter
+            fullgrads = hcat(trackU1, trackU2, trackU3, trackU4)
             A = hosvd(Anew; reqrank=ranks)
             return (G=A.cten, U1=A.fmat[1], U2=A.fmat[2], U3=A.fmat[3],
-                U4=A.fmat[4], A=full(A), iters=iters)
+                U4=A.fmat[4], A=full(A), iters=iters, fullgrads=fullgrads)
         end
     end
 end
