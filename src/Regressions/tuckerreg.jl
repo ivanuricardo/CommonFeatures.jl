@@ -51,7 +51,7 @@ A tuple containing the Tucker decomposition components:
 - `initest`: Full Tucker decomposition tensor.
 - `iters`: Number of iterations performed.
 """
-function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, initest::AbstractArray=art(mardata, 1), eta::AbstractFloat=1e-05, a::Real=1, b::Real=1, ϵ::AbstractFloat=1e-01, maxiter::Int=3000, maxnorm::Real=1, maxeta::AbstractFloat=1e-08)
+function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, initest::AbstractArray=art(mardata, 1), eta::AbstractFloat=1e-05, a::Real=1, b::Real=1, ϵ::AbstractFloat=1e-01, maxiter::Int=3000, maxnorm::Real=1, maxeta::AbstractFloat=1e-08, fixedeta::Bool=false)
     origy, lagy = tlag(mardata, 1)
     N1, N2, obs = size(mardata)
 
@@ -114,7 +114,9 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, initest::Abstr
 
         Anew = full(ttensor(Gnew, [U1new, U2new, U3new, U4new]))
 
-        eta = eta / sqrt(sum(∇U1 .^ 2) + sum(∇U2 .^ 2) + sum(∇U3 .^ 2) + sum(∇U4 .^ 2) + sum(dlbar .^ 2))
+        if fixedeta == false
+            eta = eta / sqrt(sum(∇U1 .^ 2) + sum(∇U2 .^ 2) + sum(∇U3 .^ 2) + sum(∇U4 .^ 2) + sum(dlbar .^ 2))
+        end
 
         # Stopping Condition
         if norm(∇U1) < ϵ || norm(∇U2) < ϵ || norm(∇U3) < ϵ || norm(∇U4) < ϵ || eta < maxeta
