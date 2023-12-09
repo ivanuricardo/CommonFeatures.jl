@@ -51,7 +51,7 @@ A tuple containing the Tucker decomposition components:
 - `initest`: Full Tucker decomposition tensor.
 - `iters`: Number of iterations performed.
 """
-function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, initest::AbstractArray=art(mardata, 1), eta::AbstractFloat=1e-05, a::Real=1, b::Real=1, ϵ::AbstractFloat=1e-01, maxiter::Int=3000, maxnorm::Real=1, maxeta::AbstractFloat=1e-08, fixedeta::Bool=false)
+function tuckerreg(mardata::AbstractArray, ranks::AbstractVector; initest::AbstractArray=art(mardata, 1), eta::AbstractFloat=1e-05, a::Real=1, b::Real=1, ϵ::AbstractFloat=1e-01, maxiter::Int=3000, maxnorm::Real=1, maxeta::AbstractFloat=1e-08, fixedeta::Bool=false)
     origy, lagy = tlag(mardata, 1)
     N1, N2, obs = size(mardata)
 
