@@ -79,7 +79,6 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, initest::Abstr
             dlbar += ttt((innert - origy[:, :, i]), lagy[:, :, i])
         end
         dlbar .= dlbar ./ obs
-
         clipgradient!(dlbar, maxnorm)
 
         kronU1 = kron(U4new, kron(U3new, U2new)) * tenmat(Gnew, row=1)'
@@ -87,24 +86,28 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, initest::Abstr
         ∇U1 = tenmat(dlbar, row=1) * kronU1
         U1new -= eta * ∇U1 - eta * regularizeU1
         trackU1[s] = norm(∇U1)
+        clipgradient!(U1new, maxnorm)
 
         kronU2 = kron(U4new, kron(U3new, U1new)) * tenmat(Gnew, row=2)'
         regularizeU2 = a * (U2new * (U2new'U2new - (b^2 * I)))
         ∇U2 = tenmat(dlbar, row=2) * kronU2
         U2new -= eta * ∇U2 - eta * regularizeU2
         trackU2[s] = norm(∇U2)
+        clipgradient!(U2new, maxnorm)
 
         kronU3 = kron(U4new, kron(U2new, U1new)) * tenmat(Gnew, row=3)'
         regularizeU3 = a * (U3new * (U3new'U3new - (b^2 * I)))
         ∇U3 = tenmat(dlbar, row=3) * kronU3
         U3new -= eta * ∇U3 - eta * regularizeU3
         trackU3[s] = norm(∇U3)
+        clipgradient!(U3new, maxnorm)
 
         kronU4 = kron(U3new, kron(U2new, U1new)) * tenmat(Gnew, row=4)'
         regularizeU4 = a * (U4new * (U4new'U4new - (b^2 * I)))
         ∇U4 = tenmat(dlbar, row=4) * kronU4
         U4new -= eta * ∇U4 - eta * regularizeU4
         trackU4[s] = norm(∇U4)
+        clipgradient!(U4new, maxnorm)
 
         facmat = [Matrix(U1new'), Matrix(U2new'), Matrix(U3new'), Matrix(U4new')]
         Gnew -= eta * full(ttensor(dlbar, facmat))
