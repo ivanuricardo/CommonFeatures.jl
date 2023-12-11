@@ -37,22 +37,28 @@ Uses the gradient descent algorithm of Wang, Zhang, and Li 2024.
 # Arguments
 - `mardata::AbstractArray`: Input tensor data. Should be ``N1 \times N2 \times T``
 - `ranks::AbstractVector`: Vector specifying the desired ranks of the Tucker decomposition.
-- `initest::AbstractArray`: Initial coefficient value (usually MAR)
 - `eta::AbstractFloat`: Learning rate for gradient descent (default: 1e-04).
 - `a::Real`: Regularization parameter (default: 1).
 - `b::Real`: Regularization parameter (default: 1).
 - `ϵ::AbstractFloat`: Convergence threshold for stopping criteria (default: 1e-04).
 - `maxiter::Int`: Maximum number of iterations for gradient descent (default: 3000).
+- `maxnorm::Real`: Max norm for gradient clipping if required. (default: 1)
+- `mineta::AbstractFloat`: If adaptive step size, sets an eta stopping condition if the adaptive step size is too small (default: 1e-20)
+- `fixedeta::Bool`: Sets either a fixed or adaptive step size (default: true)
+- `orthonorm::Bool`: Bool to normalize columns of factor matrices. (default: true)
+- `P::Int`: Number of lags to include
 
 # Returns
 A tuple containing the Tucker decomposition components:
 - `G`: Core tensor.
 - `U1`, `U2`, `U3`, `U4`: Factor matrices.
-- `initest`: Full Tucker decomposition tensor.
+- `A`: Full Tucker decomposition tensor.
 - `iters`: Number of iterations performed.
+- `fullgrads`: A matrix keeping track of gradients. Can be plotted to determine whether gradients behave properly.
 """
-function tuckerreg(mardata::AbstractArray, ranks::AbstractVector; initest::AbstractArray=art(mardata, 1), eta::AbstractFloat=1e-05, a::Real=1, b::Real=1, ϵ::AbstractFloat=1e-01, maxiter::Int=3000, maxnorm::Real=1, maxeta::AbstractFloat=1e-08, fixedeta::Bool=false)
-    origy, lagy = tlag(mardata, 1)
+function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractFloat=1e-05, a::Real=1, b::Real=1, ϵ::AbstractFloat=1e-02, maxiter::Int=3000, maxnorm::Real=1, mineta::AbstractFloat=1e-20, fixedeta::Bool=true, orthonorm::Bool=true, P::Int=1, stopcond::Bool=false)
+    initest = art(mardata, P)
+    origy, lagy = tlag(mardata, P)
     N1, N2, obs = size(mardata)
 
     hosvdinit = hosvd(initest; reqrank=ranks)
@@ -74,7 +80,7 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector; initest::Abstr
         iters += 1
         dlbar = zeros(N1, N2, N1, N2)
         innert = zeros(N1, N2)
-        for i in 1:(obs-1)
+        for i in 1:(obs-P)
             innert = contract(Anew, [3, 4], lagy[:, :, i], [1, 2])
             dlbar += ttt((innert - origy[:, :, i]), lagy[:, :, i])
         end
@@ -86,28 +92,36 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector; initest::Abstr
         ∇U1 = tenmat(dlbar, row=1) * kronU1
         U1new -= eta * ∇U1 - eta * regularizeU1
         trackU1[s] = norm(∇U1)
-        clipgradient!(U1new, maxnorm)
+        if orthonorm == true
+            clipgradient!(U1new, maxnorm)
+        end
 
         kronU2 = kron(U4new, kron(U3new, U1new)) * tenmat(Gnew, row=2)'
         regularizeU2 = a * (U2new * (U2new'U2new - (b^2 * I)))
         ∇U2 = tenmat(dlbar, row=2) * kronU2
         U2new -= eta * ∇U2 - eta * regularizeU2
         trackU2[s] = norm(∇U2)
-        clipgradient!(U2new, maxnorm)
+        if orthonorm == true
+            clipgradient!(U2new, maxnorm)
+        end
 
         kronU3 = kron(U4new, kron(U2new, U1new)) * tenmat(Gnew, row=3)'
         regularizeU3 = a * (U3new * (U3new'U3new - (b^2 * I)))
         ∇U3 = tenmat(dlbar, row=3) * kronU3
         U3new -= eta * ∇U3 - eta * regularizeU3
         trackU3[s] = norm(∇U3)
-        clipgradient!(U3new, maxnorm)
+        if orthonorm == true
+            clipgradient!(U3new, maxnorm)
+        end
 
         kronU4 = kron(U3new, kron(U2new, U1new)) * tenmat(Gnew, row=4)'
         regularizeU4 = a * (U4new * (U4new'U4new - (b^2 * I)))
         ∇U4 = tenmat(dlbar, row=4) * kronU4
         U4new -= eta * ∇U4 - eta * regularizeU4
         trackU4[s] = norm(∇U4)
-        clipgradient!(U4new, maxnorm)
+        if orthonorm == true
+            clipgradient!(U4new, maxnorm)
+        end
 
         facmat = [Matrix(U1new'), Matrix(U2new'), Matrix(U3new'), Matrix(U4new')]
         Gnew -= eta * full(ttensor(dlbar, facmat))
@@ -119,16 +133,29 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector; initest::Abstr
         end
 
         # Stopping Condition
-        if norm(∇U1) < ϵ || norm(∇U2) < ϵ || norm(∇U3) < ϵ || norm(∇U4) < ϵ || eta < maxeta
-            fullgrads = hcat(trackU1, trackU2, trackU3, trackU4)
-            A = hosvd(Anew; reqrank=ranks)
-            return (G=A.cten, U1=A.fmat[1], U2=A.fmat[2], U3=A.fmat[3],
-                U4=A.fmat[4], A=full(A), iters=iters, fullgrads=fullgrads)
-        elseif iters == maxiter
-            fullgrads = hcat(trackU1, trackU2, trackU3, trackU4)
-            A = hosvd(Anew; reqrank=ranks)
-            return (G=A.cten, U1=A.fmat[1], U2=A.fmat[2], U3=A.fmat[3],
-                U4=A.fmat[4], A=full(A), iters=iters, fullgrads=fullgrads)
+        if stopcond == true
+            if norm(∇U1) < ϵ || norm(∇U2) < ϵ || norm(∇U3) < ϵ || norm(∇U4) < ϵ || eta < mineta
+                fullgrads = hcat(trackU1, trackU2, trackU3, trackU4)
+                A = hosvd(Anew; reqrank=ranks)
+                return (G=A.cten, U1=A.fmat[1], U2=A.fmat[2], U3=A.fmat[3],
+                    U4=A.fmat[4], A=full(A), iters=iters, fullgrads=fullgrads)
+            elseif iters == maxiter
+                fullgrads = hcat(trackU1, trackU2, trackU3, trackU4)
+                A = hosvd(Anew; reqrank=ranks)
+                return (G=A.cten, U1=A.fmat[1], U2=A.fmat[2], U3=A.fmat[3],
+                    U4=A.fmat[4], A=full(A), iters=iters, fullgrads=fullgrads)
+            end
         end
     end
+    fullgrads = hcat(trackU1, trackU2, trackU3, trackU4)
+    A = hosvd(Anew; reqrank=ranks)
+
+    return (G=A.cten, U1=A.fmat[1], U2=A.fmat[2], U3=A.fmat[3],
+        U4=A.fmat[4], A=full(A), iters=iters, fullgrads=fullgrads)
+end
+
+function naivetuckreg(mardata, ranks, P)
+    initest = art(mardata, P)
+    hosvdinit = hosvd(initest; reqrank=ranks)
+    return (G=hosvdinit.cten, U1=hosvdinit.fmat[1], U2=hosvdinit.fmat[2], U3=hosvdinit.fmat[3], U4=hosvdinit.fmat[4], A=full(hosvdinit))
 end

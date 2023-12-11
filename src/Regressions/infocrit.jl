@@ -68,8 +68,7 @@ println("AIC Chosen Ranks: ", result.AIC)
 println("Information Criteria Table: ", result.ictable)
 ```
 """
-function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], tuckiter::Int=500, tucketa::Real=1e-05, fixedeta::Bool=true)
-    initest = art(mardata, p)
+function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], a::Real=1, b::Real=1, tuckiter::Int=500, ϵ::AbstractFloat=1e-02, tucketa::Real=1e-05, fixedeta::Bool=true, orthonorm::Bool=true)
     # Each row is associated with either AIC, BIC, and the assocaited rank
     origy, lagy = tlag(mardata, p)
     N1, N2, obs = size(origy)
@@ -91,13 +90,11 @@ function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], tuckit
                         infocritest[5, counter] = k
                         infocritest[6, counter] = l
                     else
-                        tuckest = tuckerreg(mardata, [i, j, k, l], initest, tucketa, 1, 1, 0.001, tuckiter, 1, 1e-20, fixedeta)
-                        ϵ = origy - contract(tuckest.A, [3, 4], lagy, [1, 2])
-                        flatϵ = tenmat(ϵ, col=3)
+                        # tuckest = naivetuckreg(mardata, [i, j, k, l], p)
+                        tuckest = tuckerreg(mardata, [i, j, k, l], tucketa, a, b, ϵ, tuckiter, 1, 1e-20, fixedeta, orthonorm)
+                        err = origy - contract(tuckest.A, [3, 4], lagy, [1, 2])
+                        flatϵ = tenmat(err, col=3)
                         detcov = det(flatϵ * flatϵ')
-                        if detcov == 0 || detcov == Inf
-                            detcov = tr(flatϵ * flatϵ')
-                        end
                         infocritest[1, counter] = log(detcov) + (2 * tuckerpar([N1, N2], [i, j, k, l])) / obs
                         infocritest[2, counter] = log(detcov) + (tuckerpar([N1, N2], [i, j, k, l]) * log(obs)) / obs
                         infocritest[3, counter] = i
@@ -113,9 +110,10 @@ function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], tuckit
     nancols = findall(x -> any(isnan, x), eachcol(infocritest))
     filteredic = infocritest[:, setdiff(1:size(infocritest, 2), nancols)]
     AICvec = argmin(filteredic[1, :])
-    AICchosen = filteredic[3:end, AICvec]
+    AICchosen = Int.(filteredic[3:end, AICvec])
     BICvec = argmin(filteredic[2, :])
-    BICchosen = filteredic[3:end, BICvec]
+    BICchosen = Int.(filteredic[3:end, BICvec])
+    truetuck = tuckerreg(mardata, BICchosen, tucketa, a, b, ϵ, tuckiter, 1, 1e-20, fixedeta, orthonorm)
 
-    return (BIC=BICchosen, AIC=AICchosen, ictable=infocritest, regiters=regiters)
+    return (BIC=BICchosen, AIC=AICchosen, ictable=infocritest, regiters=regiters, truetuck=truetuck)
 end

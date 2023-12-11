@@ -43,6 +43,7 @@ Simulate Tucker data with specified dimensions, ranks, observation count, and sc
 - `ranks::AbstractVector`: Tucker ranks for the four modes.
 - `obs::Int`: Number of observations to simulate.
 - `scale::Real`: Scaling factor for the Tucker decomposition.
+- `P::Int`: Number of lags to include. Default is 1 and the maximum is 5.
 
 # Returns
 A named tuple containing:
@@ -55,7 +56,7 @@ A named tuple containing:
 result = simulatetuckerdata([5, 4], [2, 3, 2, 3], 100, 1.0)
 ```
 """
-function simulatetuckerdata(dimvals::AbstractVector, ranks::AbstractVector, obs::Int, scale::Real)
+function simulatetuckerdata(dimvals::AbstractVector, ranks::AbstractVector, obs::Int, scale::Real, P::Int=1)
     A = fill(NaN, dimvals[1], dimvals[2], dimvals[1], dimvals[2])
     stabit = 0
     while true
@@ -74,9 +75,19 @@ function simulatetuckerdata(dimvals::AbstractVector, ranks::AbstractVector, obs:
     end
 
     mardata = zeros(dimvals[1], dimvals[2], obs)
-    for i in 2:obs
+    for i in (P+1):obs
         ϵ = randn(dimvals[1], dimvals[2])
-        mardata[:, :, i] .= contract(A, [3, 4], mardata[:, :, i-1], [1, 2]) + ϵ
+        if P == 1
+            mardata[:, :, i] .= contract(A, [3, 4], mardata[:, :, i-1], [1, 2]) + ϵ
+        elseif P == 2
+            mardata[:, :, i] .= contract(A[:, :, :, 1:dimvals[2]], [3, 4], mardata[:, :, i-1], [1, 2]) + contract(A[:, :, :, (dimvals[2]+1):end], [3, 4], mardata[:, :, i-2], [1, 2]) + ϵ
+        elseif P == 3
+            mardata[:, :, i] .= contract(A[:, :, :, 1:dimvals[2]], [3, 4], mardata[:, :, i-1], [1, 2]) + contract(A[:, :, :, (dimvals[2]+1):dimvals[2]*2], [3, 4], mardata[:, :, i-2], [1, 2]) + contract(A[:, :, :, (dimvals[2]*2+1):end], [3, 4], mardata[:, :, i-3], [1, 2]) + ϵ
+        elseif P == 4
+            mardata[:, :, i] .= contract(A[:, :, :, 1:dimvals[2]], [3, 4], mardata[:, :, i-1], [1, 2]) + contract(A[:, :, :, (dimvals[2]+1):dimvals[2]*2], [3, 4], mardata[:, :, i-2], [1, 2]) + contract(A[:, :, :, (dimvals[2]*2+1):(dimvals[2]*3)], [3, 4], mardata[:, :, i-3], [1, 2]) + contract(A[:, :, :, (dimvals[2]*3+1):end], [3, 4], mardata[:, :, i-4], [1, 2]) + ϵ
+        elseif P == 5
+            mardata[:, :, i] .= contract(A[:, :, :, 1:dimvals[2]], [3, 4], mardata[:, :, i-1], [1, 2]) + contract(A[:, :, :, (dimvals[2]+1):dimvals[2]*2], [3, 4], mardata[:, :, i-2], [1, 2]) + contract(A[:, :, :, (dimvals[2]*2+1):(dimvals[2]*3)], [3, 4], mardata[:, :, i-3], [1, 2]) + contract(A[:, :, :, (dimvals[2]*3+1):(dimvals[2]*4)], [3, 4], mardata[:, :, i-4], [1, 2]) + contract(A[:, :, :, (dimvals[2]*4+1):end], [3, 4], mardata[:, :, i-5], [1, 2]) + ϵ
+        end
     end
     return (tuckerdata=mardata, stabit=stabit, A=A)
 end
