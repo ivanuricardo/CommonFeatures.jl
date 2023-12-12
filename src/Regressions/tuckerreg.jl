@@ -56,7 +56,7 @@ A tuple containing the Tucker decomposition components:
 - `iters`: Number of iterations performed.
 - `fullgrads`: A matrix keeping track of gradients. Can be plotted to determine whether gradients behave properly.
 """
-function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractFloat=1e-05, a::Real=1, b::Real=1, ϵ::AbstractFloat=1e-02, maxiter::Int=3000, maxnorm::Real=1, mineta::AbstractFloat=1e-20, fixedeta::Bool=true, orthonorm::Bool=true, P::Int=1, stopcond::Bool=false)
+function tuckerreg(mardata::AbstractArray, ranks::AbstractVector; eta::AbstractFloat=1e-05, a::Real=1, b::Real=1, maxiter::Int=3000, maxnorm::Real=1, fixedeta::Bool=true, orthonorm::Bool=true, P::Int=1)
     initest = art(mardata, P)
     origy, lagy = tlag(mardata, P)
     N1, N2, obs = size(mardata)
@@ -133,18 +133,11 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractF
         end
 
         # Stopping Condition
-        if stopcond == true
-            if norm(∇U1) < ϵ || norm(∇U2) < ϵ || norm(∇U3) < ϵ || norm(∇U4) < ϵ || eta < mineta
-                fullgrads = hcat(trackU1, trackU2, trackU3, trackU4)
-                A = hosvd(Anew; reqrank=ranks)
-                return (G=A.cten, U1=A.fmat[1], U2=A.fmat[2], U3=A.fmat[3],
-                    U4=A.fmat[4], A=full(A), iters=iters, fullgrads=fullgrads)
-            elseif iters == maxiter
-                fullgrads = hcat(trackU1, trackU2, trackU3, trackU4)
-                A = hosvd(Anew; reqrank=ranks)
-                return (G=A.cten, U1=A.fmat[1], U2=A.fmat[2], U3=A.fmat[3],
-                    U4=A.fmat[4], A=full(A), iters=iters, fullgrads=fullgrads)
-            end
+        if s == maxiter
+            fullgrads = hcat(trackU1, trackU2, trackU3, trackU4)
+            A = hosvd(Anew; reqrank=ranks)
+            return (G=A.cten, U1=A.fmat[1], U2=A.fmat[2], U3=A.fmat[3],
+                U4=A.fmat[4], A=full(A), iters=iters, fullgrads=fullgrads)
         end
     end
     fullgrads = hcat(trackU1, trackU2, trackU3, trackU4)

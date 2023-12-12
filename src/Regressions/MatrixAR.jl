@@ -41,7 +41,7 @@ p = 2
 result = art(Y, p)
 ```
 """
-function art(Y::AbstractArray, p::Int)
+function art(Y::AbstractArray; p::Int=1)
     origy, laggedy = tlag(Y, p)
     tols = tensorols(origy, laggedy)
 
