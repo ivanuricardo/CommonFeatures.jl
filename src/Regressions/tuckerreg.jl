@@ -56,9 +56,9 @@ A tuple containing the Tucker decomposition components:
 - `iters`: Number of iterations performed.
 - `fullgrads`: A matrix keeping track of gradients. Can be plotted to determine whether gradients behave properly.
 """
-function tuckerreg(mardata::AbstractArray, ranks::AbstractVector; eta::AbstractFloat=1e-05, a::Real=1, b::Real=1, maxiter::Int=3000, maxnorm::Real=1, fixedeta::Bool=true, orthonorm::Bool=true, P::Int=1)
-    initest = art(mardata, P)
-    origy, lagy = tlag(mardata, P)
+function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractFloat=1e-05, a::Real=1, b::Real=1, maxiter::Int=3000, maxnorm::Real=1, fixedeta::Bool=true, orthonorm::Bool=true, p::Int=1)
+    initest = art(mardata, p=p)
+    origy, lagy = tlag(mardata, p)
     N1, N2, obs = size(mardata)
 
     hosvdinit = hosvd(initest; reqrank=ranks)
@@ -80,7 +80,7 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector; eta::AbstractF
         iters += 1
         dlbar = zeros(N1, N2, N1, N2)
         innert = zeros(N1, N2)
-        for i in 1:(obs-P)
+        for i in 1:(obs-p)
             innert = contract(Anew, [3, 4], lagy[:, :, i], [1, 2])
             dlbar += ttt((innert - origy[:, :, i]), lagy[:, :, i])
         end
