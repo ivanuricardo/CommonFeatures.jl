@@ -56,7 +56,7 @@ A tuple containing the Tucker decomposition components:
 - `iters`: Number of iterations performed.
 - `fullgrads`: A matrix keeping track of gradients. Can be plotted to determine whether gradients behave properly.
 """
-function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractFloat=1e-05, a::Real=1, b::Real=1, maxiter::Int=3000, maxnorm::Real=1, fixedeta::Bool=true, orthonorm::Bool=true, p::Int=1)
+function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractFloat=1e-05, a::Real=1, b::Real=1, maxiter::Int=3000, maxnorm::Real=1, orthonorm::Bool=true, p::Int=1, ϵ::AbstractFloat=1e-02)
     initest = art(mardata, p=p)
     origy, lagy = tlag(mardata, p)
     N1, N2, obs = size(mardata)
@@ -78,7 +78,7 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractF
     iters = 0
     for s in 1:maxiter
         iters += 1
-        dlbar = zeros(N1, N2, N1, N2)
+        dlbar = zeros(N1, N2, N1, N2 * p)
         innert = zeros(N1, N2)
         for i in 1:(obs-p)
             innert = contract(Anew, [3, 4], lagy[:, :, i], [1, 2])
@@ -128,23 +128,21 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractF
 
         Anew = full(ttensor(Gnew, [U1new, U2new, U3new, U4new]))
 
-        if fixedeta == false
-            eta = eta / sqrt(sum(∇U1 .^ 2) + sum(∇U2 .^ 2) + sum(∇U3 .^ 2) + sum(∇U4 .^ 2) + sum(dlbar .^ 2))
-        end
-
         # Stopping Condition
-        if s == maxiter
-            fullgrads = hcat(trackU1, trackU2, trackU3, trackU4)
-            A = hosvd(Anew; reqrank=ranks)
-            return (G=A.cten, U1=A.fmat[1], U2=A.fmat[2], U3=A.fmat[3],
-                U4=A.fmat[4], A=full(A), iters=iters, fullgrads=fullgrads)
+        if iters > 100
+            if norm(∇U1) < ϵ || norm(∇U2) < ϵ || norm(∇U3) < ϵ || norm(∇U4) < ϵ
+                fullgrads = hcat(trackU1, trackU2, trackU3, trackU4)
+                A = hosvd(Anew; reqrank=ranks)
+                return (G=A.cten, U1=A.fmat[1], U2=A.fmat[2], U3=A.fmat[3],
+                    U4=A.fmat[4], A=full(A), iters=iters, fullgrads=fullgrads)
+            elseif iters == maxiter
+                fullgrads = hcat(trackU1, trackU2, trackU3, trackU4)
+                A = hosvd(Anew; reqrank=ranks)
+                return (G=A.cten, U1=A.fmat[1], U2=A.fmat[2], U3=A.fmat[3],
+                    U4=A.fmat[4], A=full(A), iters=iters, fullgrads=fullgrads)
+            end
         end
     end
-    fullgrads = hcat(trackU1, trackU2, trackU3, trackU4)
-    A = hosvd(Anew; reqrank=ranks)
-
-    return (G=A.cten, U1=A.fmat[1], U2=A.fmat[2], U3=A.fmat[3],
-        U4=A.fmat[4], A=full(A), iters=iters, fullgrads=fullgrads)
 end
 
 function naivetuckreg(mardata, ranks, P)

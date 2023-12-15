@@ -56,16 +56,23 @@ A named tuple containing:
 result = simulatetuckerdata([5, 4], [2, 3, 2, 3], 100, 1.0)
 ```
 """
-function simulatetuckerdata(dimvals::AbstractVector, ranks::AbstractVector, obs::Int, scale::Real, P::Int=1)
-    A = fill(NaN, dimvals[1], dimvals[2], dimvals[1], dimvals[2])
+function simulatetuckerdata(dimvals::AbstractVector, ranks::AbstractVector, obs::Int, scale::Real=5, P::Int=1)
+    A = fill(NaN, dimvals[1], dimvals[2], dimvals[1], dimvals[2] * P)
     stabit = 0
     while true
         stabit += 1
-        G = randn(ranks[1], ranks[2], ranks[3], ranks[4])
-        U1 = scale .* randn(dimvals[1], ranks[1])
-        U2 = scale .* randn(dimvals[2], ranks[2])
-        U3 = scale .* randn(dimvals[1], ranks[3])
-        U4 = scale .* randn(dimvals[2], ranks[4])
+        unscaledG = randn(ranks[1], ranks[2], ranks[3], ranks[4])
+        G = rescalemat(unscaledG, scale)
+        randU1 = randn(dimvals[1], ranks[1])
+        randU2 = randn(dimvals[2], ranks[2])
+        randU3 = randn(dimvals[1], ranks[3])
+        randU4 = randn(dimvals[2] * P, ranks[4])
+
+        U1, _ = svd(randU1)
+        U2, _ = svd(randU2)
+        U3, _ = svd(randU3)
+        U4, _ = svd(randU4)
+
         hosvdA = ttensor(G, [U1, U2, U3, U4])
         A .= full(hosvdA)
         varA = tenmat(A, row=[1, 2])

@@ -68,7 +68,7 @@ println("AIC Chosen Ranks: ", result.AIC)
 println("Information Criteria Table: ", result.ictable)
 ```
 """
-function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], a::Real=1, b::Real=1, tuckiter::Int=500, tucketa::Real=1e-05, fixedeta::Bool=true, orthonorm::Bool=true)
+function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], a::Real=1, b::Real=1, tuckiter::Int=500, tucketa::Real=1e-05, orthonorm::Bool=true, ϵ::Real=1e-05)
     # Each row is associated with either AIC, BIC, and the assocaited rank
     origy, lagy = tlag(mardata, p)
     N1, N2, obs = size(origy)
@@ -88,7 +88,7 @@ function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], a::Rea
             infocritest[6, i] = r4
         else
             # tuckest = naivetuckreg(mardata, [i, j, k, l], p)
-            tuckest = tuckerreg(mardata, selectedrank, tucketa, a, b, tuckiter, 1, fixedeta, orthonorm)
+            tuckest = tuckerreg(mardata, selectedrank, tucketa, a, b, tuckiter, 1, orthonorm, 1, ϵ)
             err = origy - contract(tuckest.A, [3, 4], lagy, [1, 2])
             flatϵ = tenmat(err, col=3)
             detcov = det(flatϵ * flatϵ')
@@ -107,7 +107,6 @@ function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], a::Rea
     AICchosen = Int.(filteredic[3:end, AICvec])
     BICvec = argmin(filteredic[2, :])
     BICchosen = Int.(filteredic[3:end, BICvec])
-    truetuck = tuckerreg(mardata, BICchosen, tucketa, a, b, tuckiter, 1, fixedeta, orthonorm)
 
-    return (BIC=BICchosen, AIC=AICchosen, ictable=infocritest, regiters=regiters, truetuck=truetuck)
+    return (BIC=BICchosen, AIC=AICchosen, ictable=infocritest, regiters=regiters)
 end

@@ -5,7 +5,7 @@ using TensorToolbox
 using LinearAlgebra
 
 export tensorols, art
-export tlag, ridgerankselect
+export tlag, ridgerankselect, rescalemat
 export makecompanion, isstable
 export infocrit, tuckerpar
 export tuckerreg, clipgradient!
