@@ -85,7 +85,7 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractF
             dlbar += ttt((innert - origy[:, :, i]), lagy[:, :, i])
         end
         dlbar .= dlbar ./ obs
-        clipgradient!(dlbar, maxnorm)
+        # clipgradient!(dlbar, maxnorm)
 
         kronU1 = kron(U4new, kron(U3new, U2new)) * tenmat(Gnew, row=1)'
         regularizeU1 = a * (U1new * (U1new'U1new - (b^2 * I)))
@@ -129,7 +129,7 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractF
         Anew = full(ttensor(Gnew, [U1new, U2new, U3new, U4new]))
 
         # Stopping Condition
-        if iters > 100
+        if iters > 50
             if norm(∇U1) < ϵ || norm(∇U2) < ϵ || norm(∇U3) < ϵ || norm(∇U4) < ϵ
                 fullgrads = hcat(trackU1, trackU2, trackU3, trackU4)
                 A = hosvd(Anew; reqrank=ranks)

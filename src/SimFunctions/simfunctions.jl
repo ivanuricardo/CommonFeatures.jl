@@ -56,7 +56,7 @@ A named tuple containing:
 result = simulatetuckerdata([5, 4], [2, 3, 2, 3], 100, 1.0)
 ```
 """
-function simulatetuckerdata(dimvals::AbstractVector, ranks::AbstractVector, obs::Int, scale::Real=5, P::Int=1)
+function simulatetuckerdata(dimvals::AbstractVector, ranks::AbstractVector, obs::Int, scale::Real=5, P::Int=1, κ::Int=500)
     A = fill(NaN, dimvals[1], dimvals[2], dimvals[1], dimvals[2] * P)
     stabit = 0
     while true
@@ -140,3 +140,13 @@ function simulatemardata(dimvals::AbstractVector, obs::Int, scale::Real)
     return (mardata=mardata, stabit=stabit, A=A)
 end
 
+function conditionvalue(ten::AbstractArray, ranks)
+    unfold1 = tenmat(ten, row=1)
+    unfold2 = tenmat(ten, row=2)
+    unfold3 = tenmat(ten, row=3)
+    unfold4 = tenmat(ten, row=4)
+    upperλ = max(opnorm(unfold1), opnorm(unfold2), opnorm(unfold3), opnorm(unfold4))
+    lowerλ = min(svd(unfold1).S[ranks[1]], svd(unfold2).S[ranks[2]], svd(unfold3).S[ranks[3]], svd(unfold4).S[ranks[4]])
+    conditionnum = upperλ / lowerλ
+    return conditionnum
+end
