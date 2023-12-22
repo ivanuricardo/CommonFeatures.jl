@@ -3,6 +3,7 @@ module TensorEconometrics
 using Statistics
 using TensorToolbox
 using LinearAlgebra
+using ProgressBars
 
 export tensorols, art
 export tlag, ridgerankselect, rescalemat
