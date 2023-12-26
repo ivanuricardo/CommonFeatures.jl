@@ -1,3 +1,14 @@
+function conditionvalue(ten::AbstractArray, ranks)
+    unfold1 = tenmat(ten, row=1)
+    unfold2 = tenmat(ten, row=2)
+    unfold3 = tenmat(ten, row=3)
+    unfold4 = tenmat(ten, row=4)
+    upperλ = max(opnorm(unfold1), opnorm(unfold2), opnorm(unfold3), opnorm(unfold4))
+    lowerλ = min(svd(unfold1).S[ranks[1]], svd(unfold2).S[ranks[2]], svd(unfold3).S[ranks[3]], svd(unfold4).S[ranks[4]])
+    conditionnum = upperλ / lowerλ
+    return conditionnum
+end
+
 """
     simstats(selectedranks, correctrank, sims)
 
@@ -6,7 +17,7 @@ Calculate simulation statistics based on selected ranks, correct ranks, and the 
 # Arguments
 - `selectedranks`::AbstractMatrix: Matrix of selected ranks for each simulation. Simulations should be along the rows.
 - `correctrank`::AbstractVector: Vector of correct ranks for each simulation.
-- `sims`::Int: Number of simulations.
+- `sims`::Int: CNumber of simulations.
 
 # Returns
 A named tuple containing the following statistics:
@@ -43,7 +54,7 @@ Simulate Tucker data with specified dimensions, ranks, observation count, and sc
 - `ranks::AbstractVector`: Tucker ranks for the four modes.
 - `obs::Int`: Number of observations to simulate.
 - `scale::Real`: Scaling factor for the Tucker decomposition.
-- `P::Int`: Number of lags to include. Default is 1 and the maximum is 5.
+- `p::Int`: Number of lags to include. Default is 1 and the maximum is 5.
 
 # Returns
 A named tuple containing:
@@ -56,8 +67,8 @@ A named tuple containing:
 result = simulatetuckerdata([5, 4], [2, 3, 2, 3], 100, 1.0)
 ```
 """
-function simulatetuckerdata(dimvals::AbstractVector, ranks::AbstractVector, obs::Int, scale::Real=5, P::Int=1, κ::Int=500)
-    A = fill(NaN, dimvals[1], dimvals[2], dimvals[1], dimvals[2] * P)
+function simulatetuckerdata(dimvals::AbstractVector, ranks::AbstractVector, obs::Int, scale::Real=5, p::Int=1, maxeigen=1)
+    A = fill(NaN, dimvals[1], dimvals[2], dimvals[1], dimvals[2] * p)
     stabit = 0
     while true
         stabit += 1
@@ -66,7 +77,7 @@ function simulatetuckerdata(dimvals::AbstractVector, ranks::AbstractVector, obs:
         randU1 = randn(dimvals[1], ranks[1])
         randU2 = randn(dimvals[2], ranks[2])
         randU3 = randn(dimvals[1], ranks[3])
-        randU4 = randn(dimvals[2] * P, ranks[4])
+        randU4 = randn(dimvals[2] * p, ranks[4])
 
         U1, _ = svd(randU1)
         U2, _ = svd(randU2)
@@ -76,27 +87,27 @@ function simulatetuckerdata(dimvals::AbstractVector, ranks::AbstractVector, obs:
         hosvdA = ttensor(G, [U1, U2, U3, U4])
         A .= full(hosvdA)
         varA = tenmat(A, row=[1, 2])
-        if isstable(varA)
+        if isstable(varA, maxeigen)
             break
         end
     end
 
     mardata = zeros(dimvals[1], dimvals[2], obs)
-    for i in (P+1):obs
+    for i in (p+1):obs
         ϵ = randn(dimvals[1], dimvals[2])
-        if P == 1
+        if p == 1
             mardata[:, :, i] .= contract(A, [3, 4], mardata[:, :, i-1], [1, 2]) + ϵ
-        elseif P == 2
+        elseif p == 2
             mardata[:, :, i] .= contract(A[:, :, :, 1:dimvals[2]], [3, 4], mardata[:, :, i-1], [1, 2]) + contract(A[:, :, :, (dimvals[2]+1):end], [3, 4], mardata[:, :, i-2], [1, 2]) + ϵ
-        elseif P == 3
+        elseif p == 3
             mardata[:, :, i] .= contract(A[:, :, :, 1:dimvals[2]], [3, 4], mardata[:, :, i-1], [1, 2]) + contract(A[:, :, :, (dimvals[2]+1):dimvals[2]*2], [3, 4], mardata[:, :, i-2], [1, 2]) + contract(A[:, :, :, (dimvals[2]*2+1):end], [3, 4], mardata[:, :, i-3], [1, 2]) + ϵ
-        elseif P == 4
+        elseif p == 4
             mardata[:, :, i] .= contract(A[:, :, :, 1:dimvals[2]], [3, 4], mardata[:, :, i-1], [1, 2]) + contract(A[:, :, :, (dimvals[2]+1):dimvals[2]*2], [3, 4], mardata[:, :, i-2], [1, 2]) + contract(A[:, :, :, (dimvals[2]*2+1):(dimvals[2]*3)], [3, 4], mardata[:, :, i-3], [1, 2]) + contract(A[:, :, :, (dimvals[2]*3+1):end], [3, 4], mardata[:, :, i-4], [1, 2]) + ϵ
-        elseif P == 5
+        elseif p == 5
             mardata[:, :, i] .= contract(A[:, :, :, 1:dimvals[2]], [3, 4], mardata[:, :, i-1], [1, 2]) + contract(A[:, :, :, (dimvals[2]+1):dimvals[2]*2], [3, 4], mardata[:, :, i-2], [1, 2]) + contract(A[:, :, :, (dimvals[2]*2+1):(dimvals[2]*3)], [3, 4], mardata[:, :, i-3], [1, 2]) + contract(A[:, :, :, (dimvals[2]*3+1):(dimvals[2]*4)], [3, 4], mardata[:, :, i-4], [1, 2]) + contract(A[:, :, :, (dimvals[2]*4+1):end], [3, 4], mardata[:, :, i-5], [1, 2]) + ϵ
         end
     end
-    return (tuckerdata=mardata, stabit=stabit, A=A)
+    return (tuckerdata=mardata, stabit=stabit, A=A, κ=conditionvalue(A, ranks))
 end
 
 """
@@ -140,13 +151,3 @@ function simulatemardata(dimvals::AbstractVector, obs::Int, scale::Real)
     return (mardata=mardata, stabit=stabit, A=A)
 end
 
-function conditionvalue(ten::AbstractArray, ranks)
-    unfold1 = tenmat(ten, row=1)
-    unfold2 = tenmat(ten, row=2)
-    unfold3 = tenmat(ten, row=3)
-    unfold4 = tenmat(ten, row=4)
-    upperλ = max(opnorm(unfold1), opnorm(unfold2), opnorm(unfold3), opnorm(unfold4))
-    lowerλ = min(svd(unfold1).S[ranks[1]], svd(unfold2).S[ranks[2]], svd(unfold3).S[ranks[3]], svd(unfold4).S[ranks[4]])
-    conditionnum = upperλ / lowerλ
-    return conditionnum
-end

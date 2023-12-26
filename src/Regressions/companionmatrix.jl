@@ -61,7 +61,7 @@ The companion matrix is constructed using the makecompanion function.
 ## See Also
 - `makecompanion`: Function to create the VAR companion matrix.
 """
-function isstable(var)
+function isstable(var, maxeigen=1.0)
     C = makecompanion(var)
-    return maximum(abs.(eigen(C).values)) < 1.0
+    return maximum(abs.(eigen(C).values)) < maxeigen
 end
