@@ -55,7 +55,7 @@ A tuple containing the Tucker decomposition components:
 - `iters`: Number of iterations performed.
 - `fullgrads`: A matrix keeping track of gradients. Can be plotted to determine whether gradients behave properly.
 """
-function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractFloat=1e-05, a::Real=1, b::Real=1, maxiter::Int=3000, p::Int=1, ϵ::AbstractFloat=1e-02)
+function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractFloat=1e-05, a::Real=1, b::Real=1, miniters::Int=0, maxiter::Int=1000, p::Int=1, ϵ::AbstractFloat=1e-02)
     initest = art(mardata, p=p)
     origy, lagy = tlag(mardata, p)
     N1, N2, obs = size(mardata)
@@ -115,16 +115,18 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractF
         Anew = full(ttensor(Gnew, [U1new, U2new, U3new, U4new]))
 
         # Stopping Condition
-        if norm(∇U1) < ϵ || norm(∇U2) < ϵ || norm(∇U3) < ϵ || norm(∇U4) < ϵ
-            fullgrads = hcat(trackU1, trackU2, trackU3, trackU4)
-            A = hosvd(Anew; reqrank=ranks)
-            return (G=A.cten, U1=A.fmat[1], U2=A.fmat[2], U3=A.fmat[3],
-                U4=A.fmat[4], A=full(A), iters=iters, fullgrads=fullgrads)
-        elseif iters == maxiter
-            fullgrads = hcat(trackU1, trackU2, trackU3, trackU4)
-            A = hosvd(Anew; reqrank=ranks)
-            return (G=A.cten, U1=A.fmat[1], U2=A.fmat[2], U3=A.fmat[3],
-                U4=A.fmat[4], A=full(A), iters=iters, fullgrads=fullgrads)
+        if s > miniters
+            if norm(∇U1) < ϵ || norm(∇U2) < ϵ || norm(∇U3) < ϵ || norm(∇U4) < ϵ
+                fullgrads = hcat(trackU1, trackU2, trackU3, trackU4)
+                A = hosvd(Anew; reqrank=ranks)
+                return (G=A.cten, U1=A.fmat[1], U2=A.fmat[2], U3=A.fmat[3],
+                    U4=A.fmat[4], A=full(A), iters=iters, fullgrads=fullgrads)
+            elseif iters == maxiter
+                fullgrads = hcat(trackU1, trackU2, trackU3, trackU4)
+                A = hosvd(Anew; reqrank=ranks)
+                return (G=A.cten, U1=A.fmat[1], U2=A.fmat[2], U3=A.fmat[3],
+                    U4=A.fmat[4], A=full(A), iters=iters, fullgrads=fullgrads)
+            end
         end
     end
 end

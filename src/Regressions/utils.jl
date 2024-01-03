@@ -75,7 +75,7 @@ function ridgerankselect(est::AbstractArray, c::Real, r̄=collect(size(est)))::V
     return [r1, r2, r3, r4]
 end
 
-function rescalemat(A, target_norm::Real=5)
+function rescaleten(A, target_norm::Real=5)
     current_norm = norm(A, 2)  # Compute the Frobenius norm of the matrix A
 
     # Rescale each element of the matrix

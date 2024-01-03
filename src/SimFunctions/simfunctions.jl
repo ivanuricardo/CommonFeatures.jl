@@ -73,7 +73,7 @@ function simulatetuckerdata(dimvals::AbstractVector, ranks::AbstractVector, obs:
     while true
         stabit += 1
         unscaledG = randn(ranks[1], ranks[2], ranks[3], ranks[4])
-        G = rescalemat(unscaledG, scale)
+        G = rescaleten(unscaledG, scale)
         randU1 = randn(dimvals[1], ranks[1])
         randU2 = randn(dimvals[2], ranks[2])
         randU3 = randn(dimvals[1], ranks[3])
@@ -131,14 +131,15 @@ A named tuple containing:
 result = simulatemardata([5, 4], 100, 1.0)
 ```
 """
-function simulatemardata(dimvals::AbstractVector, obs::Int, scale::Real)
+function simulatemardata(dimvals::AbstractVector, obs::Int, scale::Real, maxeigen::Real=1)
     A = fill(NaN, dimvals[1], dimvals[2], dimvals[1], dimvals[2])
     stabit = 0
     while true
         stabit += 1
-        A .= round.(scale .* randn(dimvals[1], dimvals[2], dimvals[1], dimvals[2]), digits=3)
+        randA = randn(dimvals[1], dimvals[2], dimvals[1], dimvals[2])
+        A .= rescaleten(randA, scale)
         varA = tenmat(A, row=[1, 2])
-        if isstable(varA)
+        if isstable(varA, maxeigen)
             break
         end
     end
