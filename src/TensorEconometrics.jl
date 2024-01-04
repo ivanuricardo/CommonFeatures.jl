@@ -6,7 +6,7 @@ using LinearAlgebra
 using ProgressBars
 
 export tensorols, art
-export tlag, ridgerankselect, rescalemat
+export tlag, ridgerankselect, rescaleten
 export makecompanion, isstable
 export infocrit, tuckerpar
 export tuckerreg, clipgradient!

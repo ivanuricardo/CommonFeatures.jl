@@ -29,7 +29,7 @@ function clipgradient!(grad, maxnorm)
 end
 
 """
-    tuckerreg(mardata, A, ranks::AbstractVector, eta=1e-04, a=1, b=1, ϵ=1e-04, maxiter=600)
+    tuckerreg(mardata, ranks::AbstractVector, eta=1e-04, a=1, b=1, ϵ=1e-04, maxiter=600)
 
 Perform a matrix autoregression with one lag (MAR(1)) with a reduced tucker rank along the coefficients.
 Uses the gradient descent algorithm of Wang, Zhang, and Li 2024.
@@ -55,7 +55,7 @@ A tuple containing the Tucker decomposition components:
 - `iters`: Number of iterations performed.
 - `fullgrads`: A matrix keeping track of gradients. Can be plotted to determine whether gradients behave properly.
 """
-function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractFloat=1e-05, a::Real=1, b::Real=1, miniters::Int=0, maxiter::Int=1000, p::Int=1, ϵ::AbstractFloat=1e-02)
+function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractFloat=1e-05, a::Real=1, b::Real=1, maxiter::Int=1000, p::Int=1, ϵ::AbstractFloat=1e-02)
     initest = art(mardata, p=p)
     origy, lagy = tlag(mardata, p)
     N1, N2, obs = size(mardata)
@@ -73,6 +73,7 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractF
     trackU2 = fill(NaN, maxiter)
     trackU3 = fill(NaN, maxiter)
     trackU4 = fill(NaN, maxiter)
+    tracktot = fill(NaN, maxiter)
 
     iters = 0
     for s in 1:maxiter
@@ -113,20 +114,20 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractF
         Gnew -= eta * full(ttensor(dlbar, facmat))
 
         Anew = full(ttensor(Gnew, [U1new, U2new, U3new, U4new]))
+        normtot = +(norm(∇U1), norm(∇U2), norm(∇U3), norm(∇U4))
+        tracktot[s] = normtot
 
         # Stopping Condition
-        if s > miniters
-            if norm(∇U1) < ϵ || norm(∇U2) < ϵ || norm(∇U3) < ϵ || norm(∇U4) < ϵ
-                fullgrads = hcat(trackU1, trackU2, trackU3, trackU4)
-                A = hosvd(Anew; reqrank=ranks)
-                return (G=A.cten, U1=A.fmat[1], U2=A.fmat[2], U3=A.fmat[3],
-                    U4=A.fmat[4], A=full(A), iters=iters, fullgrads=fullgrads)
-            elseif iters == maxiter
-                fullgrads = hcat(trackU1, trackU2, trackU3, trackU4)
-                A = hosvd(Anew; reqrank=ranks)
-                return (G=A.cten, U1=A.fmat[1], U2=A.fmat[2], U3=A.fmat[3],
-                    U4=A.fmat[4], A=full(A), iters=iters, fullgrads=fullgrads)
-            end
+        if normtot < ϵ
+            fullgrads = hcat(trackU1, trackU2, trackU3, trackU4, tracktot)
+            A = hosvd(Anew; reqrank=ranks)
+            return (G=A.cten, U1=A.fmat[1], U2=A.fmat[2], U3=A.fmat[3],
+                U4=A.fmat[4], A=full(A), iters=iters, fullgrads=fullgrads)
+        elseif iters == maxiter
+            fullgrads = hcat(trackU1, trackU2, trackU3, trackU4, tracktot)
+            A = hosvd(Anew; reqrank=ranks)
+            return (G=A.cten, U1=A.fmat[1], U2=A.fmat[2], U3=A.fmat[3],
+                U4=A.fmat[4], A=full(A), iters=iters, fullgrads=fullgrads)
         end
     end
 end

@@ -68,7 +68,7 @@ println("AIC Chosen Ranks: ", result.AIC)
 println("Information Criteria Table: ", result.ictable)
 ```
 """
-function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], a::Real=1, b::Real=1, miniters::Int=0, maxiters::Int=1000, tucketa::Real=1e-05, ϵ::Real=1e-05)
+function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], a::Real=1, b::Real=1, maxiters::Int=1000, tucketa::Real=1e-04, ϵ::Real=1e-01)
     origy, lagy = tlag(mardata, p)
     N1, N2, obs = size(origy)
     if r̄ == []
@@ -86,12 +86,12 @@ function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], a::Rea
             infocritest[5, i] = r3
             infocritest[6, i] = r4
         else
-            tuckest = tuckerreg(mardata, selectedrank, tucketa, a, b, miniters, maxiters, p, ϵ)
-            err = origy - contract(tuckest.A, [3, 4], lagy, [1, 2])
-            flatϵ = tenmat(err, col=3)
+            tuckest = tuckerreg(mardata, selectedrank, tucketa, a, b, maxiters, p, ϵ)
+            tuckerr = origy - contract(tuckest.A, [3, 4], lagy, [1, 2])
+            flatϵ = tenmat(tuckerr, col=3)
             detcov = det(flatϵ * flatϵ')
-            infocritest[1, i] = log(detcov) + (2 * tuckerpar([N1, N2], selectedrank)) / obs
-            infocritest[2, i] = log(detcov) + (tuckerpar([N1, N2], selectedrank) * log(obs)) / obs
+            infocritest[1, i] = log(detcov) + (2 * tuckerpar([N1, N2], selectedrank, p)) / obs
+            infocritest[2, i] = log(detcov) + (tuckerpar([N1, N2], selectedrank, p) * log(obs)) / obs
             infocritest[3, i] = r1
             infocritest[4, i] = r2
             infocritest[5, i] = r3
