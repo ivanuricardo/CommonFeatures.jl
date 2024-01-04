@@ -1,35 +1,6 @@
 
 """
-    clipgradient!(grad, maxnorm)
-
-Clip the gradient vector in-place to have a maximum Euclidean norm of `maxnorm`.
-
-# Arguments
-- `grad::AbstractArray`: The gradient vector to be clipped.
-- `maxnorm::Real`: The maximum Euclidean norm allowed for the gradient.
-
-# Returns
-- `grad::AbstractArray`: The clipped gradient vector.
-
-# Example
-```julia
-grad = [1.0, 2.0, 3.0]
-maxnorm = 2.5
-# In this example, if the Euclidean norm of grad is greater than maxnorm, the vector is scaled to have a norm of maxnorm.
-clipgradient!(grad, maxnorm)
-```
-"""
-function clipgradient!(grad, maxnorm)
-    normg = norm(grad)
-    if normg > maxnorm
-        grad .= grad ./ normg * maxnorm
-    end
-
-    return grad
-end
-
-"""
-    tuckerreg(mardata, ranks::AbstractVector, eta=1e-04, a=1, b=1, ϵ=1e-04, maxiter=600)
+    tuckerreg(mardata, ranks::AbstractVector, eta=1e-04, a=1, b=1, ϵ=1e-04, maxiter=1000, p=1,ϵ=1e-02)
 
 Perform a matrix autoregression with one lag (MAR(1)) with a reduced tucker rank along the coefficients.
 Uses the gradient descent algorithm of Wang, Zhang, and Li 2024.
@@ -40,12 +11,9 @@ Uses the gradient descent algorithm of Wang, Zhang, and Li 2024.
 - `eta::AbstractFloat`: Learning rate for gradient descent (default: 1e-04).
 - `a::Real`: Regularization parameter (default: 1).
 - `b::Real`: Regularization parameter (default: 1).
-- `ϵ::AbstractFloat`: Convergence threshold for stopping criteria (default: 1e-04).
 - `maxiter::Int`: Maximum number of iterations for gradient descent (default: 3000).
-- `maxnorm::Real`: Max norm for gradient clipping if required. (default: 1)
-- `mineta::AbstractFloat`: If adaptive step size, sets an eta stopping condition if the adaptive step size is too small (default: 1e-20)
-- `fixedeta::Bool`: Sets either a fixed or adaptive step size (default: true)
-- `P::Int`: Number of lags to include
+- `p::Int`: Number of lags to include
+- `ϵ::AbstractFloat`: Convergence threshold for stopping criteria (default: 1e-04).
 
 # Returns
 A tuple containing the Tucker decomposition components:
@@ -55,7 +23,7 @@ A tuple containing the Tucker decomposition components:
 - `iters`: Number of iterations performed.
 - `fullgrads`: A matrix keeping track of gradients. Can be plotted to determine whether gradients behave properly.
 """
-function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractFloat=1e-05, a::Real=1, b::Real=1, maxiter::Int=1000, p::Int=1, ϵ::AbstractFloat=1e-02)
+function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractFloat=1e-04, a::Real=1, b::Real=1, maxiter::Int=1000, p::Int=1, ϵ::AbstractFloat=1e-02)
     initest = art(mardata, p=p)
     origy, lagy = tlag(mardata, p)
     N1, N2, obs = size(mardata)
@@ -132,8 +100,3 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractF
     end
 end
 
-function naivetuckreg(mardata, ranks, P)
-    initest = art(mardata, P)
-    hosvdinit = hosvd(initest; reqrank=ranks)
-    return (G=hosvdinit.cten, U1=hosvdinit.fmat[1], U2=hosvdinit.fmat[2], U3=hosvdinit.fmat[3], U4=hosvdinit.fmat[4], A=full(hosvdinit))
-end

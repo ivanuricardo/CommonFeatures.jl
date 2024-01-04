@@ -90,8 +90,9 @@ function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], a::Rea
             tuckerr = origy - contract(tuckest.A, [3, 4], lagy, [1, 2])
             flatϵ = tenmat(tuckerr, col=3)
             detcov = det(flatϵ * flatϵ')
-            infocritest[1, i] = log(detcov) + (2 * tuckerpar([N1, N2], selectedrank, p)) / obs
-            infocritest[2, i] = log(detcov) + (tuckerpar([N1, N2], selectedrank, p) * log(obs)) / obs
+            numpars = tuckerpar([N1, N2], selectedrank, p)
+            infocritest[1, i] = log(detcov) + (2 * numpars) / obs
+            infocritest[2, i] = log(detcov) + (numpars * log(obs)) / obs
             infocritest[3, i] = r1
             infocritest[4, i] = r2
             infocritest[5, i] = r3
