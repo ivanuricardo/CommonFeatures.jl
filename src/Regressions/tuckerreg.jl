@@ -24,7 +24,7 @@ A tuple containing the Tucker decomposition components:
 - `fullgrads`: A matrix keeping track of gradients. Can be plotted to determine whether gradients behave properly.
 """
 function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractFloat=1e-04, a::Real=1, b::Real=1, maxiter::Int=1000, p::Int=1, ϵ::AbstractFloat=1e-02)
-    initest = art(mardata, p=p)
+    initest = art(mardata, p)
     origy, lagy = tlag(mardata, p)
     N1, N2, obs = size(mardata)
 

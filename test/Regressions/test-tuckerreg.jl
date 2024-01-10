@@ -54,7 +54,7 @@ end
 
     varest = origy * lagy' * inv(lagy * lagy')
 
-    tuckerest = tuckerreg(mardata, ranks, eta, a, b, miniters, maxiters, p, ϵ)
+    tuckerest = tuckerreg(mardata, ranks, eta, a, b, maxiters, p, ϵ)
     flattuck = tenmat(tuckerest.A, row=[1, 2])
     @test varest ≈ flattuck
 end
