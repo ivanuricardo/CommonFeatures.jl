@@ -23,16 +23,14 @@ println(result)
 # References
 - Tucker, L. R. (1966). Some mathematical notes on three-mode factor analysis. Psychometrika, 31(3), 279-311.
 """
-function tuckerpar(dimvals::AbstractVector, ranks::AbstractVector, P::Integer=1)
+function tuckerpar(dimvals::AbstractVector, ranks::AbstractVector, p::Integer=1)
     k = length(ranks) ÷ 2
-    totalsum = prod(ranks)
+    totalsum = prod(ranks) * p
     for i in 1:k
-        totalsum += ranks[i] * (dimvals[i] - ranks[i])
+        term1 = ranks[i] * (dimvals[i] - ranks[i])
+        term2 = ranks[k+i] * (dimvals[i] - ranks[k+i])
+        totalsum += term1 + term2
     end
-    for i in 1:(k-1)
-        totalsum += ranks[k+i] * (dimvals[i] - ranks[k+i])
-    end
-    totalsum += ranks[2*k] * (dimvals[k] * P - ranks[2*k])
     return totalsum
 end
 

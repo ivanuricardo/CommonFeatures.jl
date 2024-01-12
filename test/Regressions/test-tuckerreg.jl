@@ -18,13 +18,13 @@
     ϵ = 1e-02
 
     marsim = simulatetuckerdata(dimvals, ranks, obs, scale, p, maxeigen)
-    mardata = marsim.tuckerdata
+    mardata = marsim.data
     vardata = tenmat(mardata, col=3)
     origy, lagy = tlag(vardata)
 
     varest = origy * lagy' * inv(lagy * lagy')
 
-    tuckerest = tuckerreg(mardata, ranks, eta, a, b, miniters, maxiters, p, ϵ)
+    tuckerest = tuckerreg(mardata, ranks, eta, a, b, maxiters, p, ϵ)
     flattuck = tenmat(tuckerest.A, row=[1, 2])
     @test varest ≈ flattuck
 end
@@ -34,7 +34,7 @@ end
     Random.seed!(20231228)
     # Match Tucker regression with VAR
     dimvals = [4, 3]
-    ranks = [4, 3, 4, 6]
+    ranks = [4, 3, 4, 3]
     obs = 1000
     scale = 3
     p = 2
@@ -43,12 +43,11 @@ end
     eta = 1e-04
     a = 1
     b = 1
-    miniters = 100
     maxiters = 1000
     ϵ = 1e-02
 
     marsim = simulatetuckerdata(dimvals, ranks, obs, scale, p, maxeigen)
-    mardata = marsim.tuckerdata
+    mardata = marsim.data
     vardata = tenmat(mardata, col=3)
     origy, lagy = tlag(vardata, p)
 

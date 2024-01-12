@@ -24,10 +24,15 @@ A tuple containing the Tucker decomposition components:
 - `fullgrads`: A matrix keeping track of gradients. Can be plotted to determine whether gradients behave properly.
 """
 function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractFloat=1e-04, a::Real=1, b::Real=1, maxiter::Int=1000, p::Int=1, ϵ::AbstractFloat=1e-02)
-    initest = art(mardata, p)
-    origy, lagy = tlag(mardata, p)
     N1, N2, obs = size(mardata)
+    origy, lagy = tlag(mardata, p)
 
+    initest = art(mardata, p)
+    if p > 1
+        lagy = reshape(lagy, (N1, N2, p, obs - p))
+        initest = reshape(initest, (N1, N2, N1, N2, p))
+        push!(ranks, p)
+    end
     hosvdinit = hosvd(initest; reqrank=ranks)
     Anew = full(hosvdinit)
 
@@ -36,6 +41,13 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractF
     U2new = hosvdinit.fmat[2]
     U3new = hosvdinit.fmat[3]
     U4new = hosvdinit.fmat[4]
+    U5new = I(p)
+    # This is a rotation of the factor matrix
+    if p > 1
+        U5pre = hosvdinit.fmat[5]
+        U5new = U5pre'U5pre
+        Gnew = ttm(Gnew, U5pre', 5)
+    end
 
     trackU1 = fill(NaN, maxiter)
     trackU2 = fill(NaN, maxiter)
@@ -46,42 +58,54 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractF
     iters = 0
     for s in 1:maxiter
         iters += 1
-        dlbar = zeros(N1, N2, N1, N2 * p)
+        dlbar = zeros(N1, N2, N1, N2, p)
         innert = zeros(N1, N2)
-        for i in 1:(obs-p)
-            innert = contract(Anew, [3, 4], lagy[:, :, i], [1, 2])
-            dlbar += ttt((innert - origy[:, :, i]), lagy[:, :, i])
+        if p == 1
+            for i in 1:(obs-p)
+                innert = contract(Anew, [3, 4], lagy[:, :, i], [1, 2])
+                dlbar += ttt((innert - origy[:, :, i]), lagy[:, :, i])
+            end
+            dlbar .= dlbar ./ obs
+        elseif p > 1
+            for i in 1:(obs-p)
+                innert = contract(Anew, [3, 4, 5], lagy[:, :, :, i], [1, 2, 3])
+                dlbar += ttt((innert - origy[:, :, i]), lagy[:, :, :, i])
+            end
+            dlbar .= dlbar ./ obs
         end
-        dlbar .= dlbar ./ obs
 
-        kronU1 = kron(U4new, kron(U3new, U2new)) * tenmat(Gnew, row=1)'
+        kronU1 = kron(U5new, kron(U4new, kron(U3new, U2new))) * tenmat(Gnew, row=1)'
         regularizeU1 = a * (U1new * (U1new'U1new - (b^2 * I)))
         ∇U1 = tenmat(dlbar, row=1) * kronU1
         U1new -= eta * ∇U1 - eta * regularizeU1
         trackU1[s] = norm(∇U1)
 
-        kronU2 = kron(U4new, kron(U3new, U1new)) * tenmat(Gnew, row=2)'
+        kronU2 = kron(U5new, kron(U4new, kron(U3new, U1new))) * tenmat(Gnew, row=2)'
         regularizeU2 = a * (U2new * (U2new'U2new - (b^2 * I)))
         ∇U2 = tenmat(dlbar, row=2) * kronU2
         U2new -= eta * ∇U2 - eta * regularizeU2
         trackU2[s] = norm(∇U2)
 
-        kronU3 = kron(U4new, kron(U2new, U1new)) * tenmat(Gnew, row=3)'
+        kronU3 = kron(U5new, kron(U4new, kron(U2new, U1new))) * tenmat(Gnew, row=3)'
         regularizeU3 = a * (U3new * (U3new'U3new - (b^2 * I)))
         ∇U3 = tenmat(dlbar, row=3) * kronU3
         U3new -= eta * ∇U3 - eta * regularizeU3
         trackU3[s] = norm(∇U3)
 
-        kronU4 = kron(U3new, kron(U2new, U1new)) * tenmat(Gnew, row=4)'
+        kronU4 = kron(U5new, kron(U3new, kron(U2new, U1new))) * tenmat(Gnew, row=4)'
         regularizeU4 = a * (U4new * (U4new'U4new - (b^2 * I)))
         ∇U4 = tenmat(dlbar, row=4) * kronU4
         U4new -= eta * ∇U4 - eta * regularizeU4
         trackU4[s] = norm(∇U4)
 
-        facmat = [Matrix(U1new'), Matrix(U2new'), Matrix(U3new'), Matrix(U4new')]
+        facmat = [Matrix(U1new'), Matrix(U2new'), Matrix(U3new'), Matrix(U4new'), Matrix(U5new)]
         Gnew -= eta * full(ttensor(dlbar, facmat))
 
-        Anew = full(ttensor(Gnew, [U1new, U2new, U3new, U4new]))
+        Anew = full(ttensor(Gnew, [U1new, U2new, U3new, U4new, Matrix(U5new)]))
+        if p == 1
+            Gnew = Gnew[:, :, :, :, 1]
+            Anew = Anew[:, :, :, :, 1]
+        end
         normtot = +(norm(∇U1), norm(∇U2), norm(∇U3), norm(∇U4))
         tracktot[s] = normtot
 

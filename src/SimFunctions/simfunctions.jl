@@ -68,28 +68,29 @@ result = simulatetuckerdata([5, 4], [2, 3, 2, 3], 100, 1.0)
 ```
 """
 function simulatetuckerdata(dimvals::AbstractVector, ranks::AbstractVector, obs::Int, scale::Real=5, p::Int=1, maxeigen=1)
-    A = fill(NaN, dimvals[1], dimvals[2], dimvals[1], dimvals[2] * p)
-    G = fill(NaN, ranks[1], ranks[2], ranks[3], ranks[4])
+    A = fill(NaN, dimvals[1], dimvals[2], dimvals[1], dimvals[2], p)
+    G = fill(NaN, ranks[1], ranks[2], ranks[3], ranks[4], p)
     U1 = fill(NaN, dimvals[1], ranks[1])
     U2 = fill(NaN, dimvals[2], ranks[2])
     U3 = fill(NaN, dimvals[1], ranks[3])
-    U4 = fill(NaN, dimvals[2] * p, ranks[4])
+    U4 = fill(NaN, dimvals[2], ranks[4])
+    U5 = I(p)
     stabit = 0
     while true
         stabit += 1
-        unscaledG = randn(ranks[1], ranks[2], ranks[3], ranks[4])
+        unscaledG = randn(ranks[1], ranks[2], ranks[3], ranks[4], p)
         G .= rescaleten(unscaledG, scale)
         randU1 = randn(dimvals[1], ranks[1])
         randU2 = randn(dimvals[2], ranks[2])
         randU3 = randn(dimvals[1], ranks[3])
-        randU4 = randn(dimvals[2] * p, ranks[4])
+        randU4 = randn(dimvals[2], ranks[4])
 
         U1 .= svd(randU1).U
         U2 .= svd(randU2).U
         U3 .= svd(randU3).U
         U4 .= svd(randU4).U
 
-        hosvdA = ttensor(G, [U1, U2, U3, U4])
+        hosvdA = ttensor(G, [U1, U2, U3, U4, Matrix(U5)])
         A .= full(hosvdA)
         varA = tenmat(A, row=[1, 2])
         if isstable(varA, maxeigen)
@@ -101,15 +102,15 @@ function simulatetuckerdata(dimvals::AbstractVector, ranks::AbstractVector, obs:
     for i in (p+1):obs
         ϵ = randn(dimvals[1], dimvals[2])
         if p == 1
-            mardata[:, :, i] .= contract(A, [3, 4], mardata[:, :, i-1], [1, 2]) + ϵ
+            mardata[:, :, i] .= contract(A[:, :, :, :, 1], [3, 4], mardata[:, :, i-1], [1, 2]) + ϵ
         elseif p == 2
-            mardata[:, :, i] .= contract(A[:, :, :, 1:dimvals[2]], [3, 4], mardata[:, :, i-1], [1, 2]) + contract(A[:, :, :, (dimvals[2]+1):end], [3, 4], mardata[:, :, i-2], [1, 2]) + ϵ
+            mardata[:, :, i] .= contract(A[:, :, :, :, 1], [3, 4], mardata[:, :, i-1], [1, 2]) + contract(A[:, :, :, :, 2], [3, 4], mardata[:, :, i-2], [1, 2]) + ϵ
         elseif p == 3
-            mardata[:, :, i] .= contract(A[:, :, :, 1:dimvals[2]], [3, 4], mardata[:, :, i-1], [1, 2]) + contract(A[:, :, :, (dimvals[2]+1):dimvals[2]*2], [3, 4], mardata[:, :, i-2], [1, 2]) + contract(A[:, :, :, (dimvals[2]*2+1):end], [3, 4], mardata[:, :, i-3], [1, 2]) + ϵ
+            mardata[:, :, i] .= contract(A[:, :, :, :, 1], [3, 4], mardata[:, :, i-1], [1, 2]) + contract(A[:, :, :, :, 2], [3, 4], mardata[:, :, i-2], [1, 2]) + contract(A[:, :, :, :, 3], [3, 4], mardata[:, :, i-3], [1, 2]) + ϵ
         elseif p == 4
-            mardata[:, :, i] .= contract(A[:, :, :, 1:dimvals[2]], [3, 4], mardata[:, :, i-1], [1, 2]) + contract(A[:, :, :, (dimvals[2]+1):dimvals[2]*2], [3, 4], mardata[:, :, i-2], [1, 2]) + contract(A[:, :, :, (dimvals[2]*2+1):(dimvals[2]*3)], [3, 4], mardata[:, :, i-3], [1, 2]) + contract(A[:, :, :, (dimvals[2]*3+1):end], [3, 4], mardata[:, :, i-4], [1, 2]) + ϵ
+            mardata[:, :, i] .= contract(A[:, :, :, :, 1], [3, 4], mardata[:, :, i-1], [1, 2]) + contract(A[:, :, :, :, 2], [3, 4], mardata[:, :, i-2], [1, 2]) + contract(A[:, :, :, :, 3], [3, 4], mardata[:, :, i-3], [1, 2]) + contract(A[:, :, :, :, 4], [3, 4], mardata[:, :, i-4], [1, 2]) + ϵ
         elseif p == 5
-            mardata[:, :, i] .= contract(A[:, :, :, 1:dimvals[2]], [3, 4], mardata[:, :, i-1], [1, 2]) + contract(A[:, :, :, (dimvals[2]+1):dimvals[2]*2], [3, 4], mardata[:, :, i-2], [1, 2]) + contract(A[:, :, :, (dimvals[2]*2+1):(dimvals[2]*3)], [3, 4], mardata[:, :, i-3], [1, 2]) + contract(A[:, :, :, (dimvals[2]*3+1):(dimvals[2]*4)], [3, 4], mardata[:, :, i-4], [1, 2]) + contract(A[:, :, :, (dimvals[2]*4+1):end], [3, 4], mardata[:, :, i-5], [1, 2]) + ϵ
+            mardata[:, :, i] .= contract(A[:, :, :, :, 1], mardata[:, :, i-1], [1, 2]) + contract(A[:, :, :, :, 2], [3, 4], mardata[:, :, i-2], [1, 2]) + contract(A[:, :, :, :, 3], [3, 4], mardata[:, :, i-3], [1, 2]) + contract(A[:, :, :, :, 4], [3, 4], mardata[:, :, i-4], [1, 2]) + contract(A[:, :, :, :, 5], [3, 4], mardata[:, :, i-5], [1, 2]) + ϵ
         end
     end
     return (data=mardata, stabit=stabit, A=A, G=G, U1=U1, U2=U2, U3=U3, U4=U4)
