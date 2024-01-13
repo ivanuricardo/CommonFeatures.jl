@@ -67,9 +67,9 @@ println("Information Criteria Table: ", result.ictable)
 ```
 """
 function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], a::Real=1, b::Real=1, maxiters::Int=1000, tucketa::Real=1e-04, ϵ::Real=1e-01)
-    origy, lagy = tlag(mardata, p)
+    origy, lagy = tlag(mardata, p, true)
     N1, N2, obs = size(origy)
-    if r̄ == []
+    if isempty(r̄)
         r̄ = [N1, N2, N1, N2]
     end
     infocritest = fill(NaN, 6, prod(r̄))
@@ -78,25 +78,26 @@ function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], a::Rea
     for i in 1:prod(r̄)
         selectedrank = collect(grid[i])
         r1, r2, r3, r4 = selectedrank
-        if r1 > r2 * r3 * r4 || r2 > r1 * r3 * r4 || r3 > r1 * r2 * r4 || r4 > r1 * r2 * r3
+        if r1 > r2 * r3 * r4 * p || r2 > r1 * r3 * r4 * p || r3 > r1 * r2 * r4 * p || r4 > r1 * r2 * r3 * p || p > r1 * r2 * r3 * r4
             infocritest[3, i] = r1
             infocritest[4, i] = r2
             infocritest[5, i] = r3
             infocritest[6, i] = r4
-        else
-            tuckest = tuckerreg(mardata, selectedrank, tucketa, a, b, maxiters, p, ϵ)
-            tuckerr = origy - contract(tuckest.A, [3, 4], lagy, [1, 2])
-            flatϵ = tenmat(tuckerr, col=3)
-            detcov = det(flatϵ * flatϵ')
-            numpars = tuckerpar([N1, N2], selectedrank, p)
-            infocritest[1, i] = log(detcov) + (2 * numpars) / obs
-            infocritest[2, i] = log(detcov) + (numpars * log(obs)) / obs
-            infocritest[3, i] = r1
-            infocritest[4, i] = r2
-            infocritest[5, i] = r3
-            infocritest[6, i] = r4
-            regiters[i] = tuckest.iters
+            continue
         end
+        tuckest = tuckerreg(mardata, selectedrank, tucketa, a, b, maxiters, p, ϵ)
+        tuckerr = origy - contract(tuckest.A, [3, 4, 5], lagy, [1, 2, 3])
+        flatϵ = tenmat(tuckerr, col=3)
+        detcov = det(flatϵ * flatϵ')
+        numpars = tuckerpar([N1, N2], selectedrank, p)
+
+        infocritest[1, i] = log(detcov) + (2 * numpars) / obs
+        infocritest[2, i] = log(detcov) + (numpars * log(obs)) / obs
+        infocritest[3, i] = r1
+        infocritest[4, i] = r2
+        infocritest[5, i] = r3
+        infocritest[6, i] = r4
+        regiters[i] = tuckest.iters
     end
     nancols = findall(x -> any(isnan, x), eachcol(infocritest))
     filteredic = infocritest[:, setdiff(1:size(infocritest, 2), nancols)]

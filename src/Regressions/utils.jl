@@ -17,17 +17,19 @@ data = randn(3, 4, 5, 10)  # Example tensor with dimensions 3 × 4 × 5 × 10
 original, lagged = tlag(data, 2)  # Create lagged arrays with 2 lags
 ```
 """
-function tlag(ten_data::AbstractArray, p=1)
+function tlag(ten_data::AbstractArray, p=1, pdims::Bool=false)
+    N1, N2, obs = size(ten_data)
 
-    lastdim = size(ten_data)[ndims(ten_data)-1]
-    obs = size(ten_data)[ndims(ten_data)]
     fulllags = selectdim(ten_data, ndims(ten_data), (p+1):obs)
     for i in 1:p
         interlag = selectdim(ten_data, ndims(ten_data), (p-i+1):(obs-i))
         fulllags = cat(fulllags, interlag; dims=ndims(ten_data) - 1)
     end
-    original = selectdim(fulllags, ndims(ten_data) - 1, 1:lastdim)
-    lagged = selectdim(fulllags, ndims(ten_data) - 1, (lastdim+1):((p+1)*lastdim))
+    original = selectdim(fulllags, ndims(ten_data) - 1, 1:N2)
+    lagged = selectdim(fulllags, ndims(ten_data) - 1, (N2+1):((p+1)*N2))
+    if pdims
+        lagged = reshape(lagged, (N1, N2, p, obs - p))
+    end
 
     return original, lagged
 

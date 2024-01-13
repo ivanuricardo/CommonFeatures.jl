@@ -25,14 +25,10 @@ A tuple containing the Tucker decomposition components:
 """
 function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractFloat=1e-04, a::Real=1, b::Real=1, maxiter::Int=1000, p::Int=1, ϵ::AbstractFloat=1e-02)
     N1, N2, obs = size(mardata)
-    origy, lagy = tlag(mardata, p)
+    origy, lagy = tlag(mardata, p, true)
 
-    initest = art(mardata, p)
-    if p > 1
-        lagy = reshape(lagy, (N1, N2, p, obs - p))
-        initest = reshape(initest, (N1, N2, N1, N2, p))
-        push!(ranks, p)
-    end
+    initest = reshape(art(mardata, p), (N1, N2, N1, N2, p))
+    push!(ranks, p)
     hosvdinit = hosvd(initest; reqrank=ranks)
     Anew = full(hosvdinit)
 
@@ -55,24 +51,18 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractF
     trackU4 = fill(NaN, maxiter)
     tracktot = fill(NaN, maxiter)
 
+    dlbar = zeros(N1, N2, N1, N2, p)
+    innert = zeros(N1, N2)
+
     iters = 0
     for s in 1:maxiter
         iters += 1
-        dlbar = zeros(N1, N2, N1, N2, p)
-        innert = zeros(N1, N2)
-        if p == 1
-            for i in 1:(obs-p)
-                innert = contract(Anew, [3, 4], lagy[:, :, i], [1, 2])
-                dlbar += ttt((innert - origy[:, :, i]), lagy[:, :, i])
-            end
-            dlbar .= dlbar ./ obs
-        elseif p > 1
-            for i in 1:(obs-p)
-                innert = contract(Anew, [3, 4, 5], lagy[:, :, :, i], [1, 2, 3])
-                dlbar += ttt((innert - origy[:, :, i]), lagy[:, :, :, i])
-            end
-            dlbar .= dlbar ./ obs
+        dlbar .= 0
+        for i in 1:(obs-p)
+            innert = contract(Anew, [3, 4, 5], lagy[:, :, :, i], [1, 2, 3])
+            dlbar += ttt((innert - origy[:, :, i]), lagy[:, :, :, i])
         end
+        dlbar .= dlbar ./ obs
 
         kronU1 = kron(U5new, kron(U4new, kron(U3new, U2new))) * tenmat(Gnew, row=1)'
         regularizeU1 = a * (U1new * (U1new'U1new - (b^2 * I)))
@@ -102,24 +92,15 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractF
         Gnew -= eta * full(ttensor(dlbar, facmat))
 
         Anew = full(ttensor(Gnew, [U1new, U2new, U3new, U4new, Matrix(U5new)]))
-        if p == 1
-            Gnew = Gnew[:, :, :, :, 1]
-            Anew = Anew[:, :, :, :, 1]
-        end
         normtot = +(norm(∇U1), norm(∇U2), norm(∇U3), norm(∇U4))
         tracktot[s] = normtot
 
         # Stopping Condition
-        if normtot < ϵ
+        if normtot < ϵ || s == maxiter
             fullgrads = hcat(trackU1, trackU2, trackU3, trackU4, tracktot)
             A = hosvd(Anew; reqrank=ranks)
             return (G=A.cten, U1=A.fmat[1], U2=A.fmat[2], U3=A.fmat[3],
-                U4=A.fmat[4], A=full(A), iters=iters, fullgrads=fullgrads)
-        elseif iters == maxiter
-            fullgrads = hcat(trackU1, trackU2, trackU3, trackU4, tracktot)
-            A = hosvd(Anew; reqrank=ranks)
-            return (G=A.cten, U1=A.fmat[1], U2=A.fmat[2], U3=A.fmat[3],
-                U4=A.fmat[4], A=full(A), iters=iters, fullgrads=fullgrads)
+                U4=A.fmat[4], A=full(A), iters=s, fullgrads=fullgrads)
         end
     end
 end
