@@ -12,9 +12,11 @@
     marsim = simulatetuckerdata(dimvals, ranks, obs, scale, p, maxeigen)
     mardata = marsim.data
     vardata = tenmat(mardata, col=3)
-    origy, lagy = tlag(vardata)
+    origy, lagy = tlag(mardata)
+    yy = tenmat(origy, col=3)
+    xx = tenmat(lagy, col=3)
 
-    varest = origy * lagy' * inv(lagy * lagy')
+    varest = yy * xx' * inv(xx * xx')
 
     @test isapprox(tenmat(marsim.A, row=[1, 2]), varest, rtol=0.1)
 end

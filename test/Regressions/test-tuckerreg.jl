@@ -20,9 +20,11 @@
     marsim = simulatetuckerdata(dimvals, ranks, obs, scale, p, maxeigen)
     mardata = marsim.data
     vardata = tenmat(mardata, col=3)
-    origy, lagy = tlag(vardata)
+    origy, lagy = tlag(mardata)
+    yy = tenmat(origy, col=3)
+    xx = tenmat(lagy, col=3)
 
-    varest = origy * lagy' * inv(lagy * lagy')
+    varest = yy * xx' * inv(xx * xx')
 
     tuckerest = tuckerreg(mardata, ranks, eta, a, b, maxiters, p, ϵ)
     flattuck = tenmat(tuckerest.A, row=[1, 2])
@@ -49,9 +51,11 @@ end
     marsim = simulatetuckerdata(dimvals, ranks, obs, scale, p, maxeigen)
     mardata = marsim.data
     vardata = tenmat(mardata, col=3)
-    origy, lagy = tlag(vardata, p)
+    origy, lagy = tlag(mardata, p)
+    yy = tenmat(origy, col=3)
+    xx = tenmat(lagy, col=3)
 
-    varest = origy * lagy' * inv(lagy * lagy')
+    varest = yy * xx' * inv(xx * xx')
 
     tuckerest = tuckerreg(mardata, ranks, eta, a, b, maxiters, p, ϵ)
     flattuck = tenmat(tuckerest.A, row=[1, 2])
