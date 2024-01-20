@@ -22,6 +22,18 @@ function objtuckreg(Yt, Xt, G, U1, U2, U3, U4, a, b)
     return obj
 end
 
+function dlbarest(origy, lagy, G, U1, U2, U3, U4, U5)
+    A = full(ttensor(G, [U1, U2, U3, U4, U5]))
+    N1, N2, p, obs = size(lagy)
+    dlbar = zeros(N1, N2, N1, N2, p)
+    innert = zeros(N1, N2)
+    for i in 1:(obs)
+        innert = contract(A, [3, 4, 5], lagy[:, :, :, i], [1, 2, 3])
+        dlbar += ttt((innert - origy[:, :, i]), lagy[:, :, :, i])
+    end
+    dlbar .= dlbar ./ (obs)
+end
+
 """
     tuckerreg(mardata, ranks::AbstractVector, eta=1e-04, a=1, b=1, ϵ=1e-04, maxiter=1000, p=1,ϵ=1e-02)
 
@@ -47,7 +59,7 @@ A tuple containing the Tucker decomposition components:
 - `fullgrads`: A matrix keeping track of gradients. Can be plotted to determine whether gradients behave properly.
 """
 function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractFloat=1e-04, a::Real=1, b::Real=1, maxiter::Int=1000, p::Int=1, ϵ::AbstractFloat=1e-02)
-    N1, N2, obs = size(mardata)
+    N1, N2, _ = size(mardata)
     origy, lagy = tlag(mardata, p, true)
 
     initest = reshape(art(mardata, p), (N1, N2, N1, N2, p))
@@ -56,60 +68,59 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractF
     A = full(hosvdinit)
 
     U1, U2, U3, U4, U5 = hosvdinit.fmat
-    G = (p > 1) ? ttm(hosvdinit.cten, U5', 5) : hosvdinit.cten
-    U5 = (p > 1) ? U5' * U5 : I(p)
+    G = ttm(hosvdinit.cten, U5', 5)
+    U5 = U5' * U5
 
+    trackG = fill(NaN, maxiter)
     trackU1 = fill(NaN, maxiter)
     trackU2 = fill(NaN, maxiter)
     trackU3 = fill(NaN, maxiter)
     trackU4 = fill(NaN, maxiter)
 
-    dlbar = zeros(N1, N2, N1, N2, p)
-    innert = zeros(N1, N2)
-
     iters = 0
     for s in 1:maxiter
         iters += 1
-        dlbar .= 0
-        for i in 1:(obs-p)
-            innert = contract(A, [3, 4, 5], lagy[:, :, :, i], [1, 2, 3])
-            dlbar += ttt((innert - origy[:, :, i]), lagy[:, :, :, i])
-        end
-        dlbar .= dlbar ./ obs
 
-        facmat = [Matrix(U1'), Matrix(U2'), Matrix(U3'), Matrix(U4'), Matrix(U5)]
-        G -= eta * full(ttensor(dlbar, facmat))
-
+        dlbar1 = dlbarest(origy, lagy, G, U1, U2, U3, U4, U5)
         kronU1 = kron(U5, kron(U4, kron(U3, U2))) * tenmat(G, row=1)'
         regularizeU1 = a * (U1 * (U1'U1 - (b^2 * I)))
-        ∇U1 = tenmat(dlbar, row=1) * kronU1
+        ∇U1 = tenmat(dlbar1, row=1) * kronU1
         U1 -= eta * ∇U1 - eta * regularizeU1
         trackU1[s] = norm(∇U1)
 
+        dlbar2 = dlbarest(origy, lagy, G, U1, U2, U3, U4, U5)
         kronU2 = kron(U5, kron(U4, kron(U3, U1))) * tenmat(G, row=2)'
         regularizeU2 = a * (U2 * (U2'U2 - (b^2 * I)))
-        ∇U2 = tenmat(dlbar, row=2) * kronU2
+        ∇U2 = tenmat(dlbar2, row=2) * kronU2
         U2 -= eta * ∇U2 - eta * regularizeU2
         trackU2[s] = norm(∇U2)
 
+        dlbar3 = dlbarest(origy, lagy, G, U1, U2, U3, U4, U5)
         kronU3 = kron(U5, kron(U4, kron(U2, U1))) * tenmat(G, row=3)'
         regularizeU3 = a * (U3 * (U3'U3 - (b^2 * I)))
-        ∇U3 = tenmat(dlbar, row=3) * kronU3
+        ∇U3 = tenmat(dlbar3, row=3) * kronU3
         U3 -= eta * ∇U3 - eta * regularizeU3
         trackU3[s] = norm(∇U3)
 
+        dlbar4 = dlbarest(origy, lagy, G, U1, U2, U3, U4, U5)
         kronU4 = kron(U5, kron(U3, kron(U2, U1))) * tenmat(G, row=4)'
         regularizeU4 = a * (U4 * (U4'U4 - (b^2 * I)))
-        ∇U4 = tenmat(dlbar, row=4) * kronU4
+        ∇U4 = tenmat(dlbar4, row=4) * kronU4
         U4 -= eta * ∇U4 - eta * regularizeU4
         trackU4[s] = norm(∇U4)
+
+        dlbarG = dlbarest(origy, lagy, G, U1, U2, U3, U4, U5)
+        facmat = [Matrix(U1'), Matrix(U2'), Matrix(U3'), Matrix(U4'), Matrix(U5)]
+        ∇G = full(ttensor(dlbarG, facmat))
+        trackG[s] = norm(∇G)
+        G -= eta * ∇G
 
         A = full(ttensor(G, [U1, U2, U3, U4, Matrix(U5)]))
 
         # Stopping Condition
         c = trackU1[s] < ϵ && trackU2[s] < ϵ && trackU3[s] < ϵ && trackU4[s] < ϵ
         if c || s == maxiter
-            fullgrads = hcat(trackU1, trackU2, trackU3, trackU4)
+            fullgrads = hcat(trackU1, trackU2, trackU3, trackU4, trackG)
             A = hosvd(A; reqrank=ranks)
             return (G=A.cten, U1=A.fmat[1], U2=A.fmat[2], U3=A.fmat[3],
                 U4=A.fmat[4], A=full(A), iters=s, fullgrads=fullgrads)
@@ -128,19 +139,18 @@ function tuckerreg2(mardata::AbstractArray, ranks::AbstractVector, eta::Abstract
     A = full(hosvdinit)
 
     U1, U2, U3, U4, U5 = hosvdinit.fmat
-    G = (p > 1) ? ttm(hosvdinit.cten, U5', 5) : hosvdinit.cten
-    U5 = (p > 1) ? U5' * U5 : I(p)
+    G = ttm(hosvdinit.cten, U5', 5)
+    U5 = U5' * U5
 
+    trackG = fill(NaN, maxiter)
     trackU1 = fill(NaN, maxiter)
     trackU2 = fill(NaN, maxiter)
     trackU3 = fill(NaN, maxiter)
     trackU4 = fill(NaN, maxiter)
 
     iters = 0
-    for s in 1:maxiter
+    for s in ProgressBar(1:maxiter)
         iters += 1
-        ∇G = ReverseDiff.gradient(x -> objtuckreg(origy, lagy, x, U1, U2, U3, U4, a, b), G)
-        G -= eta * ∇G
 
         ∇U1 = ReverseDiff.gradient(x -> objtuckreg(origy, lagy, G, x, U2, U3, U4, a, b), U1)
         U1 -= eta * ∇U1
@@ -158,12 +168,16 @@ function tuckerreg2(mardata::AbstractArray, ranks::AbstractVector, eta::Abstract
         U4 -= eta * ∇U4
         trackU4[s] = norm(∇U4)
 
+        ∇G = ReverseDiff.gradient(x -> objtuckreg(origy, lagy, x, U1, U2, U3, U4, a, b), G)
+        trackG[s] = norm(∇G)
+        G -= eta * ∇G
+
         A = full(ttensor(G, [U1, U2, U3, U4, Matrix(U5)]))
 
         # Stopping Condition
         c = trackU1[s] < ϵ && trackU2[s] < ϵ && trackU3[s] < ϵ && trackU4[s] < ϵ
         if c || s == maxiter
-            fullgrads = hcat(trackU1, trackU2, trackU3, trackU4)
+            fullgrads = hcat(trackU1, trackU2, trackU3, trackU4, trackG)
             A = hosvd(A; reqrank=ranks)
             return (G=A.cten, U1=A.fmat[1], U2=A.fmat[2], U3=A.fmat[3],
                 U4=A.fmat[4], A=full(A), iters=s, fullgrads=fullgrads)
