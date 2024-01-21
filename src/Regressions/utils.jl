@@ -86,3 +86,15 @@ function rescaleten(A, target_norm::Real=5)
     return scaled_matrix
 end
 
+function idhosvd(X::AbstractArray{<:Number,N}; reqrank=[]) where {N}
+    fmat = MatrixCell(undef, N)
+
+    for n in 1:N
+        r = reqrank[n]
+        Xn = tenmat(X, n)
+        U, _, _ = svd(Xn)
+        fmat[n] = U[:, 1:r]
+    end
+    ttensor(ttm(X, fmat, 't'), fmat)
+end
+

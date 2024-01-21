@@ -7,7 +7,7 @@ using ProgressBars
 using ReverseDiff
 
 export tensorols, art
-export tlag, ridgerankselect, rescaleten
+export tlag, ridgerankselect, rescaleten, idhosvd
 export makecompanion, isstable
 export infocrit, tuckerpar
 export tuckerreg, tuckerreg2

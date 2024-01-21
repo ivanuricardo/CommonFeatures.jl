@@ -64,7 +64,7 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractF
 
     initest = reshape(art(mardata, p), (N1, N2, N1, N2, p))
     ranks = vcat(ranks, p)
-    hosvdinit = hosvd(initest; reqrank=ranks)
+    hosvdinit = idhosvd(initest; reqrank=ranks)
     A = full(hosvdinit)
 
     U1, U2, U3, U4, U5 = hosvdinit.fmat
@@ -121,7 +121,7 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractF
         c = trackU1[s] < ϵ && trackU2[s] < ϵ && trackU3[s] < ϵ && trackU4[s] < ϵ
         if c || s == maxiter
             fullgrads = hcat(trackU1, trackU2, trackU3, trackU4, trackG)
-            A = hosvd(A; reqrank=ranks)
+            A = idhosvd(A; reqrank=ranks)
             return (G=A.cten, U1=A.fmat[1], U2=A.fmat[2], U3=A.fmat[3],
                 U4=A.fmat[4], A=full(A), iters=s, fullgrads=fullgrads)
         end
