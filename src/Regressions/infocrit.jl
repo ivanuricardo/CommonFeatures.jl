@@ -78,7 +78,7 @@ function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], a::Rea
     for i in ProgressBar(1:prod(r̄))
         selectedrank = collect(grid[i])
         r1, r2, r3, r4 = selectedrank
-        if r1 > r2 * r3 * r4 * p || r2 > r1 * r3 * r4 * p || r3 > r1 * r2 * r4 * p || r4 > r1 * r2 * r3 * p || p > r1 * r2 * r3 * r4
+        if r1 > r2 * r3 * r4 || r2 > r1 * r3 * r4 || r3 > r1 * r2 * r4 || r4 > r1 * r2 * r3
             infocritest[3, i] = r1
             infocritest[4, i] = r2
             infocritest[5, i] = r3
