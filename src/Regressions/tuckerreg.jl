@@ -58,24 +58,6 @@ A tuple containing the Tucker decomposition components:
 - `iters`: Number of iterations performed.
 - `fullgrads`: A matrix keeping track of gradients. Can be plotted to determine whether gradients behave properly.
 """
-using TensorToolbox, Statistics, Random, LinearAlgebra, TensorEconometrics, ProgressBars
-
-Random.seed!(20231213)
-
-sims = 100
-dimvals = [4, 3]
-ranks = [1, 1, 3, 3]
-scale = 5
-maxiter = 1000
-eta = 1e-04
-ϵ = 1e-03
-a = 1
-b = 1
-maxeigen = 0.9
-p = 2
-obs = 500
-medmar = simulatetuckerdata(dimvals, ranks, obs, scale, p, maxeigen)
-mardata = medmar.data
 function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractFloat=1e-04, a::Real=1, b::Real=1, maxiter::Int=1000, p::Int=1, ϵ::AbstractFloat=1e-02)
     N1, N2, _ = size(mardata)
     origy, lagy = tlag(mardata, p, true)
@@ -139,10 +121,12 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractF
         c = trackU1[s] < ϵ && trackU2[s] < ϵ && trackU3[s] < ϵ && trackU4[s] < ϵ
         if c || s == maxiter
             fullgrads = hcat(trackU1, trackU2, trackU3, trackU4, trackG)
-            A = idhosvd(A; reqrank=ranks)
-
-            return (G=A.cten, U1=A.fmat[1], U2=A.fmat[2], U3=A.fmat[3],
-                U4=A.fmat[4], A=full(A), iters=s, fullgrads=fullgrads)
+            A = hosvd(A; reqrank=ranks)
+            U1, U2, U3, U4, U5 = A.fmat
+            G = ttm(hosvdinit.cten, U5', 5)
+            U5 = U5'U5
+            Arot = full(ttensor(G, [U1, U2, U3, U4, U5]))
+            return (G=G, U1=U1, U2=U2, U3=U3, U4=U4, A=Arot, iters=s, fullgrads=fullgrads)
         end
     end
 end
