@@ -1,10 +1,6 @@
 
-function regularize(a, b, U)
-    norm_val = norm(U'U - b^2 * I)
-    return a / 2 * norm_val^2
-end
 
-function objtuckreg(Yt, Xt, G, U1, U2, U3, U4, a, b)
+function objtuckreg(Yt, Xt, G, U1, U2, U3, U4)
     p = size(Xt, 3)
     obs = size(Xt, 4)
 
@@ -12,14 +8,7 @@ function objtuckreg(Yt, Xt, G, U1, U2, U3, U4, a, b)
 
     eq = tenmat(Yt, col=3) - A * tenmat(Xt, col=4)
 
-    obj = (1 / (2 * obs)) * norm(eq)^2
-
-    facmats = [U1, U2, U3, U4]
-    for i in facmats
-        obj += regularize(a, b, i)
-    end
-
-    return obj
+    return (1 / (2 * obs)) * norm(eq)^2
 end
 
 function dlbarest(origy, lagy, G, U1, U2, U3, U4, U5)
@@ -58,7 +47,7 @@ A tuple containing the Tucker decomposition components:
 - `iters`: Number of iterations performed.
 - `fullgrads`: A matrix keeping track of gradients. Can be plotted to determine whether gradients behave properly.
 """
-function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractFloat=1e-04, a::Real=1, b::Real=1, maxiter::Int=1000, p::Int=1, ϵ::AbstractFloat=1e-02)
+function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractFloat=1e-04, maxiter::Int=1000, p::Int=1, ϵ::AbstractFloat=1e-02)
     N1, N2, _ = size(mardata)
     origy, lagy = tlag(mardata, p, true)
 
@@ -83,30 +72,26 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractF
 
         dlbar1 = dlbarest(origy, lagy, G, U1, U2, U3, U4, U5)
         kronU1 = kron(U5, kron(U4, kron(U3, U2))) * tenmat(G, row=1)'
-        regularizeU1 = a * (U1 * (U1'U1 - (b^2 * I)))
         ∇U1 = tenmat(dlbar1, row=1) * kronU1
-        U1 -= eta * ∇U1 - eta * regularizeU1
+        U1 -= eta * ∇U1
         trackU1[s] = norm(∇U1)
 
         dlbar2 = dlbarest(origy, lagy, G, U1, U2, U3, U4, U5)
         kronU2 = kron(U5, kron(U4, kron(U3, U1))) * tenmat(G, row=2)'
-        regularizeU2 = a * (U2 * (U2'U2 - (b^2 * I)))
         ∇U2 = tenmat(dlbar2, row=2) * kronU2
-        U2 -= eta * ∇U2 - eta * regularizeU2
+        U2 -= eta * ∇U2
         trackU2[s] = norm(∇U2)
 
         dlbar3 = dlbarest(origy, lagy, G, U1, U2, U3, U4, U5)
         kronU3 = kron(U5, kron(U4, kron(U2, U1))) * tenmat(G, row=3)'
-        regularizeU3 = a * (U3 * (U3'U3 - (b^2 * I)))
         ∇U3 = tenmat(dlbar3, row=3) * kronU3
-        U3 -= eta * ∇U3 - eta * regularizeU3
+        U3 -= eta * ∇U3
         trackU3[s] = norm(∇U3)
 
         dlbar4 = dlbarest(origy, lagy, G, U1, U2, U3, U4, U5)
         kronU4 = kron(U5, kron(U3, kron(U2, U1))) * tenmat(G, row=4)'
-        regularizeU4 = a * (U4 * (U4'U4 - (b^2 * I)))
         ∇U4 = tenmat(dlbar4, row=4) * kronU4
-        U4 -= eta * ∇U4 - eta * regularizeU4
+        U4 -= eta * ∇U4
         trackU4[s] = norm(∇U4)
 
         dlbarG = dlbarest(origy, lagy, G, U1, U2, U3, U4, U5)
