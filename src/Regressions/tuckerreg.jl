@@ -121,12 +121,14 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractF
         c = trackU1[s] < ϵ && trackU2[s] < ϵ && trackU3[s] < ϵ && trackU4[s] < ϵ
         if c || s == maxiter
             fullgrads = hcat(trackU1, trackU2, trackU3, trackU4, trackG)
-            A = hosvd(A; reqrank=ranks)
+            A = idhosvd(A; reqrank=ranks)
             U1, U2, U3, U4, U5 = A.fmat
-            G = ttm(hosvdinit.cten, U5', 5)
+            G = ttm(A.cten, U5', 5)
             U5 = U5'U5
             Arot = full(ttensor(G, [U1, U2, U3, U4, U5]))
-            return (G=G, U1=U1, U2=U2, U3=U3, U4=U4, A=Arot, iters=s, fullgrads=fullgrads)
+            predfacs = ttm(ttm(lagy, U3', 1), U4', 2)
+            respfacs = ttm(ttm(origy, U1', 1), U2', 2)
+            return (G=G, U1=U1, U2=U2, U3=U3, U4=U4, A=Arot, iters=s, fullgrads=fullgrads, predfacs, respfacs)
         end
     end
 end
