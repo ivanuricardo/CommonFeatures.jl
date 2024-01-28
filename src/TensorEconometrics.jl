@@ -19,7 +19,7 @@ include("./Regressions/infocrit.jl")
 include("./Regressions/tuckerreg.jl")
 include("./Regressions/crossval.jl")
 
-export simulatetuckerdata, simulatemardata, simstats, conditionvalue
+export simulatetuckerdata, simulatemardata, simstats, conditionvalue, generaterandcoef
 include("./SimFunctions/simfunctions.jl")
 
 end

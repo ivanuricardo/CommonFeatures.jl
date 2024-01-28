@@ -44,30 +44,7 @@ function simstats(selectedranks::AbstractMatrix, correctrank::AbstractVector, si
     return (avgrank=avgrank, stdrank=stdrank, freqcorrect=freqcorrect, freqhigh=freqhigh, freqlow=freqlow)
 end
 
-"""
-    simulatetuckerdata(dimvals, ranks, obs, scale)
-
-Simulate Tucker data with specified dimensions, ranks, observation count, and scaling factor.
-
-# Arguments
-- `dimvals::AbstractVector`: Dimensions of the tensor (dimvals[1] for the first mode, dimvals[2] for the second mode).
-- `ranks::AbstractVector`: Tucker ranks for the four modes.
-- `obs::Int`: Number of observations to simulate.
-- `scale::Real`: Scaling factor for the Tucker decomposition.
-- `p::Int`: Number of lags to include. Default is 1 and the maximum is 5.
-
-# Returns
-A named tuple containing:
-- `tuckerdata::Array{Float64, 3}`: Simulated Tucker data with dimensions (dimvals[1], dimvals[2], obs).
-- `stabit::Int`: Number of iterations required to generate a stable tensor.
-- `A::Array{Float64, 4}`: Tucker core tensor.
-
-# Examples
-```julia
-result = simulatetuckerdata([5, 4], [2, 3, 2, 3], 100, 1.0)
-```
-"""
-function simulatetuckerdata(dimvals::AbstractVector, ranks::AbstractVector, obs::Int, scale::Real=5, p::Int=1, maxeigen=1)
+function generaterandcoef(dimvals, ranks, scale, p, maxeigen)
     A = fill(NaN, dimvals[1], dimvals[2], dimvals[1], dimvals[2], p)
     G = fill(NaN, ranks[1], ranks[2], ranks[3], ranks[4], p)
     U1 = fill(NaN, dimvals[1], ranks[1])
@@ -96,6 +73,43 @@ function simulatetuckerdata(dimvals::AbstractVector, ranks::AbstractVector, obs:
         if isstable(varA, maxeigen)
             break
         end
+    end
+    return (A=A, G=G, U1=U1, U2=U2, U3=U3, U4=U4, U5=U5, stabit=stabit)
+end
+
+"""
+    simulatetuckerdata(dimvals, ranks, obs, scale)
+
+Simulate Tucker data with specified dimensions, ranks, observation count, and scaling factor.
+
+# Arguments
+- `dimvals::AbstractVector`: Dimensions of the tensor (dimvals[1] for the first mode, dimvals[2] for the second mode).
+- `ranks::AbstractVector`: Tucker ranks for the four modes.
+- `obs::Int`: Number of observations to simulate.
+- `scale::Real`: Scaling factor for the Tucker decomposition.
+- `p::Int`: Number of lags to include. Default is 1 and the maximum is 5.
+
+# Returns
+A named tuple containing:
+- `tuckerdata::Array{Float64, 3}`: Simulated Tucker data with dimensions (dimvals[1], dimvals[2], obs).
+- `stabit::Int`: Number of iterations required to generate a stable tensor.
+- `A::Array{Float64, 4}`: Tucker core tensor.
+
+# Examples
+```julia
+result = simulatetuckerdata([5, 4], [2, 3, 2, 3], 100, 1.0)
+```
+"""
+function simulatetuckerdata(dimvals::AbstractVector, ranks::AbstractVector, obs::Int, A=nothing, scale::Real=5, p::Int=1, maxeigen=1)
+    if isnothing(A)
+        A, G, U1, U2, U3, U4, _, stabit = generaterandcoef(dimvals, ranks, scale, p, maxeigen)
+    else
+        G = nothing
+        U1 = nothing
+        U2 = nothing
+        U3 = nothing
+        U4 = nothing
+        stabit = nothing
     end
 
     mardata = zeros(dimvals[1], dimvals[2], obs)

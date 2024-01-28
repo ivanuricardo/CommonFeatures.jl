@@ -1,5 +1,4 @@
 
-
 function objtuckreg(Yt, Xt, G, U1, U2, U3, U4)
     p = size(Xt, 3)
     obs = size(Xt, 4)
@@ -113,12 +112,12 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractF
             Arot = full(ttensor(G, [U1, U2, U3, U4, U5]))
             predfacs = ttm(ttm(lagy, U3', 1), U4', 2)
             respfacs = ttm(ttm(origy, U1', 1), U2', 2)
-            return (G=G, U1=U1, U2=U2, U3=U3, U4=U4, A=Arot, iters=s, fullgrads=fullgrads, predfacs, respfacs)
+            return (G=G, U1=U1, U2=U2, U3=U3, U4=U4, U5=U5, A=Arot, iters=s, fullgrads=fullgrads, predfacs, respfacs)
         end
     end
 end
 
-function tuckerreg2(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractFloat=1e-04, a::Real=1, b::Real=1, maxiter::Int=1000, p::Int=1, ϵ::AbstractFloat=1e-02)
+function tuckerreg2(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractFloat=1e-04, maxiter::Int=1000, p::Int=1, ϵ::AbstractFloat=1e-02)
     N1 = size(mardata, 1)
     N2 = size(mardata, 2)
     origy, lagy = tlag(mardata, p, true)
@@ -142,23 +141,23 @@ function tuckerreg2(mardata::AbstractArray, ranks::AbstractVector, eta::Abstract
     for s in ProgressBar(1:maxiter)
         iters += 1
 
-        ∇U1 = ReverseDiff.gradient(x -> objtuckreg(origy, lagy, G, x, U2, U3, U4, a, b), U1)
+        ∇U1 = ReverseDiff.gradient(x -> objtuckreg(origy, lagy, G, x, U2, U3, U4), U1)
         U1 -= eta * ∇U1
         trackU1[s] = norm(∇U1)
 
-        ∇U2 = ReverseDiff.gradient(x -> objtuckreg(origy, lagy, G, U1, x, U3, U4, a, b), U2)
+        ∇U2 = ReverseDiff.gradient(x -> objtuckreg(origy, lagy, G, U1, x, U3, U4), U2)
         U2 -= eta * ∇U2
         trackU2[s] = norm(∇U2)
 
-        ∇U3 = ReverseDiff.gradient(x -> objtuckreg(origy, lagy, G, U1, U2, x, U4, a, b), U3)
+        ∇U3 = ReverseDiff.gradient(x -> objtuckreg(origy, lagy, G, U1, U2, x, U4), U3)
         U3 -= eta * ∇U3
         trackU3[s] = norm(∇U3)
 
-        ∇U4 = ReverseDiff.gradient(x -> objtuckreg(origy, lagy, G, U1, U2, U3, x, a, b), U4)
+        ∇U4 = ReverseDiff.gradient(x -> objtuckreg(origy, lagy, G, U1, U2, U3, x), U4)
         U4 -= eta * ∇U4
         trackU4[s] = norm(∇U4)
 
-        ∇G = ReverseDiff.gradient(x -> objtuckreg(origy, lagy, x, U1, U2, U3, U4, a, b), G)
+        ∇G = ReverseDiff.gradient(x -> objtuckreg(origy, lagy, x, U1, U2, U3, U4), G)
         trackG[s] = norm(∇G)
         G -= eta * ∇G
 

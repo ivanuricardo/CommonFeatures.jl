@@ -66,7 +66,7 @@ println("AIC Chosen Ranks: ", result.AIC)
 println("Information Criteria Table: ", result.ictable)
 ```
 """
-function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], a::Real=1, b::Real=1, maxiters::Int=1000, tucketa::Real=1e-04, ϵ::Real=1e-01)
+function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], maxiters::Int=1000, tucketa::Real=1e-04, ϵ::Real=1e-01)
     origy, lagy = tlag(mardata, p, true)
     N1, N2, obs = size(origy)
     if isempty(r̄)
@@ -85,7 +85,7 @@ function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], a::Rea
             infocritest[6, i] = r4
             continue
         end
-        tuckest = tuckerreg(mardata, selectedrank, tucketa, a, b, maxiters, p, ϵ)
+        tuckest = tuckerreg(mardata, selectedrank, tucketa, maxiters, p, ϵ)
         tuckerr = origy - contract(tuckest.A, [3, 4, 5], lagy, [1, 2, 3])
         flatϵ = tenmat(tuckerr, col=3)
         detcov = det(flatϵ * flatϵ')
