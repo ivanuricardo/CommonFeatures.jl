@@ -17,7 +17,7 @@
     p = 1
     ϵ = 1e-02
 
-    marsim = simulatetuckerdata(dimvals, ranks, obs, scale, p, maxeigen)
+    marsim = simulatetuckerdata(dimvals, ranks, obs, nothing, scale, p, maxeigen)
     mardata = marsim.data
     vardata = tenmat(mardata, col=3)
     origy, lagy = tlag(mardata)
@@ -26,7 +26,7 @@
 
     varest = yy * xx' * inv(xx * xx')
 
-    tuckerest = tuckerreg(mardata, ranks, eta, a, b, maxiters, p, ϵ)
+    tuckerest = tuckerreg(mardata, ranks, eta, maxiters, p, ϵ)
     flattuck = tenmat(tuckerest.A, row=[1, 2])
     @test varest ≈ flattuck
 end
@@ -48,7 +48,7 @@ end
     maxiters = 1000
     ϵ = 1e-02
 
-    marsim = simulatetuckerdata(dimvals, ranks, obs, scale, p, maxeigen)
+    marsim = simulatetuckerdata(dimvals, ranks, obs, nothing, scale, p, maxeigen)
     mardata = marsim.data
     vardata = tenmat(mardata, col=3)
     origy, lagy = tlag(mardata, p)
@@ -57,7 +57,7 @@ end
 
     varest = yy * xx' * inv(xx * xx')
 
-    tuckerest = tuckerreg(mardata, ranks, eta, a, b, maxiters, p, ϵ)
+    tuckerest = tuckerreg(mardata, ranks, eta, maxiters, p, ϵ)
     flattuck = tenmat(tuckerest.A, row=[1, 2])
     @test varest ≈ flattuck
 end
@@ -69,7 +69,7 @@ end
     dimvals = [4, 3]
     ranks = [3, 2, 3, 2]
     selectedranks = [2, 1, 2, 1]
-    obs = 1000
+    obs = 100
     scale = 5
     p = 1
     maxeigen = 0.9
@@ -77,10 +77,10 @@ end
     eta = 1e-04
     a = 1
     b = 1
-    maxiters = 1000
+    maxiters = 100
     ϵ = 1e-02
 
-    marsim = simulatetuckerdata(dimvals, ranks, obs, scale, p, maxeigen)
+    marsim = simulatetuckerdata(dimvals, ranks, obs, nothing, scale, p, maxeigen)
     mardata = marsim.data
 
     tuck1 = tuckerreg(mardata, selectedranks, eta, maxiters, p, ϵ)
@@ -95,7 +95,7 @@ end
     dimvals = [4, 3]
     ranks = [3, 2, 3, 2]
     selectedranks = [2, 1, 2, 1]
-    obs = 1000
+    obs = 100
     scale = 5
     p = 2
     maxeigen = 0.9
@@ -103,10 +103,10 @@ end
     eta = 1e-04
     a = 1
     b = 1
-    maxiters = 1000
+    maxiters = 100
     ϵ = 1e-02
 
-    marsim = simulatetuckerdata(dimvals, ranks, obs, scale, p, maxeigen)
+    marsim = simulatetuckerdata(dimvals, ranks, obs, nothing, scale, p, maxeigen)
     mardata = marsim.data
 
     tuck1 = tuckerreg(mardata, selectedranks, eta, maxiters, p, ϵ)

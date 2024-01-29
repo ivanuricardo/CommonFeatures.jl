@@ -9,7 +9,7 @@
     p = 1
     maxeigen = 0.9
 
-    marsim = simulatetuckerdata(dimvals, ranks, obs, scale, p, maxeigen)
+    marsim = simulatetuckerdata(dimvals, ranks, obs, nothing, scale, p, maxeigen)
     mardata = marsim.data
     vardata = tenmat(mardata, col=3)
     origy, lagy = tlag(mardata)
