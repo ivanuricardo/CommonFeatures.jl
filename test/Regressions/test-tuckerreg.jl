@@ -61,3 +61,55 @@ end
     flattuck = tenmat(tuckerest.A, row=[1, 2])
     @test varest ≈ flattuck
 end
+
+@testset "Gradients p = 1" begin
+    using TensorToolbox
+    Random.seed!(20231228)
+
+    dimvals = [4, 3]
+    ranks = [3, 2, 3, 2]
+    selectedranks = [2, 1, 2, 1]
+    obs = 1000
+    scale = 5
+    p = 1
+    maxeigen = 0.9
+
+    eta = 1e-04
+    a = 1
+    b = 1
+    maxiters = 1000
+    ϵ = 1e-02
+
+    marsim = simulatetuckerdata(dimvals, ranks, obs, scale, p, maxeigen)
+    mardata = marsim.data
+
+    tuck1 = tuckerreg(mardata, selectedranks, eta, maxiters, p, ϵ)
+    tuck2 = tuckerreg2(mardata, selectedranks, eta, maxiters, p, ϵ)
+    @test tuck1.fullgrads ≈ tuck2.fullgrads
+end
+
+@testset "Gradients p = 2" begin
+    using TensorToolbox
+    Random.seed!(20231228)
+
+    dimvals = [4, 3]
+    ranks = [3, 2, 3, 2]
+    selectedranks = [2, 1, 2, 1]
+    obs = 1000
+    scale = 5
+    p = 2
+    maxeigen = 0.9
+
+    eta = 1e-04
+    a = 1
+    b = 1
+    maxiters = 1000
+    ϵ = 1e-02
+
+    marsim = simulatetuckerdata(dimvals, ranks, obs, scale, p, maxeigen)
+    mardata = marsim.data
+
+    tuck1 = tuckerreg(mardata, selectedranks, eta, maxiters, p, ϵ)
+    tuck2 = tuckerreg2(mardata, selectedranks, eta, maxiters, p, ϵ)
+    @test tuck1.fullgrads ≈ tuck2.fullgrads
+end

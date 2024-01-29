@@ -16,7 +16,7 @@ function dlbarest(origy, lagy, G, U1, U2, U3, U4, U5)
     dlbar = zeros(N1, N2, N1, N2, p)
     innert = zeros(N1, N2)
     for i in 1:(obs)
-        innert = contract(A, [3, 4, 5], lagy[:, :, :, i], [1, 2, 3])
+        innert = reshape(tenmat(A, row=[1, 2]) * vec(lagy[:, :, :, i]), (N1, N2))
         dlbar += ttt((innert - origy[:, :, i]), lagy[:, :, :, i])
     end
     dlbar .= dlbar ./ (obs)

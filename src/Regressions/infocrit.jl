@@ -86,9 +86,9 @@ function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], maxite
             continue
         end
         tuckest = tuckerreg(mardata, selectedrank, tucketa, maxiters, p, ϵ)
-        tuckerr = origy - contract(tuckest.A, [3, 4, 5], lagy, [1, 2, 3])
-        flatϵ = tenmat(tuckerr, col=3)
-        detcov = det(flatϵ * flatϵ')
+        ax = tenmat(tuckest.A, row=[1, 2]) * tenmat(lagy, row=[1, 2, 3])
+        tuckerr = tenmat(origy, row=[1, 2]) - ax
+        detcov = det(tuckerr * tuckerr')
         numpars = tuckerpar([N1, N2], selectedrank, p)
 
         infocritest[1, i] = log(detcov) + (2 * numpars) / obs
