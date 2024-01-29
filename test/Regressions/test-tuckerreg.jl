@@ -12,7 +12,6 @@
     eta = 1e-04
     a = 1
     b = 1
-    miniters = 100
     maxiters = 1000
     p = 1
     ϵ = 1e-02
@@ -66,9 +65,9 @@ end
     using TensorToolbox
     Random.seed!(20231228)
 
-    dimvals = [4, 3]
-    ranks = [3, 2, 3, 2]
-    selectedranks = [2, 1, 2, 1]
+    dimvals = [6, 5]
+    ranks = [5, 4, 3, 2]
+    selectedranks = [5, 4, 3, 2]
     obs = 100
     scale = 5
     p = 1
@@ -92,9 +91,9 @@ end
     using TensorToolbox
     Random.seed!(20231228)
 
-    dimvals = [4, 3]
-    ranks = [3, 2, 3, 2]
-    selectedranks = [2, 1, 2, 1]
+    dimvals = [6, 5]
+    ranks = [5, 4, 3, 2]
+    selectedranks = [5, 4, 3, 2]
     obs = 100
     scale = 5
     p = 2

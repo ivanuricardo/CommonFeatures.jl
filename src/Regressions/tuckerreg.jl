@@ -16,7 +16,8 @@ function dlbarest(origy, lagy, G, U1, U2, U3, U4, U5)
     dlbar = zeros(N1, N2, N1, N2, p)
     innert = zeros(N1, N2)
     for i in 1:(obs)
-        innert = reshape(tenmat(A, row=[1, 2]) * vec(lagy[:, :, :, i]), (N1, N2))
+        tena = reshape(A, (N1 * N2, N1 * N2 * p))
+        innert = reshape(tena * vec(lagy[:, :, :, i]), (N1, N2))
         dlbar += ttt((innert - origy[:, :, i]), lagy[:, :, :, i])
     end
     dlbar .= dlbar ./ (obs)
@@ -52,6 +53,7 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractF
 
     initest = reshape(art(mardata, p), (N1, N2, N1, N2, p))
     ranks = vcat(ranks, p)
+    r1, r2, r3, r4, _ = ranks
     hosvdinit = idhosvd(initest; reqrank=ranks)
     A = full(hosvdinit)
 
@@ -70,8 +72,8 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractF
         iters += 1
 
         dlbar1 = dlbarest(origy, lagy, G, U1, U2, U3, U4, U5)
-        kronU1 = kron(U5, kron(U4, kron(U3, U2))) * tenmat(G, row=1)'
-        ∇U1 = tenmat(dlbar1, row=1) * kronU1
+        kronU1 = kron(U5, kron(U4, kron(U3, U2))) * reshape(G, (r1, r2 * r3 * r4 * p))'
+        ∇U1 = reshape(dlbar1, (N1, N2 * N1 * N2 * p)) * kronU1
         U1 -= eta * ∇U1
         trackU1[s] = norm(∇U1)
 

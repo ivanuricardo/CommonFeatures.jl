@@ -66,6 +66,13 @@ println("AIC Chosen Ranks: ", result.AIC)
 println("Information Criteria Table: ", result.ictable)
 ```
 """
+using TensorToolbox, TensorEconometrics, LinearAlgebra
+mardata = randn(4, 3, 100)
+p = 1
+r̄ = [4, 3, 4, 3]
+maxiters = 1000
+tucketa = 1e-04
+ϵ = 1e-01
 function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], maxiters::Int=1000, tucketa::Real=1e-04, ϵ::Real=1e-01)
     origy, lagy = tlag(mardata, p, true)
     N1, N2, obs = size(origy)
@@ -86,8 +93,8 @@ function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], maxite
             continue
         end
         tuckest = tuckerreg(mardata, selectedrank, tucketa, maxiters, p, ϵ)
-        ax = tenmat(tuckest.A, row=[1, 2]) * tenmat(lagy, row=[1, 2, 3])
-        tuckerr = tenmat(origy, row=[1, 2]) - ax
+        ax = reshape(tuckest.A, (N1 * N2, N1 * N2 * p)) * reshape(lagy, (N1 * N2 * p, obs))
+        tuckerr = reshape(origy, (N1 * N2, obs)) - ax
         detcov = det(tuckerr * tuckerr')
         numpars = tuckerpar([N1, N2], selectedrank, p)
 
