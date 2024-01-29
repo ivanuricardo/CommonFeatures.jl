@@ -66,13 +66,6 @@ println("AIC Chosen Ranks: ", result.AIC)
 println("Information Criteria Table: ", result.ictable)
 ```
 """
-using TensorToolbox, TensorEconometrics, LinearAlgebra
-mardata = randn(4, 3, 100)
-p = 1
-r̄ = [4, 3, 4, 3]
-maxiters = 1000
-tucketa = 1e-04
-ϵ = 1e-01
 function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], maxiters::Int=1000, tucketa::Real=1e-04, ϵ::Real=1e-01)
     origy, lagy = tlag(mardata, p, true)
     N1, N2, obs = size(origy)
