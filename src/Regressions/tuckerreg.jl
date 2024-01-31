@@ -48,8 +48,8 @@ A tuple containing the Tucker decomposition components:
 - `fullgrads`: A matrix keeping track of gradients. Can be plotted to determine whether gradients behave properly.
 """
 function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractFloat=1e-04, maxiter::Int=1000, p::Int=1, ϵ::AbstractFloat=1e-02)
-    N1, N2, _ = size(mardata)
     origy, lagy = tlag(mardata, p, true)
+    N1, N2, obs = size(origy)
 
     initest = reshape(art(mardata, p), (N1, N2, N1, N2, p))
     ranks = vcat(ranks, p)
@@ -112,9 +112,9 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractF
             G = ttm(A.cten, U5', 5)
             U5 = U5'U5
             Arot = full(ttensor(G, [U1, U2, U3, U4, U5]))
-            predfacs = ttm(ttm(lagy, U3', 1), U4', 2)
-            respfacs = ttm(ttm(origy, U1', 1), U2', 2)
-            return (G=G, U1=U1, U2=U2, U3=U3, U4=U4, U5=U5, A=Arot, iters=s, fullgrads=fullgrads, predfacs, respfacs)
+            ax = reshape(Arot, (N1 * N2, N1 * N2 * p)) * reshape(lagy, (N1 * N2 * p, obs))
+            tuckerr = reshape(origy, (N1 * N2, obs)) - ax
+            return (G=G, U1=U1, U2=U2, U3=U3, U4=U4, U5=U5, A=Arot, iters=s, fullgrads=fullgrads, residuals=tuckerr)
         end
     end
 end
