@@ -86,8 +86,7 @@ function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], maxite
             continue
         end
         tuckest = tuckerreg(mardata, selectedrank, tucketa, maxiters, p, ϵ)
-        ax = reshape(tuckest.A, (N1 * N2, N1 * N2 * p)) * reshape(lagy, (N1 * N2 * p, obs))
-        tuckerr = reshape(origy, (N1 * N2, obs)) - ax
+        tuckerr = tuckest.residuals
         detcov = det(tuckerr * tuckerr')
         numpars = tuckerpar([N1, N2], selectedrank, p)
 
