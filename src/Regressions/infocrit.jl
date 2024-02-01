@@ -67,7 +67,7 @@ println("Information Criteria Table: ", result.ictable)
 ```
 """
 function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], maxiters::Int=1000, tucketa::Real=1e-04, ϵ::Real=1e-01)
-    origy, lagy = tlag(mardata, p, true)
+    origy, _ = tlag(mardata, p, true)
     N1, N2, obs = size(origy)
     if isempty(r̄)
         r̄ = [N1, N2, N1, N2]
@@ -96,6 +96,49 @@ function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], maxite
         infocritest[4, i] = r2
         infocritest[5, i] = r3
         infocritest[6, i] = r4
+        regiters[i] = tuckest.iters
+    end
+    nancols = findall(x -> any(isnan, x), eachcol(infocritest))
+    filteredic = infocritest[:, setdiff(1:size(infocritest, 2), nancols)]
+    AICvec = argmin(filteredic[1, :])
+    AICchosen = Int.(filteredic[3:end, AICvec])
+    BICvec = argmin(filteredic[2, :])
+    BICchosen = Int.(filteredic[3:end, BICvec])
+
+    return (BIC=BICchosen, AIC=AICchosen, ictable=infocritest, regiters=regiters)
+end
+
+function fullinfocrit(mardata::AbstractArray, pmax::Int, r̄::AbstractVector=[], maxiters::Int=1000, tucketa::Real=1e-04, ϵ::Real=1e-01)
+    origy, _ = tlag(mardata, pmax, true)
+    N1, N2, obs = size(origy)
+    if isempty(r̄)
+        r̄ = [N1, N2, N1, N2]
+    end
+    infocritest = fill(NaN, 7, prod(r̄) * pmax)
+    regiters = fill(NaN, prod(r̄) * pmax)
+    grid = collect(Iterators.product(1:r̄[1], 1:r̄[2], 1:r̄[3], 1:r̄[4], 1:pmax))
+    Threads.@threads for i in ProgressBar(1:(prod(r̄)*pmax))
+        selectedrank = collect(grid[i])
+        r1, r2, r3, r4, p = selectedrank
+        if r1 > r2 * r3 * r4 || r2 > r1 * r3 * r4 || r3 > r1 * r2 * r4 || r4 > r1 * r2 * r3
+            infocritest[3, i] = r1
+            infocritest[4, i] = r2
+            infocritest[5, i] = r3
+            infocritest[6, i] = r4
+            continue
+        end
+        tuckest = tuckerreg(mardata, [r1, r2, r3, r4], tucketa, maxiters, p, ϵ)
+        tuckerr = tuckest.residuals
+        detcov = det(tuckerr * tuckerr')
+        numpars = tuckerpar([N1, N2], selectedrank, p)
+
+        infocritest[1, i] = log(detcov) + (2 * numpars) / obs
+        infocritest[2, i] = log(detcov) + (numpars * log(obs)) / obs
+        infocritest[3, i] = r1
+        infocritest[4, i] = r2
+        infocritest[5, i] = r3
+        infocritest[6, i] = r4
+        infocritest[7, i] = p
         regiters[i] = tuckest.iters
     end
     nancols = findall(x -> any(isnan, x), eachcol(infocritest))

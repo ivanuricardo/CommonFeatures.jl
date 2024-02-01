@@ -9,7 +9,7 @@ using ReverseDiff
 export tensorols, art
 export tlag, ridgerankselect, rescaleten, idhosvd
 export makecompanion, isstable
-export infocrit, tuckerpar
+export infocrit, tuckerpar, fullinfocrit
 export tuckerreg, tuckerreg2
 export rrmarcrossval
 include("./Regressions/MatrixAR.jl")
