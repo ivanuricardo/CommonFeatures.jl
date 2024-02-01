@@ -128,6 +128,15 @@ function fullinfocrit(mardata::AbstractArray, pmax::Int, r̄::AbstractVector=[],
             infocritest[8, i] = p
             continue
         end
+        if p == 1
+            tuckest = tuckerreg(mardata[:, :, pmax:end], [r1, r2, r3, r4], tucketa, maxiters, p, ϵ)
+        elseif p == 2
+            tuckest = tuckerreg(mardata[:, :, (pmax-1):end], [r1, r2, r3, r4], tucketa, maxiters, p, ϵ)
+        elseif p == 3
+            tuckest = tuckerreg(mardata[:, :, (pmax-2):end], [r1, r2, r3, r4], tucketa, maxiters, p, ϵ)
+        elseif p == 4
+            tuckest = tuckerreg(mardata[:, :, (pmax-3):end], [r1, r2, r3, r4], tucketa, maxiters, p, ϵ)
+        end
         tuckest = tuckerreg(mardata, [r1, r2, r3, r4], tucketa, maxiters, p, ϵ)
         tuckerr = tuckest.residuals
         detcov = det(tuckerr * tuckerr')
