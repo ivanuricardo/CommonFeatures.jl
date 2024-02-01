@@ -137,7 +137,6 @@ function fullinfocrit(mardata::AbstractArray, pmax::Int, r̄::AbstractVector=[],
         elseif p == 4
             tuckest = tuckerreg(mardata[:, :, (pmax-3):end], [r1, r2, r3, r4], tucketa, maxiters, p, ϵ)
         end
-        tuckest = tuckerreg(mardata, [r1, r2, r3, r4], tucketa, maxiters, p, ϵ)
         tuckerr = tuckest.residuals
         detcov = det(tuckerr * tuckerr')
         numpars = tuckerpar([N1, N2], selectedrank, p)
@@ -155,11 +154,11 @@ function fullinfocrit(mardata::AbstractArray, pmax::Int, r̄::AbstractVector=[],
     nancols = findall(x -> any(isnan, x), eachcol(infocritest))
     filteredic = infocritest[:, setdiff(1:size(infocritest, 2), nancols)]
     AICvec = argmin(filteredic[1, :])
-    AICchosen = Int.(filteredic[3:end, AICvec])
+    AICchosen = Int.(filteredic[4:end, AICvec])
     BICvec = argmin(filteredic[2, :])
-    BICchosen = Int.(filteredic[3:end, BICvec])
+    BICchosen = Int.(filteredic[4:end, BICvec])
     HQvec = argmin(filteredic[3, :])
-    HQchosen = Int.(filteredic[3:end, HQvec])
+    HQchosen = Int.(filteredic[4:end, HQvec])
 
     return (BIC=BICchosen, AIC=AICchosen, HQ=HQchosen, ictable=infocritest, regiters=regiters)
 end
