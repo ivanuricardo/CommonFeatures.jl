@@ -87,7 +87,7 @@ function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], maxite
         end
         tuckest = tuckerreg(mardata, selectedrank, tucketa, maxiters, p, ϵ)
         tuckerr = tuckest.residuals
-        detcov = det(tuckerr * tuckerr')
+        detcov = det(tuckerr * tuckerr' / obs)
         numpars = tuckerpar([N1, N2], selectedrank, p)
 
         infocritest[1, i] = log(detcov) + (2 * numpars) / obs
@@ -138,7 +138,7 @@ function fullinfocrit(mardata::AbstractArray, pmax::Int, r̄::AbstractVector=[],
             tuckest = tuckerreg(mardata[:, :, (pmax-3):end], [r1, r2, r3, r4], tucketa, maxiters, p, ϵ)
         end
         tuckerr = tuckest.residuals
-        detcov = det(tuckerr * tuckerr')
+        detcov = det(tuckerr * tuckerr' / obs)
         numpars = tuckerpar([N1, N2], selectedrank, p)
 
         infocritest[1, i] = log(detcov) + (2 * numpars) / obs
