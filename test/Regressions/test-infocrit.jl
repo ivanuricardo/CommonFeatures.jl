@@ -15,3 +15,15 @@
 
     @test pars == 280
 end
+
+@testset "Tucker Parameters p = 2" begin
+
+    dimvals = [4, 3]
+    ranks = [4, 3, 4, 3]
+    p = 2
+
+    pars = tuckerpar(dimvals, ranks, p)
+    truepars = 12 * 12 * p
+
+    @test pars == truepars
+end

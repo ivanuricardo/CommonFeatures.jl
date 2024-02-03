@@ -112,8 +112,8 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractF
             G = ttm(A.cten, U5', 5)
             U5 = U5'U5
             Arot = full(ttensor(G, [U1, U2, U3, U4, U5]))
-            ax = reshape(Arot, (N1 * N2, N1 * N2 * p)) * reshape(lagy, (N1 * N2 * p, obs))
-            tuckerr = reshape(origy, (N1 * N2, obs)) - ax
+            ax = tenmat(Arot, row=[1, 2]) * tenmat(lagy, row=[1, 2, 3])
+            tuckerr = tenmat(origy, row=[1, 2]) - ax
             return (G=G, U1=U1, U2=U2, U3=U3, U4=U4, U5=U5, A=Arot, iters=s, fullgrads=fullgrads, residuals=tuckerr)
         end
     end
