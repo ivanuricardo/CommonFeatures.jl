@@ -139,7 +139,7 @@ function fullinfocrit(mardata::AbstractArray, pmax::Int, r̄::AbstractVector=[],
         end
         tuckerr = tuckest.residuals
         detcov = det(tuckerr * tuckerr' / obs)
-        numpars = tuckerpar([N1, N2], selectedrank, p)
+        numpars = tuckerpar([N1, N2], [r1, r2, r3, r4], p)
 
         infocritest[1, i] = log(detcov) + (2 * numpars) / obs
         infocritest[2, i] = log(detcov) + (numpars * log(obs)) / obs
