@@ -1,13 +1,3 @@
-function conditionvalue(ten::AbstractArray, ranks)
-    unfold1 = tenmat(ten, row=1)
-    unfold2 = tenmat(ten, row=2)
-    unfold3 = tenmat(ten, row=3)
-    unfold4 = tenmat(ten, row=4)
-    upperλ = max(opnorm(unfold1), opnorm(unfold2), opnorm(unfold3), opnorm(unfold4))
-    lowerλ = min(svd(unfold1).S[ranks[1]], svd(unfold2).S[ranks[2]], svd(unfold3).S[ranks[3]], svd(unfold4).S[ranks[4]])
-    conditionnum = upperλ / lowerλ
-    return conditionnum
-end
 
 """
     simstats(selectedranks, correctrank, sims)
@@ -44,37 +34,53 @@ function simstats(selectedranks::AbstractMatrix, correctrank::AbstractVector, si
     return (avgrank=avgrank, stdrank=stdrank, freqcorrect=freqcorrect, freqhigh=freqhigh, freqlow=freqlow)
 end
 
-function generaterandcoef(dimvals, ranks, scale, p, maxeigen)
-    A = fill(NaN, dimvals[1], dimvals[2], dimvals[1], dimvals[2], p)
-    G = fill(NaN, ranks[1], ranks[2], ranks[3], ranks[4], p)
-    U1 = fill(NaN, dimvals[1], ranks[1])
-    U2 = fill(NaN, dimvals[2], ranks[2])
-    U3 = fill(NaN, dimvals[1], ranks[3])
-    U4 = fill(NaN, dimvals[2], ranks[4])
+function generatetuckercoef(dimvals, ranks, p, persistence)
+
+    G = randn(ranks[1], ranks[2], ranks[3], ranks[4], p)
+    randU1 = randn(dimvals[1], ranks[1])
+    randU2 = randn(dimvals[2], ranks[2])
+    randU3 = randn(dimvals[1], ranks[3])
+    randU4 = randn(dimvals[2], ranks[4])
+
+    U1 = svd(randU1).U
+    U2 = svd(randU2).U
+    U3 = svd(randU3).U
+    U4 = svd(randU4).U
     U5 = I(p)
-    stabit = 0
-    while true
-        stabit += 1
-        unscaledG = randn(ranks[1], ranks[2], ranks[3], ranks[4], p)
-        G .= rescaleten(unscaledG, scale)
-        randU1 = randn(dimvals[1], ranks[1])
-        randU2 = randn(dimvals[2], ranks[2])
-        randU3 = randn(dimvals[1], ranks[3])
-        randU4 = randn(dimvals[2], ranks[4])
 
-        U1 .= svd(randU1).U
-        U2 .= svd(randU2).U
-        U3 .= svd(randU3).U
-        U4 .= svd(randU4).U
-
-        hosvdA = ttensor(G, [U1, U2, U3, U4, Matrix(U5)])
-        A .= full(hosvdA)
-        varA = tenmat(A, row=[1, 2])
-        if isstable(varA, maxeigen)
-            break
+    hosvdA = ttensor(G, [U1, U2, U3, U4, Matrix(U5)])
+    A = full(hosvdA)
+    varA = tenmat(A, row=[1, 2])
+    if p == 1
+        vareig = abs.(eigen(varA).values)
+        varscale = persistence / maximum(vareig)
+        newcoef = varscale .* varA
+    else
+        compvar = makecompanion(varA)
+        if spectralradius(compvar) > persistence
+            while (spectralradius(compvar) > persistence)
+                varA .*= 0.99
+                compvar = makecompanion(varA)
+            end
+        elseif spectralradius(compvar) < persistence
+            while (spectralradius(compvar) < persistence)
+                varA .*= 1.01
+                compvar = makecompanion(varA)
+            end
         end
+        newcoef = varA
     end
-    return (A=A, G=G, U1=U1, U2=U2, U3=U3, U4=U4, U5=U5, stabit=stabit)
+    newtucker = matten(newcoef, [1, 2], [3, 4, 5], vcat(dimvals, dimvals, p))
+    tuckA = hosvd(newtucker, reqrank=vcat(ranks, p))
+    A = full(tuckA)
+    G = ttm(tuckA.cten, U5, 5)
+    U1 = tuckA.fmat[1]
+    U2 = tuckA.fmat[2]
+    U3 = tuckA.fmat[3]
+    U4 = tuckA.fmat[4]
+    U5 = tuckA.fmat[5]' * tuckA.fmat[5]
+    return (A=A, G=G, U1=U1, U2=U2, U3=U3, U4=U4, U5=U5)
+
 end
 
 """
@@ -100,9 +106,9 @@ A named tuple containing:
 result = simulatetuckerdata([5, 4], [2, 3, 2, 3], 100, 1.0)
 ```
 """
-function simulatetuckerdata(dimvals::AbstractVector, ranks::AbstractVector, obs::Int, A=nothing, scale::Real=5, p::Int=1, maxeigen=1)
+function simulatetuckerdata(dimvals::AbstractVector, ranks::AbstractVector, obs::Int, A=nothing, p::Int=1, persistence=0.7)
     if isnothing(A)
-        A, G, U1, U2, U3, U4, _, stabit = generaterandcoef(dimvals, ranks, scale, p, maxeigen)
+        A, G, U1, U2, U3, U4, _, stabit = generatetuckercoef(dimvals, ranks, p, persistence)
     else
         G = nothing
         U1 = nothing

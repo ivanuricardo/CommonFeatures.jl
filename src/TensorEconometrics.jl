@@ -7,7 +7,7 @@ using ProgressBars
 using ReverseDiff
 
 export tensorols, art
-export tlag, ridgerankselect, rescaleten, idhosvd
+export tlag, ridgerankselect, rescaleten, idhosvd, spectralradius
 export makecompanion, isstable
 export infocrit, tuckerpar, fullinfocrit
 export tuckerreg, tuckerreg2
@@ -19,7 +19,7 @@ include("./Regressions/infocrit.jl")
 include("./Regressions/tuckerreg.jl")
 include("./Regressions/crossval.jl")
 
-export simulatetuckerdata, simulatemardata, simstats, conditionvalue, generaterandcoef
+export simulatetuckerdata, simulatemardata, simstats, conditionvalue, generatetuckercoef
 include("./SimFunctions/simfunctions.jl")
 
 end

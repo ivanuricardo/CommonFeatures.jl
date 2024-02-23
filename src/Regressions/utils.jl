@@ -98,3 +98,5 @@ function idhosvd(X::AbstractArray{<:Number,N}; reqrank=[]) where {N}
     ttensor(ttm(X, fmat, 't'), fmat)
 end
 
+spectralradius(C::AbstractMatrix) = maximum(abs.(eigen(C).values))
+
