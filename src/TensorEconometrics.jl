@@ -5,6 +5,7 @@ using TensorToolbox
 using LinearAlgebra
 using ProgressBars
 using ReverseDiff
+using Distributions
 
 export tensorols, art
 export tlag, ridgerankselect, rescaleten, idhosvd, spectralradius

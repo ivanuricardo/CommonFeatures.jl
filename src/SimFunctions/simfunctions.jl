@@ -34,53 +34,38 @@ function simstats(selectedranks::AbstractMatrix, correctrank::AbstractVector, si
     return (avgrank=avgrank, stdrank=stdrank, freqcorrect=freqcorrect, freqhigh=freqhigh, freqlow=freqlow)
 end
 
-function generatetuckercoef(dimvals, ranks, p, persistence)
-
-    G = randn(ranks[1], ranks[2], ranks[3], ranks[4], p)
-    randU1 = randn(dimvals[1], ranks[1])
-    randU2 = randn(dimvals[2], ranks[2])
-    randU3 = randn(dimvals[1], ranks[3])
-    randU4 = randn(dimvals[2], ranks[4])
-
-    U1 = svd(randU1).U
-    U2 = svd(randU2).U
-    U3 = svd(randU3).U
-    U4 = svd(randU4).U
+function generatetuckercoef(dimvals, ranks, p, gscale=0.3, maxeigen=0.9)
+    A = fill(NaN, dimvals[1], dimvals[2], dimvals[1], dimvals[2], p)
+    G = fill(NaN, ranks[1], ranks[2], ranks[3], ranks[4], p)
+    U1 = fill(NaN, dimvals[1], ranks[1])
+    U2 = fill(NaN, dimvals[2], ranks[2])
+    U3 = fill(NaN, dimvals[1], ranks[3])
+    U4 = fill(NaN, dimvals[2], ranks[4])
     U5 = I(p)
 
-    hosvdA = ttensor(G, [U1, U2, U3, U4, Matrix(U5)])
-    A = full(hosvdA)
-    varA = tenmat(A, row=[1, 2])
-    if p == 1
-        vareig = abs.(eigen(varA).values)
-        varscale = persistence / maximum(vareig)
-        newcoef = varscale .* varA
-    else
-        compvar = makecompanion(varA)
-        if spectralradius(compvar) > persistence
-            while (spectralradius(compvar) > persistence)
-                varA .*= 0.99
-                compvar = makecompanion(varA)
-            end
-        elseif spectralradius(compvar) < persistence
-            while (spectralradius(compvar) < persistence)
-                varA .*= 1.01
-                compvar = makecompanion(varA)
-            end
-        end
-        newcoef = varA
-    end
-    newtucker = matten(newcoef, [1, 2], [3, 4, 5], vcat(dimvals, dimvals, p))
-    tuckA = hosvd(newtucker, reqrank=vcat(ranks, p))
-    A = full(tuckA)
-    G = ttm(tuckA.cten, U5, 5)
-    U1 = tuckA.fmat[1]
-    U2 = tuckA.fmat[2]
-    U3 = tuckA.fmat[3]
-    U4 = tuckA.fmat[4]
-    U5 = tuckA.fmat[5]' * tuckA.fmat[5]
-    return (A=A, G=G, U1=U1, U2=U2, U3=U3, U4=U4, U5=U5)
+    stabit = 0
+    while true
+        stabit += 1
+        unscaledG = randn(ranks[1], ranks[2], ranks[3], ranks[4], p)
+        G .= rescaleten(unscaledG, gscale)
+        randU1 = randn(dimvals[1], ranks[1])
+        randU2 = randn(dimvals[2], ranks[2])
+        randU3 = randn(dimvals[1], ranks[3])
+        randU4 = randn(dimvals[2], ranks[4])
 
+        U1 .= svd(randU1).U
+        U2 .= svd(randU2).U
+        U3 .= svd(randU3).U
+        U4 .= svd(randU4).U
+
+        hosvdA = ttensor(G, [U1, U2, U3, U4, Matrix(U5)])
+        A .= full(hosvdA)
+        varA = tenmat(A, row = [1,2])
+        if isstable(varA, maxeigen)
+            break
+        end
+    end
+    return (A=A, G=G, U1=U1, U2=U2, U3=U3, U4=U4, U5=U5, stabit=stabit)
 end
 
 """
@@ -106,21 +91,20 @@ A named tuple containing:
 result = simulatetuckerdata([5, 4], [2, 3, 2, 3], 100, 1.0)
 ```
 """
-function simulatetuckerdata(dimvals::AbstractVector, ranks::AbstractVector, obs::Int, A=nothing, p::Int=1, persistence=0.7)
+function simulatetuckerdata(dimvals::AbstractVector, ranks::AbstractVector, obs::Int, A=nothing, p::Int=1, snr=0.7)
     if isnothing(A)
-        A, G, U1, U2, U3, U4, _, stabit = generatetuckercoef(dimvals, ranks, p, persistence)
-    else
-        G = nothing
-        U1 = nothing
-        U2 = nothing
-        U3 = nothing
-        U4 = nothing
-        stabit = nothing
+        A, G, U1, U2, U3, U4, _, stabit = generatetuckercoef(dimvals, ranks, p)
     end
+
+    rho = spectralradius(makecompanion(tenmat(A, row = [1,2])))
+    Σ = diagm(repeat([rho / snr], dimvals[1] * dimvals[2]))
+    d = MultivariateNormal(zeros(dimvals[1] * dimvals[2]), Σ)
 
     mardata = zeros(dimvals[1], dimvals[2], obs)
     for i in (p+1):obs
-        ϵ = randn(dimvals[1], dimvals[2])
+        vecϵ = rand(d)
+        ϵ = reshape(vecϵ, (dimvals[1], dimvals[2]))
+
         if p == 1
             mardata[:, :, i] .= contract(A[:, :, :, :, 1], [3, 4], mardata[:, :, i-1], [1, 2]) + ϵ
         elseif p == 2
@@ -133,7 +117,7 @@ function simulatetuckerdata(dimvals::AbstractVector, ranks::AbstractVector, obs:
             mardata[:, :, i] .= contract(A[:, :, :, :, 1], mardata[:, :, i-1], [1, 2]) + contract(A[:, :, :, :, 2], [3, 4], mardata[:, :, i-2], [1, 2]) + contract(A[:, :, :, :, 3], [3, 4], mardata[:, :, i-3], [1, 2]) + contract(A[:, :, :, :, 4], [3, 4], mardata[:, :, i-4], [1, 2]) + contract(A[:, :, :, :, 5], [3, 4], mardata[:, :, i-5], [1, 2]) + ϵ
         end
     end
-    return (data=mardata, stabit=stabit, A=A, G=G, U1=U1, U2=U2, U3=U3, U4=U4)
+    return (data=mardata, A=A, Σ = Σ)
 end
 
 """

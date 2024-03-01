@@ -72,6 +72,11 @@ function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], maxite
     if isempty(r̄)
         r̄ = [N1, N2, N1, N2]
     end
+
+    # Demean the data
+    marmeans = mean(mardata, dims=3)
+    cendata = mardata .- marmeans
+
     infocritest = fill(NaN, 6, prod(r̄))
     regiters = fill(NaN, prod(r̄))
     grid = collect(Iterators.product(1:r̄[1], 1:r̄[2], 1:r̄[3], 1:r̄[4]))
@@ -85,7 +90,7 @@ function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], maxite
             infocritest[6, i] = r4
             continue
         end
-        tuckest = tuckerreg(mardata, selectedrank, tucketa, maxiters, p, ϵ)
+        tuckest = tuckerreg(cendata, selectedrank, tucketa, maxiters, p, ϵ)
         tuckerr = tuckest.residuals
         detcov = det(tuckerr * tuckerr' / obs)
         numpars = tuckerpar([N1, N2], selectedrank, p)
@@ -114,6 +119,10 @@ function fullinfocrit(mardata::AbstractArray, pmax::Int, r̄::AbstractVector=[],
     if isempty(r̄)
         r̄ = [N1, N2, N1, N2]
     end
+
+    # Demean the data
+    marmeans = mean(mardata, dims=3)
+    cendata = mardata .- marmeans
     infocritest = fill(NaN, 8, prod(r̄) * pmax)
     regiters = fill(NaN, prod(r̄) * pmax)
     grid = collect(Iterators.product(1:r̄[1], 1:r̄[2], 1:r̄[3], 1:r̄[4], 1:pmax))
@@ -129,13 +138,13 @@ function fullinfocrit(mardata::AbstractArray, pmax::Int, r̄::AbstractVector=[],
             continue
         end
         if p == 1
-            tuckest = tuckerreg(mardata[:, :, pmax:end], [r1, r2, r3, r4], tucketa, maxiters, p, ϵ)
+            tuckest = tuckerreg(cendata[:, :, pmax:end], [r1, r2, r3, r4], tucketa, maxiters, p, ϵ)
         elseif p == 2
-            tuckest = tuckerreg(mardata[:, :, (pmax-1):end], [r1, r2, r3, r4], tucketa, maxiters, p, ϵ)
+            tuckest = tuckerreg(cendata[:, :, (pmax-1):end], [r1, r2, r3, r4], tucketa, maxiters, p, ϵ)
         elseif p == 3
-            tuckest = tuckerreg(mardata[:, :, (pmax-2):end], [r1, r2, r3, r4], tucketa, maxiters, p, ϵ)
+            tuckest = tuckerreg(cendata[:, :, (pmax-2):end], [r1, r2, r3, r4], tucketa, maxiters, p, ϵ)
         elseif p == 4
-            tuckest = tuckerreg(mardata[:, :, (pmax-3):end], [r1, r2, r3, r4], tucketa, maxiters, p, ϵ)
+            tuckest = tuckerreg(cendata[:, :, (pmax-3):end], [r1, r2, r3, r4], tucketa, maxiters, p, ϵ)
         end
         tuckerr = tuckest.residuals
         detcov = det(tuckerr * tuckerr' / obs)
