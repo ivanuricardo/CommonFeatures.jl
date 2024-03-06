@@ -17,21 +17,34 @@ data = randn(3, 4, 5, 10)  # Example tensor with dimensions 3 × 4 × 5 × 10
 original, lagged = tlag(data, 2)  # Create lagged arrays with 2 lags
 ```
 """
-function tlag(ten_data::AbstractArray, p=1, pdims::Bool=false)
-    N1, N2, obs = size(ten_data)
+function tlag(tendata::AbstractArray, p=1, pdims::Bool=false)
+    N1, N2, obs = size(tendata)
 
-    fulllags = selectdim(ten_data, ndims(ten_data), (p+1):obs)
+    fulllags = selectdim(tendata, ndims(tendata), (p+1):obs)
     for i in 1:p
-        interlag = selectdim(ten_data, ndims(ten_data), (p-i+1):(obs-i))
-        fulllags = cat(fulllags, interlag; dims=ndims(ten_data) - 1)
+        interlag = selectdim(tendata, ndims(tendata), (p-i+1):(obs-i))
+        fulllags = cat(fulllags, interlag; dims=ndims(tendata) - 1)
     end
-    original = selectdim(fulllags, ndims(ten_data) - 1, 1:N2)
-    lagged = selectdim(fulllags, ndims(ten_data) - 1, (N2+1):((p+1)*N2))
+    original = selectdim(fulllags, ndims(tendata) - 1, 1:N2)
+    lagged = selectdim(fulllags, ndims(tendata) - 1, (N2+1):((p+1)*N2))
     if pdims
         lagged = reshape(lagged, (N1, N2, p, obs - p))
     end
 
     return original, lagged
+
+end
+
+function vlag(vecdata::AbstractMatrix, p=1)
+    k, obs = size(vecdata)
+    fulldata = fill(NaN, k * (p + 1), obs - p)
+    fulldata[1:k, :] .= vecdata[:, (p+1):end]
+
+    for i in 1:p
+        fulldata[(i*k+1):(k*(i+1)), :] .= vecdata[:, (p+1-i):(end-i)]
+    end
+
+    return fulldata
 
 end
 

@@ -66,7 +66,7 @@ println("AIC Chosen Ranks: ", result.AIC)
 println("Information Criteria Table: ", result.ictable)
 ```
 """
-function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], maxiters::Int=1000, tucketa::Real=1e-04, ϵ::Real=1e-01)
+function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], demean::Bool=true, maxiters::Int=1000, tucketa::Real=1e-04, ϵ::Real=1e-01)
     origy, _ = tlag(mardata, p, true)
     N1, N2, obs = size(origy)
     if isempty(r̄)
@@ -74,8 +74,10 @@ function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], maxite
     end
 
     # Demean the data
-    marmeans = mean(mardata, dims=3)
-    cendata = mardata .- marmeans
+    if demean
+        marmeans = mean(mardata, dims=3)
+        cendata = mardata .- marmeans
+    end
 
     infocritest = fill(NaN, 6, prod(r̄))
     regiters = fill(NaN, prod(r̄))

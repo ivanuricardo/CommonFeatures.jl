@@ -47,3 +47,54 @@ function art(Y::AbstractArray, p::Int=1)
 
     return tols
 end
+
+"""
+    rrvar(Y::AbstractMatrix, r::Int, p::Int)
+
+Compute reduced-rank vector autoregressive (RRVAR) model parameters.
+
+# Arguments
+- `Y::AbstractMatrix`: Input matrix with dimensions (k, T), where k is the number of variables and T is the number of observations.
+- `r::Int`: Rank of the reduced-rank model.
+- `p::Int`: Order of the autoregressive model.
+
+# Returns
+- `C::Matrix`: Reduced-rank VAR coefficient matrix.
+- `A::Matrix`: Left reduced-rank matrix.
+- `B::Matrix`: Right reduced-rank matrix.
+
+# Details
+This function computes the reduced-rank VAR parameters using the method.
+
+"""
+function rrvar(Y::AbstractMatrix, r::Int, p::Int)
+    k, _ = size(Y)
+
+    # Compute lagged matrices
+    resp = vlag(Y, p)[1:k, :]
+    resp = resp .- mean(resp, dims=2)
+    pred = vlag(Y, p)[(k+1):end, :]
+    pred = pred .- mean(pred, dims=2)
+
+    # Compute covariance matrices
+    cov_x = cov(pred')
+    cov_yx = cov(resp', pred')
+    cov_xy = cov_yx'
+
+    # Compute weighted matrix
+    weighted_matrix = cov_yx * inv(cov_x) * cov_xy
+
+    # Compute eigen decomposition
+    eigen_weighted = eigen(weighted_matrix, permute=false)
+    prevecs = eigen_weighted.vectors[:, end:-1:1]
+
+    # Select r eigenvectors
+    Vt = prevecs[:, 1:r]
+
+    # Compute RRVAR parameters
+    A = Vt
+    B = Vt' * cov_yx * inv(cov_x)
+    C = A * B
+
+    return (C=C, A=A, B=B)
+end

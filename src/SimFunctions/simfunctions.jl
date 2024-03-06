@@ -34,7 +34,7 @@ function simstats(selectedranks::AbstractMatrix, correctrank::AbstractVector, si
     return (avgrank=avgrank, stdrank=stdrank, freqcorrect=freqcorrect, freqhigh=freqhigh, freqlow=freqlow)
 end
 
-function generatetuckercoef(dimvals, ranks, p, gscale=0.3, maxeigen=0.9)
+function generatetuckercoef(dimvals, ranks, p, gscale=3, maxeigen=0.9)
     A = fill(NaN, dimvals[1], dimvals[2], dimvals[1], dimvals[2], p)
     G = fill(NaN, ranks[1], ranks[2], ranks[3], ranks[4], p)
     U1 = fill(NaN, dimvals[1], ranks[1])
@@ -60,7 +60,7 @@ function generatetuckercoef(dimvals, ranks, p, gscale=0.3, maxeigen=0.9)
 
         hosvdA = ttensor(G, [U1, U2, U3, U4, Matrix(U5)])
         A .= full(hosvdA)
-        varA = tenmat(A, row = [1,2])
+        varA = tenmat(A, row=[1, 2])
         if isstable(varA, maxeigen)
             break
         end
@@ -96,7 +96,7 @@ function simulatetuckerdata(dimvals::AbstractVector, ranks::AbstractVector, obs:
         A, G, U1, U2, U3, U4, _, stabit = generatetuckercoef(dimvals, ranks, p)
     end
 
-    rho = spectralradius(makecompanion(tenmat(A, row = [1,2])))
+    rho = spectralradius(makecompanion(tenmat(A, row=[1, 2])))
     Σ = diagm(repeat([rho / snr], dimvals[1] * dimvals[2]))
     d = MultivariateNormal(zeros(dimvals[1] * dimvals[2]), Σ)
 
@@ -117,7 +117,7 @@ function simulatetuckerdata(dimvals::AbstractVector, ranks::AbstractVector, obs:
             mardata[:, :, i] .= contract(A[:, :, :, :, 1], mardata[:, :, i-1], [1, 2]) + contract(A[:, :, :, :, 2], [3, 4], mardata[:, :, i-2], [1, 2]) + contract(A[:, :, :, :, 3], [3, 4], mardata[:, :, i-3], [1, 2]) + contract(A[:, :, :, :, 4], [3, 4], mardata[:, :, i-4], [1, 2]) + contract(A[:, :, :, :, 5], [3, 4], mardata[:, :, i-5], [1, 2]) + ϵ
         end
     end
-    return (data=mardata, A=A, Σ = Σ)
+    return (data=mardata, A=A, Σ=Σ)
 end
 
 """

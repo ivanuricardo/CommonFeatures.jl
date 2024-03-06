@@ -7,8 +7,8 @@ using ProgressBars
 using ReverseDiff
 using Distributions
 
-export tensorols, art
-export tlag, ridgerankselect, rescaleten, idhosvd, spectralradius
+export tensorols, art, rrvar
+export tlag, ridgerankselect, rescaleten, idhosvd, spectralradius, vlag
 export makecompanion, isstable
 export infocrit, tuckerpar, fullinfocrit
 export tuckerreg, tuckerreg2
