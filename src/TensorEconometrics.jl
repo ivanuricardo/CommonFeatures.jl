@@ -10,7 +10,7 @@ using Distributions
 export tensorols, art, rrvar
 export tlag, ridgerankselect, rescaleten, idhosvd, spectralradius, vlag
 export makecompanion, isstable
-export infocrit, tuckerpar, fullinfocrit
+export infocrit, tuckerpar, fullinfocrit, rrvaric
 export tuckerreg, tuckerreg2
 export rrmarcrossval
 include("./Regressions/MatrixAR.jl")

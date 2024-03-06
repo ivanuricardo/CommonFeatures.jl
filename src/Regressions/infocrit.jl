@@ -173,3 +173,47 @@ function fullinfocrit(mardata::AbstractArray, pmax::Int, r̄::AbstractVector=[],
 
     return (BIC=BICchosen, AIC=AICchosen, HQ=HQchosen, ictable=infocritest, regiters=regiters)
 end
+
+function rrvaric(vardata, pmax)
+    k, obs = size(vardata)
+    resp = vlag(vardata, pmax)[1:k, :]
+    resp = resp .- mean(resp, dims=2)
+    pred = vlag(vardata, pmax)[(k+1):end, :]
+    pred = pred .- mean(pred, dims=2)
+
+    infocritest = fill(NaN, 5, prod(k) * pmax)
+    grid = collect(Iterators.product(1:k, 1:pmax))
+
+    for i in 1:(prod(k)*pmax)
+        selectedrank = collect(grid[i])
+        r, p = selectedrank
+        if p == 1
+            rrvarest = rrvar(vardata[:, pmax:end], r, p)
+        elseif p == 2
+            rrvarest = rrvar(vardata[:, (pmax-1):end], r, p)
+        elseif p == 3
+            rrvarest = rrvar(vardata[:, (pmax-2):end], r, p)
+        elseif p == 4
+            rrvarest = rrvar(vardata[:, (pmax-3):end], r, p)
+        end
+        rrvarerr = rrvarest.rrvarerr
+        detcov = det(rrvarerr * rrvarerr' / obs)
+        numpars = (k * r) + (k * r * p)
+
+        infocritest[1, i] = log(detcov) + (2 * numpars) / obs
+        infocritest[2, i] = log(detcov) + (numpars * log(obs)) / obs
+        infocritest[3, i] = log(detcov) + (numpars * 2 * log(log(obs))) / obs
+        infocritest[4, i] = r
+        infocritest[5, i] = p
+    end
+
+    AICvec = argmin(infocritest[1, :])
+    AICchosen = Int.(infocritest[4, AICvec])
+    BICvec = argmin(infocritest[2, :])
+    BICchosen = Int.(infocritest[4, BICvec])
+    HQvec = argmin(infocritest[3, :])
+    HQchosen = Int.(infocritest[4, HQvec])
+
+    return (BIC=BICchosen, AIC=AICchosen, HQ=HQchosen, ictable=infocritest)
+
+end

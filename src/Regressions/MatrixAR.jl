@@ -67,13 +67,13 @@ Compute reduced-rank vector autoregressive (RRVAR) model parameters.
 This function computes the reduced-rank VAR parameters using the method.
 
 """
-function rrvar(Y::AbstractMatrix, r::Int, p::Int)
-    k, _ = size(Y)
+function rrvar(vardata::AbstractMatrix, r::Int, p::Int)
+    k, _ = size(vardata)
 
     # Compute lagged matrices
-    resp = vlag(Y, p)[1:k, :]
+    resp = vlag(vardata, p)[1:k, :]
     resp = resp .- mean(resp, dims=2)
-    pred = vlag(Y, p)[(k+1):end, :]
+    pred = vlag(vardata, p)[(k+1):end, :]
     pred = pred .- mean(pred, dims=2)
 
     # Compute covariance matrices
@@ -96,5 +96,7 @@ function rrvar(Y::AbstractMatrix, r::Int, p::Int)
     B = Vt' * cov_yx * inv(cov_x)
     C = A * B
 
-    return (C=C, A=A, B=B)
+    rrvarerr = resp - C * pred
+
+    return (C=C, A=A, B=B, rrvarerr=rrvarerr)
 end
