@@ -208,11 +208,11 @@ function rrvaric(vardata, pmax)
     end
 
     AICvec = argmin(infocritest[1, :])
-    AICchosen = Int.(infocritest[4, AICvec])
+    AICchosen = Int.(infocritest[4:end, AICvec])
     BICvec = argmin(infocritest[2, :])
-    BICchosen = Int.(infocritest[4, BICvec])
+    BICchosen = Int.(infocritest[4:end, BICvec])
     HQvec = argmin(infocritest[3, :])
-    HQchosen = Int.(infocritest[4, HQvec])
+    HQchosen = Int.(infocritest[4:end, HQvec])
 
     return (BIC=BICchosen, AIC=AICchosen, HQ=HQchosen, ictable=infocritest)
 

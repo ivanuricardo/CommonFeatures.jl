@@ -6,6 +6,7 @@ Create lagged arrays from a tensor-valued time series of the form N₁ × N₂ �
 # Arguments:
 - `ten_data`: A tensor-valued time series with dimensions N₁ × N₂ × … × Nₖ × T, where N₁, N₂, ..., Nₖ represent the spatial dimensions, and T represents the time dimension.
 - `p`: The number of lags to be created. Default is 1, indicating a single lag.
+- pdims: If true, separates the lags into a separate dimension.
 
 # Returns:
 - `original`: The original tensor without any lag.

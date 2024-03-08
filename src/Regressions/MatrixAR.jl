@@ -43,7 +43,11 @@ result = art(Y, p)
 """
 function art(Y::AbstractArray, p::Int=1)
     origy, laggedy = tlag(Y, p)
-    tols = tensorols(origy, laggedy)
+    cenorig = origy .- mean(origy, dims=3)
+    cenlag = laggedy .- mean(laggedy, dims=3)
+    # cenorig = origy
+    # cenlag = laggedy
+    tols = tensorols(cenorig, cenlag)
 
     return tols
 end
@@ -86,10 +90,11 @@ function rrvar(vardata::AbstractMatrix, r::Int, p::Int)
 
     # Compute eigen decomposition
     eigen_weighted = eigen(weighted_matrix, permute=false)
-    prevecs = eigen_weighted.vectors[:, end:-1:1]
+    # prevecs = eigen_weighted.vectors[:, end:-1:1]
 
     # Select r eigenvectors
-    Vt = prevecs[:, 1:r]
+    # Vt = prevecs[:, 1:r]
+    Vt = eigen_weighted.vectors
 
     # Compute RRVAR parameters
     A = Vt

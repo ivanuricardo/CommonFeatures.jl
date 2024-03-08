@@ -49,7 +49,11 @@ A tuple containing the Tucker decomposition components:
 """
 function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractFloat=1e-04, maxiter::Int=1000, p::Int=1, ϵ::AbstractFloat=1e-02)
     origy, lagy = tlag(mardata, p, true)
-    N1, N2, obs = size(origy)
+    N1, N2, _ = size(origy)
+    cenorig = origy .- mean(origy, dims=3)
+    cenlag = lagy .- mean(lagy, dims=4)
+    # cenorig = origy
+    # cenlag = lagy
 
     initest = reshape(art(mardata, p), (N1, N2, N1, N2, p))
     ranks = vcat(ranks, p)
@@ -58,7 +62,7 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractF
     A = full(hosvdinit)
 
     U1, U2, U3, U4, U5 = hosvdinit.fmat
-    G = ttm(hosvdinit.cten, U5, 5)
+    G = ttm(hosvdinit.cten, U5', 5)
     U5 = U5' * U5
 
     trackG = fill(NaN, maxiter)
@@ -71,31 +75,31 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractF
     for s in 1:maxiter
         iters += 1
 
-        dlbar1 = dlbarest(origy, lagy, G, U1, U2, U3, U4, U5)
+        dlbar1 = dlbarest(cenorig, cenlag, G, U1, U2, U3, U4, U5)
         kronU1 = kron(U5, kron(U4, kron(U3, U2))) * reshape(G, (r1, r2 * r3 * r4 * p))'
         ∇U1 = reshape(dlbar1, (N1, N2 * N1 * N2 * p)) * kronU1
         U1 -= eta * ∇U1
         trackU1[s] = norm(∇U1)
 
-        dlbar2 = dlbarest(origy, lagy, G, U1, U2, U3, U4, U5)
+        dlbar2 = dlbarest(cenorig, cenlag, G, U1, U2, U3, U4, U5)
         kronU2 = kron(U5, kron(U4, kron(U3, U1))) * tenmat(G, row=2)'
         ∇U2 = tenmat(dlbar2, row=2) * kronU2
         U2 -= eta * ∇U2
         trackU2[s] = norm(∇U2)
 
-        dlbar3 = dlbarest(origy, lagy, G, U1, U2, U3, U4, U5)
+        dlbar3 = dlbarest(cenorig, cenlag, G, U1, U2, U3, U4, U5)
         kronU3 = kron(U5, kron(U4, kron(U2, U1))) * tenmat(G, row=3)'
         ∇U3 = tenmat(dlbar3, row=3) * kronU3
         U3 -= eta * ∇U3
         trackU3[s] = norm(∇U3)
 
-        dlbar4 = dlbarest(origy, lagy, G, U1, U2, U3, U4, U5)
+        dlbar4 = dlbarest(cenorig, cenlag, G, U1, U2, U3, U4, U5)
         kronU4 = kron(U5, kron(U3, kron(U2, U1))) * tenmat(G, row=4)'
         ∇U4 = tenmat(dlbar4, row=4) * kronU4
         U4 -= eta * ∇U4
         trackU4[s] = norm(∇U4)
 
-        dlbarG = dlbarest(origy, lagy, G, U1, U2, U3, U4, U5)
+        dlbarG = dlbarest(cenorig, cenlag, G, U1, U2, U3, U4, U5)
         facmat = [Matrix(U1'), Matrix(U2'), Matrix(U3'), Matrix(U4'), Matrix(U5)]
         ∇G = full(ttensor(dlbarG, facmat))
         trackG[s] = norm(∇G)
@@ -109,11 +113,11 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractF
             fullgrads = hcat(trackU1, trackU2, trackU3, trackU4, trackG)
             A = idhosvd(A; reqrank=ranks)
             U1, U2, U3, U4, U5 = A.fmat
-            G = ttm(A.cten, U5, 5)
+            G = ttm(A.cten, U5', 5)
             U5 = U5'U5
             Arot = full(ttensor(G, [U1, U2, U3, U4, U5]))
-            ax = tenmat(Arot, row=[1, 2]) * tenmat(lagy, row=[1, 2, 3])
-            tuckerr = tenmat(origy, row=[1, 2]) - ax
+            ax = tenmat(Arot, row=[1, 2]) * tenmat(cenlag, row=[1, 2, 3])
+            tuckerr = tenmat(cenorig, row=[1, 2]) - ax
             return (G=G, U1=U1, U2=U2, U3=U3, U4=U4, U5=U5, A=Arot, iters=s, fullgrads=fullgrads, residuals=tuckerr)
         end
     end
@@ -123,6 +127,8 @@ function tuckerreg2(mardata::AbstractArray, ranks::AbstractVector, eta::Abstract
     N1 = size(mardata, 1)
     N2 = size(mardata, 2)
     origy, lagy = tlag(mardata, p, true)
+    cenorig = origy .- mean(origy, dims=3)
+    cenlag = lagy .- mean(lagy, dims=3)
 
     initest = reshape(art(mardata, p), (N1, N2, N1, N2, p))
     ranks = vcat(ranks, p)
@@ -143,23 +149,23 @@ function tuckerreg2(mardata::AbstractArray, ranks::AbstractVector, eta::Abstract
     for s in ProgressBar(1:maxiter)
         iters += 1
 
-        ∇U1 = ReverseDiff.gradient(x -> objtuckreg(origy, lagy, G, x, U2, U3, U4), U1)
+        ∇U1 = ReverseDiff.gradient(x -> objtuckreg(cenorig, cenlag, G, x, U2, U3, U4), U1)
         U1 -= eta * ∇U1
         trackU1[s] = norm(∇U1)
 
-        ∇U2 = ReverseDiff.gradient(x -> objtuckreg(origy, lagy, G, U1, x, U3, U4), U2)
+        ∇U2 = ReverseDiff.gradient(x -> objtuckreg(cenorig, cenlag, G, U1, x, U3, U4), U2)
         U2 -= eta * ∇U2
         trackU2[s] = norm(∇U2)
 
-        ∇U3 = ReverseDiff.gradient(x -> objtuckreg(origy, lagy, G, U1, U2, x, U4), U3)
+        ∇U3 = ReverseDiff.gradient(x -> objtuckreg(cenorig, cenlag, G, U1, U2, x, U4), U3)
         U3 -= eta * ∇U3
         trackU3[s] = norm(∇U3)
 
-        ∇U4 = ReverseDiff.gradient(x -> objtuckreg(origy, lagy, G, U1, U2, U3, x), U4)
+        ∇U4 = ReverseDiff.gradient(x -> objtuckreg(cenorig, cenlag, G, U1, U2, U3, x), U4)
         U4 -= eta * ∇U4
         trackU4[s] = norm(∇U4)
 
-        ∇G = ReverseDiff.gradient(x -> objtuckreg(origy, lagy, x, U1, U2, U3, U4), G)
+        ∇G = ReverseDiff.gradient(x -> objtuckreg(cenorig, cenlag, x, U1, U2, U3, U4), G)
         trackG[s] = norm(∇G)
         G -= eta * ∇G
 
