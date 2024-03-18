@@ -47,7 +47,7 @@ function art(Y::AbstractArray, p::Int=1)
     cenlag = laggedy .- mean(laggedy, dims=4)
     tols = tensorols(cenorig, cenlag)
 
-    return tols
+    return (tols, cenorig, cenlag)
 end
 
 """
