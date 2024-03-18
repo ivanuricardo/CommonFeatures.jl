@@ -57,7 +57,7 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractF
     A = full(hosvdinit)
 
     U1, U2, U3, U4, U5 = hosvdinit.fmat
-    G = ttm(hosvdinit.cten, U5', 5)
+    G = ttm(hosvdinit.cten, U5, 5)
     U5 = U5' * U5
 
     trackG = fill(NaN, maxiter)
@@ -108,7 +108,7 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractF
             fullgrads = hcat(trackU1, trackU2, trackU3, trackU4, trackG)
             A = idhosvd(A; reqrank=ranks)
             U1, U2, U3, U4, U5 = A.fmat
-            G = ttm(A.cten, U5', 5)
+            G = ttm(A.cten, U5, 5)
             U5 = U5'U5
             Arot = full(ttensor(G, [U1, U2, U3, U4, U5]))
             ax = tenmat(Arot, row=[1, 2]) * tenmat(cenlag, row=[1, 2, 3])
