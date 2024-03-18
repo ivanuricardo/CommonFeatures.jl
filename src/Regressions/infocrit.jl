@@ -82,6 +82,7 @@ function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], demean
     infocritest = fill(NaN, 6, prod(r̄))
     regiters = fill(NaN, prod(r̄))
     grid = collect(Iterators.product(1:r̄[1], 1:r̄[2], 1:r̄[3], 1:r̄[4]))
+    # Threads.@threads for i in ProgressBar(1:prod(r̄))
     for i in 1:prod(r̄)
         selectedrank = collect(grid[i])
         r1, r2, r3, r4 = selectedrank

@@ -52,8 +52,6 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractF
     N1, N2, _ = size(origy)
     cenorig = origy .- mean(origy, dims=3)
     cenlag = lagy .- mean(lagy, dims=4)
-    # cenorig = origy
-    # cenlag = lagy
 
     initest = reshape(art(mardata, p), (N1, N2, N1, N2, p))
     ranks = vcat(ranks, p)

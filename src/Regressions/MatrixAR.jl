@@ -90,11 +90,10 @@ function rrvar(vardata::AbstractMatrix, r::Int, p::Int)
 
     # Compute eigen decomposition
     eigen_weighted = eigen(weighted_matrix, permute=false)
-    # prevecs = eigen_weighted.vectors[:, end:-1:1]
+    prevecs = eigen_weighted.vectors[:, end:-1:1]
 
     # Select r eigenvectors
-    # Vt = prevecs[:, 1:r]
-    Vt = eigen_weighted.vectors
+    Vt = prevecs[:, 1:r]
 
     # Compute RRVAR parameters
     A = Vt
