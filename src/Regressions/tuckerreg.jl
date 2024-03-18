@@ -48,12 +48,9 @@ A tuple containing the Tucker decomposition components:
 - `fullgrads`: A matrix keeping track of gradients. Can be plotted to determine whether gradients behave properly.
 """
 function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractFloat=1e-04, maxiter::Int=1000, p::Int=1, ϵ::AbstractFloat=1e-02)
-    origy, lagy = tlag(mardata, p)
-    N1, N2, _ = size(origy)
-    cenorig = (origy .- mean(origy, dims=3)) ./ std(origy, dims=3)
-    cenlag = (lagy .- mean(lagy, dims=4)) ./ std(lagy, dims=4)
+    initest, cenorig, cenlag = art(mardata, p)
+    N1, N2, _ = size(cenorig)
 
-    initest = art(mardata, p)
     ranks = vcat(ranks, p)
     r1, r2, r3, r4, _ = ranks
     hosvdinit = idhosvd(initest; reqrank=ranks)
@@ -122,13 +119,10 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractF
 end
 
 function tuckerreg2(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractFloat=1e-04, maxiter::Int=1000, p::Int=1, ϵ::AbstractFloat=1e-02)
-    origy, lagy = tlag(mardata, p)
-    cenorig = origy .- mean(origy, dims=3)
-    cenlag = lagy .- mean(lagy, dims=4)
+    initest, cenorig, cenlag = art(mardata, p)
 
-    initest = art(mardata, p)
     ranks = vcat(ranks, p)
-    hosvdinit = hosvd(initest; reqrank=ranks)
+    hosvdinit = idhosvd(initest; reqrank=ranks)
     A = full(hosvdinit)
 
     U1, U2, U3, U4, U5 = hosvdinit.fmat
@@ -143,6 +137,7 @@ function tuckerreg2(mardata::AbstractArray, ranks::AbstractVector, eta::Abstract
 
     iters = 0
     for s in ProgressBar(1:maxiter)
+        # for s in 1:maxiter
         iters += 1
 
         ∇U1 = ReverseDiff.gradient(x -> objtuckreg(cenorig, cenlag, G, x, U2, U3, U4), U1)
