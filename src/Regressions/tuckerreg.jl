@@ -50,8 +50,8 @@ A tuple containing the Tucker decomposition components:
 function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractFloat=1e-04, maxiter::Int=1000, p::Int=1, ϵ::AbstractFloat=1e-02)
     origy, lagy = tlag(mardata, p)
     N1, N2, _ = size(origy)
-    cenorig = origy .- mean(origy, dims=3)
-    cenlag = lagy .- mean(lagy, dims=4)
+    cenorig = (origy .- mean(origy, dims=3)) ./ std(origy, dims=3)
+    cenlag = (lagy .- mean(lagy, dims=4)) ./ std(lagy, dims=4)
 
     initest = art(mardata, p)
     ranks = vcat(ranks, p)

@@ -43,8 +43,8 @@ result = art(Y, p)
 """
 function art(Y::AbstractArray, p::Int=1)
     origy, laggedy = tlag(Y, p)
-    cenorig = origy .- mean(origy, dims=3)
-    cenlag = laggedy .- mean(laggedy, dims=4)
+    cenorig = (origy .- mean(origy, dims=3)) ./ std(origy, dims=3)
+    cenlag = (laggedy .- mean(laggedy, dims=4)) ./ std(laggedy, dims=4)
     tols = tensorols(cenorig, cenlag)
 
     return tols
