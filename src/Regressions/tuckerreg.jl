@@ -48,12 +48,12 @@ A tuple containing the Tucker decomposition components:
 - `fullgrads`: A matrix keeping track of gradients. Can be plotted to determine whether gradients behave properly.
 """
 function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractFloat=1e-04, maxiter::Int=1000, p::Int=1, ϵ::AbstractFloat=1e-02)
-    origy, lagy = tlag(mardata, p, true)
+    origy, lagy = tlag(mardata, p)
     N1, N2, _ = size(origy)
     cenorig = origy .- mean(origy, dims=3)
     cenlag = lagy .- mean(lagy, dims=4)
 
-    initest = reshape(art(mardata, p), (N1, N2, N1, N2, p))
+    initest = art(mardata, p)
     ranks = vcat(ranks, p)
     r1, r2, r3, r4, _ = ranks
     hosvdinit = idhosvd(initest; reqrank=ranks)
@@ -122,13 +122,11 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractF
 end
 
 function tuckerreg2(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractFloat=1e-04, maxiter::Int=1000, p::Int=1, ϵ::AbstractFloat=1e-02)
-    N1 = size(mardata, 1)
-    N2 = size(mardata, 2)
-    origy, lagy = tlag(mardata, p, true)
+    origy, lagy = tlag(mardata, p)
     cenorig = origy .- mean(origy, dims=3)
-    cenlag = lagy .- mean(lagy, dims=3)
+    cenlag = lagy .- mean(lagy, dims=4)
 
-    initest = reshape(art(mardata, p), (N1, N2, N1, N2, p))
+    initest = art(mardata, p)
     ranks = vcat(ranks, p)
     hosvdinit = hosvd(initest; reqrank=ranks)
     A = full(hosvdinit)
@@ -173,12 +171,14 @@ function tuckerreg2(mardata::AbstractArray, ranks::AbstractVector, eta::Abstract
         c = trackU1[s] < ϵ && trackU2[s] < ϵ && trackU3[s] < ϵ && trackU4[s] < ϵ
         if c || s == maxiter
             fullgrads = hcat(trackU1, trackU2, trackU3, trackU4, trackG)
-            A = hosvd(A; reqrank=ranks)
+            A = idhosvd(A; reqrank=ranks)
             U1, U2, U3, U4, U5 = A.fmat
-            G = ttm(hosvdinit.cten, U5, 5)
+            G = ttm(A.cten, U5', 5)
             U5 = U5'U5
             Arot = full(ttensor(G, [U1, U2, U3, U4, U5]))
-            return (G=G, U1=U1, U2=U2, U3=U3, U4=U4, A=Arot, iters=s, fullgrads=fullgrads)
+            ax = tenmat(Arot, row=[1, 2]) * tenmat(cenlag, row=[1, 2, 3])
+            tuckerr = tenmat(cenorig, row=[1, 2]) - ax
+            return (G=G, U1=U1, U2=U2, U3=U3, U4=U4, U5=U5, A=Arot, iters=s, fullgrads=fullgrads, residuals=tuckerr)
         end
     end
 end
