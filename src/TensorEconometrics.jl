@@ -11,7 +11,7 @@ export tensorols, art, rrvar
 export tlag, ridgerankselect, rescaleten, idhosvd, spectralradius, vlag
 export makecompanion, isstable
 export infocrit, tuckerpar, fullinfocrit, rrvaric
-export tuckerreg, tuckerreg2
+export tuckerreg, tuckerreg2, dlbarest
 export rrmarcrossval
 include("./Regressions/MatrixAR.jl")
 include("./Regressions/utils.jl")
@@ -20,7 +20,7 @@ include("./Regressions/infocrit.jl")
 include("./Regressions/tuckerreg.jl")
 include("./Regressions/crossval.jl")
 
-export simulatetuckerdata, simulatemardata, simstats, conditionvalue, generatetuckercoef
+export simulatetuckerdata, simulatemardata, simstats, generatetuckercoef
 include("./SimFunctions/simfunctions.jl")
 
 end
