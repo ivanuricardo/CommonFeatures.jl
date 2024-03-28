@@ -47,9 +47,14 @@ A tuple containing the Tucker decomposition components:
 - `iters`: Number of iterations performed.
 - `fullgrads`: A matrix keeping track of gradients. Can be plotted to determine whether gradients behave properly.
 """
-function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractFloat=1e-04, maxiter::Int=1000, p::Int=1, ϵ::AbstractFloat=1e-02)
-    initest, cenorig, cenlag = art(mardata, p)
-    N1, N2, _ = size(cenorig)
+function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractFloat=1e-04, maxiter::Int=1000, p::Int=1, ϵ::AbstractFloat=1e-02, stdize::Bool=false, initest=[])
+    N1, N2, _ = size(mardata)
+    if initest == []
+        initest, cenorig, cenlag = art(mardata, p, stdize)
+    else
+        initest = initest
+        _, cenorig, cenlag = art(mardata, p, stdize)
+    end
 
     ranks = vcat(ranks, p)
     r1, r2, r3, r4, _ = ranks
@@ -103,8 +108,8 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractF
         A = full(ttensor(G, [U1, U2, U3, U4, Matrix(U5)]))
 
         # Stopping Condition
-        c = trackU1[s] < ϵ && trackU2[s] < ϵ && trackU3[s] < ϵ && trackU4[s] < ϵ
-        if c || s == maxiter
+        c = trackU1[s] < ϵ && trackU2[s] < ϵ && trackU3[s] < ϵ && trackU4[s] < ϵ && trackG[s] < ϵ
+        if c || iters == maxiter
             fullgrads = hcat(trackU1, trackU2, trackU3, trackU4, trackG)
             A = idhosvd(A; reqrank=ranks)
             U1, U2, U3, U4, U5 = A.fmat
@@ -136,8 +141,8 @@ function tuckerreg2(mardata::AbstractArray, ranks::AbstractVector, eta::Abstract
     trackU4 = fill(NaN, maxiter)
 
     iters = 0
-    for s in ProgressBar(1:maxiter)
-        # for s in 1:maxiter
+    # for s in ProgressBar(1:maxiter)
+    for s in 1:maxiter
         iters += 1
 
         ∇U1 = ReverseDiff.gradient(x -> objtuckreg(cenorig, cenlag, G, x, U2, U3, U4), U1)

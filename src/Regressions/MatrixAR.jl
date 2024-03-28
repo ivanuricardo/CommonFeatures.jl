@@ -41,29 +41,34 @@ p = 2
 result = art(Y, p)
 ```
 """
-function art(Y::AbstractArray, p::Int=1)
+function art(Y::AbstractArray, p::Int=1, stdize::Bool=false)
     origy, laggedy = tlag(Y, p)
-    # stdorigy = (origy ./ std(origy, dims=3))
-    # cenorig = stdorigy .- mean(stdorigy, dims=3)
-    # stdlagy = (laggedy ./ std(laggedy, dims=4))
-    # cenlag = stdlagy .- mean(stdlagy, dims=4)
+    if stdize
+        stdorigy = (origy ./ std(origy, dims=3))
+        cenorig = stdorigy .- mean(stdorigy, dims=3)
+        stdlagy = (laggedy ./ std(laggedy, dims=4))
+        cenlag = stdlagy .- mean(stdlagy, dims=4)
+    else
+        cenorig = origy .- mean(origy, dims=3)
+        cenlag = laggedy .- mean(laggedy, dims=4)
+    end
     #
     # stdorigy = (origy ./ [10 10 10; 5 5 5; 10 10 10; 5 5 5])
     # cenorig = stdorigy .- mean(stdorigy, dims=3)
     # stdlagy = (laggedy ./ [10 10 10; 5 5 5; 10 10 10; 5 5 5])
     # cenlag = stdlagy .- mean(stdlagy, dims=4)
 
-    stdorigy = (origy ./ [10 1 5; 2 5 1; 0.2 4 10; 5 2 3])
-    cenorig = stdorigy .- mean(stdorigy, dims=3)
-    stdlagy = (laggedy ./ [10 1 5; 2 5 1; 0.2 4 10; 5 2 3])
-    cenlag = stdlagy .- mean(stdlagy, dims=4)
+    # stdorigy = (origy ./ [10 1 5; 2 5 1; 0.2 4 10; 5 2 3])
+    # cenorig = stdorigy .- mean(stdorigy, dims=3)
+    # stdlagy = (laggedy ./ [10 1 5; 2 5 1; 0.2 4 10; 5 2 3])
+    # cenlag = stdlagy .- mean(stdlagy, dims=4)
 
     # cenorig = origy .- mean(origy, dims=3)
     # cenlag = laggedy .- mean(laggedy, dims=4)
 
     tols = tensorols(cenorig, cenlag)
 
-    return (tols, cenorig, cenlag)
+    return (tols=tols, cenorig=cenorig, cenlag=cenlag)
 end
 
 """
@@ -85,18 +90,24 @@ Compute reduced-rank vector autoregressive (RRVAR) model parameters.
 This function computes the reduced-rank VAR parameters using the method.
 
 """
-function rrvar(vardata::AbstractMatrix, r::Int, p::Int)
+function rrvar(vardata::AbstractMatrix, r::Int, p::Int, stdize::Bool=false)
     k, _ = size(vardata)
 
-    # Compute lagged matrices
-    resp = vlag(vardata, p)[1:k, :]
-    resp = resp .- mean(resp, dims=2)
-    pred = vlag(vardata, p)[(k+1):end, :]
-    pred = pred .- mean(pred, dims=2)
+    origy = vlag(vardata, p)[1:k, :]
+    laggedy = vlag(vardata, p)[(k+1):end, :]
+    if stdize
+        stdorigy = (origy ./ std(origy, dims=2))
+        cenorig = stdorigy .- mean(stdorigy, dims=2)
+        stdlagy = (laggedy ./ std(laggedy, dims=2))
+        cenlag = stdlagy .- mean(stdlagy, dims=2)
+    else
+        cenorig = origy .- mean(origy, dims=2)
+        cenlag = laggedy .- mean(laggedy, dims=2)
+    end
 
     # Compute covariance matrices
-    cov_x = cov(pred')
-    cov_yx = cov(resp', pred')
+    cov_x = cov(cenorig')
+    cov_yx = cov(cenorig', cenlag')
     cov_xy = cov_yx'
 
     # Compute weighted matrix
@@ -114,7 +125,7 @@ function rrvar(vardata::AbstractMatrix, r::Int, p::Int)
     B = Vt' * cov_yx * inv(cov_x)
     C = A * B
 
-    rrvarerr = resp - C * pred
+    rrvarerr = cenorig - C * cenlag
 
-    return (C=C, A=A, B=B, rrvarerr=rrvarerr)
+    return (C=C, A=A, B=B, rrvarerr=rrvarerr, cenorig=cenorig, cenlag=cenlag)
 end

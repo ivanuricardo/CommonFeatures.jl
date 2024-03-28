@@ -66,7 +66,7 @@ println("AIC Chosen Ranks: ", result.AIC)
 println("Information Criteria Table: ", result.ictable)
 ```
 """
-function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], maxiters::Int=1000, tucketa::Real=1e-04, ϵ::Real=1e-01)
+function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], maxiters::Int=1000, tucketa::Real=1e-04, ϵ::Real=1e-01, stdize::Bool=false)
     origy, _ = tlag(mardata, p)
     N1, N2, obs = size(origy)
     if isempty(r̄)
@@ -87,10 +87,20 @@ function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], maxite
             infocritest[6, i] = r4
             continue
         end
-        tuckest = tuckerreg(mardata, selectedrank, tucketa, maxiters, p, ϵ)
-        tuckerr = tuckest.residuals
-        detcov = det(tuckerr * tuckerr' / obs)
         numpars = tuckerpar([N1, N2], selectedrank, p)
+
+        tuckest1 = tuckerreg(mardata, selectedrank, tucketa, maxiters, p, ϵ, stdize)
+        tuckerr1 = tuckest1.residuals
+        detcov1 = det(tuckerr1 * tuckerr1' / obs)
+
+        tuckest2 = tuckerreg(mardata, selectedrank, tucketa, maxiters, p, ϵ, stdize, tucketa .* randn(N1, N2, N1, N2, p))
+        tuckerr2 = tuckest2.residuals
+        detcov2 = det(tuckerr2 * tuckerr2' / obs)
+
+        tuckest3 = tuckerreg(mardata, selectedrank, tucketa, maxiters, p, ϵ, stdize, 0.01 .* randn(N1, N2, N1, N2, p))
+        tuckerr3 = tuckest3.residuals
+        detcov3 = det(tuckerr3 * tuckerr3' / obs)
+        detcov = min(detcov1, detcov2, detcov3)
 
         infocritest[1, i] = log(detcov) + (2 * numpars) / obs
         infocritest[2, i] = log(detcov) + (numpars * log(obs)) / obs
@@ -98,7 +108,7 @@ function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], maxite
         infocritest[4, i] = r2
         infocritest[5, i] = r3
         infocritest[6, i] = r4
-        regiters[i] = tuckest.iters
+        regiters[i] = tuckest1.iters
     end
     nancols = findall(x -> any(isnan, x), eachcol(infocritest))
     filteredic = infocritest[:, setdiff(1:size(infocritest, 2), nancols)]
@@ -166,7 +176,7 @@ function fullinfocrit(mardata::AbstractArray, pmax::Int, r̄::AbstractVector=[],
     return (BIC=BICchosen, AIC=AICchosen, HQ=HQchosen, ictable=infocritest, regiters=regiters)
 end
 
-function rrvaric(vardata, pmax)
+function rrvaric(vardata, pmax, stdize)
     k, obs = size(vardata)
     resp = vlag(vardata, pmax)[1:k, :]
     resp = resp .- mean(resp, dims=2)
@@ -180,13 +190,13 @@ function rrvaric(vardata, pmax)
         selectedrank = collect(grid[i])
         r, p = selectedrank
         if p == 1
-            rrvarest = rrvar(vardata[:, pmax:end], r, p)
+            rrvarest = rrvar(vardata[:, pmax:end], r, p, stdize)
         elseif p == 2
-            rrvarest = rrvar(vardata[:, (pmax-1):end], r, p)
+            rrvarest = rrvar(vardata[:, (pmax-1):end], r, p, stdize)
         elseif p == 3
-            rrvarest = rrvar(vardata[:, (pmax-2):end], r, p)
+            rrvarest = rrvar(vardata[:, (pmax-2):end], r, p, stdize)
         elseif p == 4
-            rrvarest = rrvar(vardata[:, (pmax-3):end], r, p)
+            rrvarest = rrvar(vardata[:, (pmax-3):end], r, p, stdize)
         end
         rrvarerr = rrvarest.rrvarerr
         detcov = det(rrvarerr * rrvarerr' / obs)
