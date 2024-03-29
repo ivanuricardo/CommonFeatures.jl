@@ -57,7 +57,6 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractF
     end
 
     ranks = vcat(ranks, p)
-    r1, r2, r3, r4, _ = ranks
     hosvdinit = idhosvd(initest; reqrank=ranks)
     A = full(hosvdinit)
 
@@ -76,7 +75,7 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractF
         iters += 1
 
         dlbar1 = dlbarest(cenorig, cenlag, G, U1, U2, U3, U4, U5)
-        kronU1 = kron(U5, kron(U4, kron(U3, U2))) * reshape(G, (r1, r2 * r3 * r4 * p))'
+        kronU1 = kron(U5, kron(U4, kron(U3, U2))) * tenmat(G, row=1)'
         ∇U1 = reshape(dlbar1, (N1, N2 * N1 * N2 * p)) * kronU1
         U1 -= eta * ∇U1
         trackU1[s] = norm(∇U1)
