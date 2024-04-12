@@ -76,8 +76,9 @@ function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], maxite
     infocritest = fill(NaN, 6, prod(r̄))
     regiters = fill(NaN, prod(r̄))
     grid = collect(Iterators.product(1:r̄[1], 1:r̄[2], 1:r̄[3], 1:r̄[4]))
-    Threads.@threads for i in ProgressBar(1:prod(r̄))
-        # for i in 1:prod(r̄)
+    numconv = 0
+    # Threads.@threads for i in ProgressBar(1:prod(r̄))
+    for i in 1:prod(r̄)
         selectedrank = collect(grid[i])
         r1, r2, r3, r4 = selectedrank
         if r1 > r2 * r3 * r4 || r2 > r1 * r3 * r4 || r3 > r1 * r2 * r4 || r4 > r1 * r2 * r3
@@ -92,6 +93,10 @@ function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], maxite
         tuckest1 = tuckerreg(mardata, selectedrank, tucketa, maxiters, p, ϵ, stdize)
         tuckerr1 = tuckest1.residuals
         detcov1 = det(tuckerr1 * tuckerr1' / obs)
+
+        if tuckest1.converged == true
+            numconv += 1
+        end
 
         # tuckest2 = tuckerreg(mardata, selectedrank, tucketa, maxiters, p, ϵ, stdize, tucketa .* randn(N1, N2, N1, N2, p))
         # tuckerr2 = tuckest2.residuals
@@ -122,7 +127,7 @@ function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], maxite
     BICvec = argmin(filteredic[2, :])
     BICchosen = Int.(filteredic[3:end, BICvec])
 
-    return (BIC=BICchosen, AIC=AICchosen, ictable=infocritest, regiters=regiters)
+    return (BIC=BICchosen, AIC=AICchosen, ictable=infocritest, regiters=regiters, numconv=numconv)
 end
 
 function fullinfocrit(mardata::AbstractArray, pmax::Int, r̄::AbstractVector=[], maxiters::Int=1000, tucketa::Real=1e-04, ϵ::Real=1e-01, stdize::Bool=false)
