@@ -93,14 +93,19 @@ function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], maxite
         tuckerr1 = tuckest1.residuals
         detcov1 = det(tuckerr1 * tuckerr1' / obs)
 
-        tuckest2 = tuckerreg(mardata, selectedrank, tucketa, maxiters, p, ϵ, stdize, tucketa .* randn(N1, N2, N1, N2, p))
-        tuckerr2 = tuckest2.residuals
-        detcov2 = det(tuckerr2 * tuckerr2' / obs)
-
-        tuckest3 = tuckerreg(mardata, selectedrank, tucketa, maxiters, p, ϵ, stdize, 0.01 .* randn(N1, N2, N1, N2, p))
-        tuckerr3 = tuckest3.residuals
-        detcov3 = det(tuckerr3 * tuckerr3' / obs)
-        detcov = min(detcov1, detcov2, detcov3)
+        # tuckest2 = tuckerreg(mardata, selectedrank, tucketa, maxiters, p, ϵ, stdize, tucketa .* randn(N1, N2, N1, N2, p))
+        # tuckerr2 = tuckest2.residuals
+        # detcov2 = det(tuckerr2 * tuckerr2' / obs)
+        #
+        # tuckest3 = tuckerreg(mardata, selectedrank, tucketa, maxiters, p, ϵ, stdize, 0.01 .* randn(N1, N2, N1, N2, p))
+        # tuckerr3 = tuckest3.residuals
+        # detcov3 = det(tuckerr3 * tuckerr3' / obs)
+        #
+        # tuckest4 = tuckerreg(mardata, selectedrank, tucketa, maxiters, p, ϵ, stdize, zeros(N1, N2, N1, N2, p))
+        # tuckerr4 = tuckest4.residuals
+        # detcov4 = det(tuckerr4 * tuckerr4' / obs)
+        # detcov = min(detcov1, detcov2, detcov3, detcov4)
+        detcov = detcov1
 
         infocritest[1, i] = log(detcov) + (2 * numpars) / obs
         infocritest[2, i] = log(detcov) + (numpars * log(obs)) / obs
@@ -120,7 +125,7 @@ function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], maxite
     return (BIC=BICchosen, AIC=AICchosen, ictable=infocritest, regiters=regiters)
 end
 
-function fullinfocrit(mardata::AbstractArray, pmax::Int, r̄::AbstractVector=[], maxiters::Int=1000, tucketa::Real=1e-04, ϵ::Real=1e-01)
+function fullinfocrit(mardata::AbstractArray, pmax::Int, r̄::AbstractVector=[], maxiters::Int=1000, tucketa::Real=1e-04, ϵ::Real=1e-01, stdize::Bool=false)
     origy, _ = tlag(mardata, pmax)
     N1, N2, obs = size(origy)
     if isempty(r̄)
@@ -142,13 +147,13 @@ function fullinfocrit(mardata::AbstractArray, pmax::Int, r̄::AbstractVector=[],
             continue
         end
         if p == 1
-            tuckest = tuckerreg(mardata[:, :, pmax:end], [r1, r2, r3, r4], tucketa, maxiters, p, ϵ)
+            tuckest = tuckerreg(mardata[:, :, pmax:end], [r1, r2, r3, r4], tucketa, maxiters, p, ϵ, stdize)
         elseif p == 2
-            tuckest = tuckerreg(mardata[:, :, (pmax-1):end], [r1, r2, r3, r4], tucketa, maxiters, p, ϵ)
+            tuckest = tuckerreg(mardata[:, :, (pmax-1):end], [r1, r2, r3, r4], tucketa, maxiters, p, ϵ, stdize)
         elseif p == 3
-            tuckest = tuckerreg(mardata[:, :, (pmax-2):end], [r1, r2, r3, r4], tucketa, maxiters, p, ϵ)
+            tuckest = tuckerreg(mardata[:, :, (pmax-2):end], [r1, r2, r3, r4], tucketa, maxiters, p, ϵ, stdize)
         elseif p == 4
-            tuckest = tuckerreg(mardata[:, :, (pmax-3):end], [r1, r2, r3, r4], tucketa, maxiters, p, ϵ)
+            tuckest = tuckerreg(mardata[:, :, (pmax-3):end], [r1, r2, r3, r4], tucketa, maxiters, p, ϵ, stdize)
         end
         tuckerr = tuckest.residuals
         detcov = det(tuckerr * tuckerr' / obs)

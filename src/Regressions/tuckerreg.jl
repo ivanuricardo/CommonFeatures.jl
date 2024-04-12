@@ -52,7 +52,6 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractF
     if initest == []
         initest, cenorig, cenlag = art(mardata, p, stdize)
     else
-        initest = initest
         _, cenorig, cenlag = art(mardata, p, stdize)
     end
 
@@ -107,7 +106,17 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractF
         A = full(ttensor(G, [U1, U2, U3, U4, Matrix(U5)]))
 
         # Stopping Condition
-        c = trackU1[s] < ϵ && trackU2[s] < ϵ && trackU3[s] < ϵ && trackU4[s] < ϵ && trackG[s] < ϵ
+
+        if s > 1
+            ∇iff1 = abs(trackU1[s] - trackU1[s-1])
+            ∇iff2 = abs(trackU2[s] - trackU2[s-1])
+            ∇iff3 = abs(trackU3[s] - trackU3[s-1])
+            ∇iff4 = abs(trackU4[s] - trackU4[s-1])
+            ∇iff5 = abs(trackG[s] - trackG[s-1])
+        end
+
+        c = ∇iff1 < ϵ && ∇iff2 < ϵ && ∇iff3 < ϵ && ∇iff4 < ϵ && ∇iff5 < ϵ
+
         if c || iters == maxiter
             fullgrads = hcat(trackU1, trackU2, trackU3, trackU4, trackG)
             A = idhosvd(A; reqrank=ranks)
