@@ -115,7 +115,7 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractF
                 abs(trackG[s] - trackG[s-1])]
 
             c = all(∇diff .< ϵ)
-            converged = !(iters == maxiter)
+            converged = (s == maxiter)
 
             if c || converged
                 fullgrads = hcat(trackU1, trackU2, trackU3, trackU4, trackG)
@@ -126,7 +126,7 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractF
                 Arot = full(ttensor(G, [U1, U2, U3, U4, U5]))
                 ax = tenmat(Arot, row=[1, 2]) * tenmat(cenlag, row=[1, 2, 3])
                 tuckerr = tenmat(cenorig, row=[1, 2]) - ax
-                return (G=G, U1=U1, U2=U2, U3=U3, U4=U4, U5=U5, A=Arot, iters=s, fullgrads=fullgrads, residuals=tuckerr, converged=converged)
+                return (G=G, U1=U1, U2=U2, U3=U3, U4=U4, U5=U5, A=Arot, iters=s, fullgrads=fullgrads, residuals=tuckerr, converged=(!converged))
             end
         end
     end
