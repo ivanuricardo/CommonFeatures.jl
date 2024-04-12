@@ -135,7 +135,9 @@ function fullinfocrit(mardata::AbstractArray, pmax::Int, r̄::AbstractVector=[],
     infocritest = fill(NaN, 8, prod(r̄) * pmax)
     regiters = fill(NaN, prod(r̄) * pmax)
     grid = collect(Iterators.product(1:r̄[1], 1:r̄[2], 1:r̄[3], 1:r̄[4], 1:pmax))
-    Threads.@threads for i in ProgressBar(1:(prod(r̄)*pmax))
+    numconv = 0
+    numiters = prod(r̄) * pmax
+    Threads.@threads for i in ProgressBar(1:numiters)
         selectedrank = collect(grid[i])
         r1, r2, r3, r4, p = selectedrank
         if r1 > r2 * r3 * r4 || r2 > r1 * r3 * r4 || r3 > r1 * r2 * r4 || r4 > r1 * r2 * r3
@@ -159,6 +161,10 @@ function fullinfocrit(mardata::AbstractArray, pmax::Int, r̄::AbstractVector=[],
         detcov = det(tuckerr * tuckerr' / obs)
         numpars = tuckerpar([N1, N2], [r1, r2, r3, r4], p)
 
+        if tuckest.converged == true
+            numconv += 1
+        end
+
         infocritest[1, i] = log(detcov) + (2 * numpars) / obs
         infocritest[2, i] = log(detcov) + (numpars * log(obs)) / obs
         infocritest[3, i] = log(detcov) + (numpars * 2 * log(log(obs))) / obs
@@ -178,7 +184,7 @@ function fullinfocrit(mardata::AbstractArray, pmax::Int, r̄::AbstractVector=[],
     HQvec = argmin(filteredic[3, :])
     HQchosen = Int.(filteredic[4:end, HQvec])
 
-    return (BIC=BICchosen, AIC=AICchosen, HQ=HQchosen, ictable=infocritest, regiters=regiters)
+    return (BIC=BICchosen, AIC=AICchosen, HQ=HQchosen, ictable=infocritest, regiters=regiters, percentconv=numconv / numiters)
 end
 
 function rrvaric(vardata, pmax, stdize)
