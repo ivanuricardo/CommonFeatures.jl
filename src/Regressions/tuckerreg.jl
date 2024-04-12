@@ -113,9 +113,8 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractF
             ∇iff3 = abs(trackU3[s] - trackU3[s-1])
             ∇iff4 = abs(trackU4[s] - trackU4[s-1])
             ∇iff5 = abs(trackG[s] - trackG[s-1])
+            c = ∇iff1 < ϵ && ∇iff2 < ϵ && ∇iff3 < ϵ && ∇iff4 < ϵ && ∇iff5 < ϵ
         end
-
-        c = ∇iff1 < ϵ && ∇iff2 < ϵ && ∇iff3 < ϵ && ∇iff4 < ϵ && ∇iff5 < ϵ
 
         if c || iters == maxiter
             fullgrads = hcat(trackU1, trackU2, trackU3, trackU4, trackG)
