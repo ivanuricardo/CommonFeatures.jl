@@ -108,24 +108,26 @@ function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractF
         # Stopping Condition
 
         if s > 1
-            ∇iff1 = abs(trackU1[s] - trackU1[s-1])
-            ∇iff2 = abs(trackU2[s] - trackU2[s-1])
-            ∇iff3 = abs(trackU3[s] - trackU3[s-1])
-            ∇iff4 = abs(trackU4[s] - trackU4[s-1])
-            ∇iff5 = abs(trackG[s] - trackG[s-1])
-            c = ∇iff1 < ϵ && ∇iff2 < ϵ && ∇iff3 < ϵ && ∇iff4 < ϵ && ∇iff5 < ϵ
-        end
+            ∇diff = [abs(trackU1[s] - trackU1[s-1]),
+                abs(trackU2[s] - trackU2[s-1]),
+                abs(trackU3[s] - trackU3[s-1]),
+                abs(trackU4[s] - trackU4[s-1]),
+                abs(trackG[s] - trackG[s-1])]
 
-        if c || iters == maxiter
-            fullgrads = hcat(trackU1, trackU2, trackU3, trackU4, trackG)
-            A = idhosvd(A; reqrank=ranks)
-            U1, U2, U3, U4, U5 = A.fmat
-            G = ttm(A.cten, U5, 5)
-            U5 = U5'U5
-            Arot = full(ttensor(G, [U1, U2, U3, U4, U5]))
-            ax = tenmat(Arot, row=[1, 2]) * tenmat(cenlag, row=[1, 2, 3])
-            tuckerr = tenmat(cenorig, row=[1, 2]) - ax
-            return (G=G, U1=U1, U2=U2, U3=U3, U4=U4, U5=U5, A=Arot, iters=s, fullgrads=fullgrads, residuals=tuckerr)
+            c = all(∇diff .< ϵ)
+            converged = !(iters == maxiter)
+
+            if c || converged
+                fullgrads = hcat(trackU1, trackU2, trackU3, trackU4, trackG)
+                A = idhosvd(A; reqrank=ranks)
+                U1, U2, U3, U4, U5 = A.fmat
+                G = ttm(A.cten, U5, 5)
+                U5 = U5'U5
+                Arot = full(ttensor(G, [U1, U2, U3, U4, U5]))
+                ax = tenmat(Arot, row=[1, 2]) * tenmat(cenlag, row=[1, 2, 3])
+                tuckerr = tenmat(cenorig, row=[1, 2]) - ax
+                return (G=G, U1=U1, U2=U2, U3=U3, U4=U4, U5=U5, A=Arot, iters=s, fullgrads=fullgrads, residuals=tuckerr, converged=converged)
+            end
         end
     end
 end
