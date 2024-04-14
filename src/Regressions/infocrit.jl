@@ -6,7 +6,7 @@ Compute the Tucker compression parameter for a tensor with specified dimensions 
 
 # Arguments
 - `dimvals::AbstractVector`: A vector representing the dimensions of the original tensor.
-- `ranks::AbstractVector`: A vector representing the Tucker ranks for compression.
+- `ranks::AbstractVector`: A vector representing the Tucker ranks for compression. It should have twice the length of `dimvals`.
 - `P::Integer=1`: An optional parameter representing the mode-n unfolding size (default is 1).
 
 # Output
@@ -18,7 +18,7 @@ dimvals = [3, 4, 5]
 ranks = [2, 3, 2, 4]
 P = 2
 result = tuckerpar(dimvals, ranks, P)
-println(result)
+println(result)  # Output: 44
 ```
 # References
 - Tucker, L. R. (1966). Some mathematical notes on three-mode factor analysis. Psychometrika, 31(3), 279-311.
@@ -35,7 +35,7 @@ function tuckerpar(dimvals::AbstractVector, ranks::AbstractVector, p::Integer=1)
 end
 
 """
-    infocrit(mardata, p, r̄)
+    infocrit(mardata, p, r̄, maxiters, tucketa, ϵ, stdize)
 
 Calculate information criteria (AIC and BIC) for different combinations of Tucker ranks in a matrix autoregressive (MAR) model.
 
@@ -43,8 +43,10 @@ Calculate information criteria (AIC and BIC) for different combinations of Tucke
 - `mardata::AbstractArray`: The matrix-valued time series data.
 - `p::Int`: The order of the autoregressive model.
 - `r̄::AbstractVector`: A vector specifying the maximum Tucker ranks for each mode. Default is all possible combinations.
-- `tuckiter::Int`: An integer specifying the number of iterations the Tucker regression should run. Default value is 500.
-- `tucketa::Real`: A real value specifying the step size for the Tucker regression. Default value is 1e-05
+- `maxiters::Int`: An integer specifying the number of iterations the Tucker regression should run. Default value is 500.
+- `tucketa::Real`: A real value specifying the step size for the Tucker regression. Default value is 1e-02.
+- `ϵ::Real`: A real value specifying the convergence criterion for the Tucker regression. Default value is 1e-03.
+- `stdize::Bool`: A boolean value specifying whether to standardize the data before running the Tucker regression. Default value is false.
 
 # Output
 A tuple with the following elements:
@@ -54,6 +56,8 @@ A tuple with the following elements:
   - Row 1: Log determinant of the covariance matrix plus a penalty term (BIC criterion).
   - Row 2: Log determinant of the covariance matrix plus a penalty term (AIC criterion).
   - Rows 3-6: The chosen Tucker ranks for each mode.
+- regiters: The number of iterations for each Tucker regression.
+- numconv: The number of converged Tucker regressions.
 
 # Example
 ```julia
@@ -66,7 +70,15 @@ println("AIC Chosen Ranks: ", result.AIC)
 println("Information Criteria Table: ", result.ictable)
 ```
 """
-function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], maxiters::Int=1000, tucketa::Real=1e-04, ϵ::Real=1e-01, stdize::Bool=false)
+function infocrit(
+    mardata::AbstractArray,
+    p::Int,
+    r̄::AbstractVector=[],
+    maxiters::Int=500,
+    tucketa::Real=1e-02,
+    ϵ::Real=1e-03,
+    stdize::Bool=false
+)
     origy, _ = tlag(mardata, p)
     N1, N2, obs = size(origy)
     if isempty(r̄)
@@ -130,6 +142,43 @@ function infocrit(mardata::AbstractArray, p::Int, r̄::AbstractVector=[], maxite
     return (BIC=BICchosen, AIC=AICchosen, ictable=infocritest, regiters=regiters, numconv=numconv)
 end
 
+"""
+    fullinfocrit(mardata, p, r̄, maxiters, tucketa, ϵ, stdize)
+
+Calculate information criteria (AIC and BIC) for different combinations of Tucker ranks in a matrix autoregressive (MAR) model.
+Iterates over different time lags to find the best Tucker ranks.
+
+# Fields
+- `mardata::AbstractArray`: The matrix-valued time series data.
+- `pmax::Int`: The maximum order of the autoregressive model to be considered.
+- `r̄::AbstractVector`: A vector specifying the maximum Tucker ranks for each mode. Default is all possible combinations.
+- `maxiters::Int`: An integer specifying the number of iterations the Tucker regression should run. Default value is 500.
+- `tucketa::Real`: A real value specifying the step size for the Tucker regression. Default value is 1e-02.
+- `ϵ::Real`: A real value specifying the convergence criterion for the Tucker regression. Default value is 1e-03.
+- `stdize::Bool`: A boolean value specifying whether to standardize the data before running the Tucker regression. Default value is false.
+
+# Output
+A tuple with the following elements:
+- `BIC`: The Tucker ranks chosen based on the Bayesian Information Criterion (BIC).
+- `AIC`: The Tucker ranks chosen based on the Akaike Information Criterion (AIC).
+- `ictable`: A 6xN matrix where N is the number of valid Tucker rank combinations. Each column corresponds to a combination, and rows contain the following information:
+  - Row 1: Log determinant of the covariance matrix plus a penalty term (BIC criterion).
+  - Row 2: Log determinant of the covariance matrix plus a penalty term (AIC criterion).
+  - Rows 3-6: The chosen Tucker ranks for each mode.
+- regiters: The number of iterations for each Tucker regression.
+- numconv: The number of converged Tucker regressions.
+
+# Example
+```julia
+mardata = randn(4,3,100)  # Example matrix time series data
+p = 2
+r̄ = [2, 2, 2, 2]
+result = infocrit(mardata, p, r̄)
+println("BIC Chosen Ranks: ", result.BIC)
+println("AIC Chosen Ranks: ", result.AIC)
+println("Information Criteria Table: ", result.ictable)
+```
+"""
 function fullinfocrit(mardata::AbstractArray, pmax::Int, r̄::AbstractVector=[], maxiters::Int=1000, tucketa::Real=1e-04, ϵ::Real=1e-01, stdize::Bool=false)
     origy, _ = tlag(mardata, pmax)
     N1, N2, obs = size(origy)
@@ -141,8 +190,7 @@ function fullinfocrit(mardata::AbstractArray, pmax::Int, r̄::AbstractVector=[],
     regiters = fill(NaN, prod(r̄) * pmax)
     grid = collect(Iterators.product(1:r̄[1], 1:r̄[2], 1:r̄[3], 1:r̄[4], 1:pmax))
     numconv = 0
-    numiters = prod(r̄) * pmax
-    Threads.@threads for i in ProgressBar(1:numiters)
+    Threads.@threads for i in ProgressBar(1:(prod(r̄)*pmax))
         selectedrank = collect(grid[i])
         r1, r2, r3, r4, p = selectedrank
         if r1 > r2 * r3 * r4 || r2 > r1 * r3 * r4 || r3 > r1 * r2 * r4 || r4 > r1 * r2 * r3
@@ -189,10 +237,32 @@ function fullinfocrit(mardata::AbstractArray, pmax::Int, r̄::AbstractVector=[],
     HQvec = argmin(filteredic[3, :])
     HQchosen = Int.(filteredic[4:end, HQvec])
 
-    return (BIC=BICchosen, AIC=AICchosen, HQ=HQchosen, ictable=infocritest, regiters=regiters, percentconv=numconv / numiters)
+    return (BIC=BICchosen, AIC=AICchosen, HQ=HQchosen, ictable=infocritest, regiters=regiters, numconv=numconv)
 end
 
-function rrvaric(vardata, pmax, stdize)
+"""
+    rrvaric(vardata, pmax, stdize)
+
+Compute the optimal rank of a reduced rank regression using information criteria.
+
+# Fields
+- `vardata::AbstractMatrix`: The data matrix where each column represents a variable and each row represents an observation.
+- `pmax::Int`: The maximum lag order.
+- `stdize::Bool`: Indicates whether to standardize the data or not.
+
+# Returns
+A tuple with the following elements:
+- BIC: The optimal rank based on the Bayesian Information Criterion.
+- AIC: The optimal rank based on the Akaike Information Criterion.
+- HQ: The optimal rank based on the Hannan-Quinn Information Criterion.
+- ictable: A 5xN matrix where N is the number of valid rank combinations. Each column corresponds to a combination, and rows contain the following information:
+  - Row 1: Log determinant of the covariance matrix plus a penalty term (BIC criterion).
+  - Row 2: Log determinant of the covariance matrix plus a penalty term (AIC criterion).
+  - Row 3: Log determinant of the covariance matrix plus a penalty term (HQ criterion).
+  - Row 4: The chosen rank.
+  - Row 5: The chosen lag order.
+"""
+function rrvaric(vardata::AbstractMatrix, pmax::Int, stdize::Bool)
     k, obs = size(vardata)
     resp = vlag(vardata, pmax)[1:k, :]
     resp = resp .- mean(resp, dims=2)
