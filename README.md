@@ -7,6 +7,9 @@
 
 # Tensor Methods for Econometrics
 
+Provides a suite of tensor methods for applied statistics and econometrics.
+This includes reduced rank regressions as well as tensor regressions.
+
 ### Basics
 - [x] Tensor Lags
 - [x] Ridge Rank Select
@@ -24,5 +27,3 @@
 - [x] Simulate Matrix AR model
 - [x] Simulate Tucker AR model
 
-
-Checking if tessar is installed
