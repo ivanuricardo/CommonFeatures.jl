@@ -24,5 +24,8 @@
 - [x] Simulate Matrix AR model
 - [x] Simulate Tucker AR model
 
+Shall we try some examples?
+```julia
+
 
 
