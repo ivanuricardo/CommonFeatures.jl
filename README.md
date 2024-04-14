@@ -25,4 +25,4 @@
 - [x] Simulate Tucker AR model
 
 
-
+Checking if tessar is installed
