@@ -1,4 +1,4 @@
-module TensorEconometrics
+module CommonFeatures
 
 using Statistics
 using TensorToolbox

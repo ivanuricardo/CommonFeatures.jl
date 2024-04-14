@@ -1,14 +1,14 @@
 ```@meta
-CurrentModule = TensorEconometrics
+CurrentModule = CommonFeatures
 ```
 
-# TensorEconometrics
+# CommonFeatures
 
-Documentation for [TensorEconometrics](https://github.com/ivanuricardo/TensorEconometrics.jl).
+Documentation for [CommonFeatures](https://github.com/ivanuricardo/CommonFeatures.jl).
 
 ```@index
 ```
 
 ```@autodocs
-Modules = [TensorEconometrics]
+Modules = [CommonFeatures]
 ```

@@ -1,4 +1,4 @@
-using TensorEconometrics
+using CommonFeatures
 using Test
 using LinearAlgebra, Statistics, Random, TensorToolbox
 
