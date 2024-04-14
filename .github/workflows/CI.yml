@@ -48,7 +48,7 @@ jobs:
         uses: codecov/codecov-action@v4.0.1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          slug: ivanuricardo/TensorEconometrics.jl
+          slug: ivanuricardo/CommonFeatures.jl
   docs:
     name: Documentation
     runs-on: ubuntu-latest
@@ -74,6 +74,6 @@ jobs:
         shell: julia --project=docs --color=yes {0}
         run: |
           using Documenter: DocMeta, doctest
-          using TensorEconometrics
-          DocMeta.setdocmeta!(TensorEconometrics, :DocTestSetup, :(using TensorEconometrics); recursive=true)
-          doctest(TensorEconometrics)
+          using CommonFeatures
+          DocMeta.setdocmeta!(CommonFeatures, :DocTestSetup, :(using CommonFeatures); recursive=true)
+          doctest(CommonFeatures)
