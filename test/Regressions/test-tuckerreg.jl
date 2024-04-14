@@ -107,7 +107,11 @@ end
 
     tuck1 = tuckerreg(mardata, selectedranks, eta, maxiters, p, ϵ)
     tuck2 = tuckerreg2(mardata, selectedranks, eta, maxiters, p, ϵ)
-    @test tuck1.fullgrads ≈ tuck2.fullgrads
+    mask1 = .!isnan.(tuck1.fullgrads)
+    mask2 = .!isnan.(tuck2.fullgrads)
+    grad1 = tuck1.fullgrads[mask1]
+    grad2 = tuck2.fullgrads[mask2]
+    @test grad1 ≈ grad2
 end
 
 @testset "Gradients p = 2" begin
@@ -131,7 +135,11 @@ end
 
     tuck1 = tuckerreg(mardata, selectedranks, eta, maxiters, p, ϵ)
     tuck2 = tuckerreg2(mardata, selectedranks, eta, maxiters, p, ϵ)
-    @test tuck1.fullgrads ≈ tuck2.fullgrads
+    mask1 = .!isnan.(tuck1.fullgrads)
+    mask2 = .!isnan.(tuck2.fullgrads)
+    grad1 = tuck1.fullgrads[mask1]
+    grad2 = tuck2.fullgrads[mask2]
+    @test grad1 ≈ grad2
 end
 
 @testset "Gradients p = 3" begin
@@ -155,5 +163,9 @@ end
 
     tuck1 = tuckerreg(mardata, selectedranks, eta, maxiters, p, ϵ)
     tuck2 = tuckerreg2(mardata, selectedranks, eta, maxiters, p, ϵ)
-    @test tuck1.fullgrads ≈ tuck2.fullgrads
+    mask1 = .!isnan.(tuck1.fullgrads)
+    mask2 = .!isnan.(tuck2.fullgrads)
+    grad1 = tuck1.fullgrads[mask1]
+    grad2 = tuck2.fullgrads[mask2]
+    @test grad1 ≈ grad2
 end

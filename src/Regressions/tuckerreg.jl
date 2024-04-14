@@ -115,7 +115,6 @@ function tuckerreg(
         A = full(ttensor(G, [U1, U2, U3, U4, Matrix(U5)]))
 
         # Stopping Condition
-
         if s > 1
             ∇diff = [abs(trackU1[s] - trackU1[s-1]),
                 abs(trackU2[s] - trackU2[s-1]),
@@ -187,17 +186,28 @@ function tuckerreg2(mardata::AbstractArray, ranks::AbstractVector, eta::Abstract
         A = full(ttensor(G, [U1, U2, U3, U4, Matrix(U5)]))
 
         # Stopping Condition
-        c = trackU1[s] < ϵ && trackU2[s] < ϵ && trackU3[s] < ϵ && trackU4[s] < ϵ
-        if c || s == maxiter
-            fullgrads = hcat(trackU1, trackU2, trackU3, trackU4, trackG)
-            A = idhosvd(A; reqrank=ranks)
-            U1, U2, U3, U4, U5 = A.fmat
-            G = ttm(A.cten, U5', 5)
-            U5 = U5'U5
-            Arot = full(ttensor(G, [U1, U2, U3, U4, U5]))
-            ax = tenmat(Arot, row=[1, 2]) * tenmat(cenlag, row=[1, 2, 3])
-            tuckerr = tenmat(cenorig, row=[1, 2]) - ax
-            return (G=G, U1=U1, U2=U2, U3=U3, U4=U4, U5=U5, A=Arot, iters=s, fullgrads=fullgrads, residuals=tuckerr)
+        if s > 1
+            ∇diff = [abs(trackU1[s] - trackU1[s-1]),
+                abs(trackU2[s] - trackU2[s-1]),
+                abs(trackU3[s] - trackU3[s-1]),
+                abs(trackU4[s] - trackU4[s-1]),
+                abs(trackG[s] - trackG[s-1])]
+
+            c = all(∇diff .< ϵ)
+            # c = trackU1[s] < ϵ && trackU2[s] < ϵ && trackU3[s] < ϵ && trackU4[s] < ϵ && trackG[s] < ϵ
+            converged = (s == maxiter)
+
+            if c || converged
+                fullgrads = hcat(trackU1, trackU2, trackU3, trackU4, trackG)
+                A = idhosvd(A; reqrank=ranks)
+                U1, U2, U3, U4, U5 = A.fmat
+                G = ttm(A.cten, U5, 5)
+                U5 = U5'U5
+                Arot = full(ttensor(G, [U1, U2, U3, U4, U5]))
+                ax = tenmat(Arot, row=[1, 2]) * tenmat(cenlag, row=[1, 2, 3])
+                tuckerr = tenmat(cenorig, row=[1, 2]) - ax
+                return (G=G, U1=U1, U2=U2, U3=U3, U4=U4, U5=U5, A=Arot, iters=s, fullgrads=fullgrads, residuals=tuckerr, converged=(!converged))
+            end
         end
     end
 end

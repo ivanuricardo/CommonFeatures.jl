@@ -92,7 +92,7 @@ A named tuple containing:
 result = simulatetuckerdata([5, 4], [2, 3, 2, 3], 100, 1.0)
 ```
 """
-function simulatetuckerdata(dimvals::AbstractVector, ranks::AbstractVector, obs::Int, A::Array{Float64,4}=nothing, p::Int=1, snr=0.7)
+function simulatetuckerdata(dimvals::AbstractVector, ranks::AbstractVector, obs::Int, A=nothing, p::Int=1, snr=0.7)
     if isnothing(A)
         A, _, _, _, _, _, _, _ = generatetuckercoef(dimvals, ranks, p)
     end
