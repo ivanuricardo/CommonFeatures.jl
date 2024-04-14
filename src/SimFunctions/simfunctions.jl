@@ -77,23 +77,24 @@ Simulate Tucker data with specified dimensions, ranks, observation count, and sc
 - `dimvals::AbstractVector`: Dimensions of the tensor (dimvals[1] for the first mode, dimvals[2] for the second mode).
 - `ranks::AbstractVector`: Tucker ranks for the four modes.
 - `obs::Int`: Number of observations to simulate.
-- `scale::Real`: Scaling factor for the Tucker decomposition.
+- `A::Array{Float64, 4}`: Coefficient tensor. If `nothing`, a random coefficient tensor will be generated.
 - `p::Int`: Number of lags to include. Default is 1 and the maximum is 5.
+- `snr::Real`: Desired signal-to-noise ratio. Default is 0.7.
 
 # Returns
 A named tuple containing:
-- `tuckerdata::Array{Float64, 3}`: Simulated Tucker data with dimensions (dimvals[1], dimvals[2], obs).
-- `stabit::Int`: Number of iterations required to generate a stable tensor.
-- `A::Array{Float64, 4}`: Tucker core tensor.
+- `data::Array{Float64, 3}`: Simulated Tucker data with dimensions (dimvals[1], dimvals[2], obs).
+- `A::Array{Float64, 4}`: Chosen coefficient tensor.
+- Σ::Array{Float64, 2}: Covariance matrix of the noise.
 
 # Examples
 ```julia
 result = simulatetuckerdata([5, 4], [2, 3, 2, 3], 100, 1.0)
 ```
 """
-function simulatetuckerdata(dimvals::AbstractVector, ranks::AbstractVector, obs::Int, A=nothing, p::Int=1, snr=0.7)
+function simulatetuckerdata(dimvals::AbstractVector, ranks::AbstractVector, obs::Int, A::Array{Float64,4}=nothing, p::Int=1, snr=0.7)
     if isnothing(A)
-        A, G, U1, U2, U3, U4, _, stabit = generatetuckercoef(dimvals, ranks, p)
+        A, _, _, _, _, _, _, _ = generatetuckercoef(dimvals, ranks, p)
     end
 
     rho = spectralradius(makecompanion(tenmat(A, row=[1, 2])))

@@ -24,7 +24,7 @@ function dlbarest(origy, lagy, G, U1, U2, U3, U4, U5)
 end
 
 """
-    tuckerreg(mardata, ranks::AbstractVector, eta=1e-04, a=1, b=1, ϵ=1e-04, maxiter=1000, p=1,ϵ=1e-02)
+    tuckerreg(mardata, ranks::AbstractVector, eta::Real, a=1, b=1, ϵ=1e-04, maxiter=1000, p=1,ϵ=1e-02)
 
 Perform a matrix autoregression with one lag (MAR(1)) with a reduced tucker rank along the coefficients.
 Uses the gradient descent algorithm of Wang, Zhang, and Li 2024.
@@ -47,7 +47,16 @@ A tuple containing the Tucker decomposition components:
 - `iters`: Number of iterations performed.
 - `fullgrads`: A matrix keeping track of gradients. Can be plotted to determine whether gradients behave properly.
 """
-function tuckerreg(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractFloat=1e-04, maxiter::Int=1000, p::Int=1, ϵ::AbstractFloat=1e-02, stdize::Bool=false, initest=[])
+function tuckerreg(
+    mardata::AbstractArray,
+    ranks::AbstractVector,
+    eta::Real=1e-02,
+    maxiter::Int=1000,
+    p::Int=1,
+    ϵ::AbstractFloat=1e-03,
+    stdize::Bool=false,
+    initest::AbstractArray=[]
+)
     N1, N2, _ = size(mardata)
     if initest == []
         initest, cenorig, cenlag = art(mardata, p, stdize)

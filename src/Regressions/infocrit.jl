@@ -56,7 +56,7 @@ A tuple with the following elements:
   - Row 1: Log determinant of the covariance matrix plus a penalty term (BIC criterion).
   - Row 2: Log determinant of the covariance matrix plus a penalty term (AIC criterion).
   - Rows 3-6: The chosen Tucker ranks for each mode.
-- regiters: The number of iterations for each Tucker regression.
+  - Row 7: The number of iterations for each Tucker regression.
 - numconv: The number of converged Tucker regressions.
 
 # Example
@@ -85,8 +85,7 @@ function infocrit(
         r̄ = [N1, N2, N1, N2]
     end
 
-    infocritest = fill(NaN, 6, prod(r̄))
-    regiters = fill(NaN, prod(r̄))
+    infocritest = fill(NaN, 7, prod(r̄))
     grid = collect(Iterators.product(1:r̄[1], 1:r̄[2], 1:r̄[3], 1:r̄[4]))
     numconv = 0
     # Threads.@threads for i in ProgressBar(1:prod(r̄))
@@ -102,11 +101,11 @@ function infocrit(
         end
         numpars = tuckerpar([N1, N2], selectedrank, p)
 
-        tuckest1 = tuckerreg(mardata, selectedrank, tucketa, maxiters, p, ϵ, stdize)
-        tuckerr1 = tuckest1.residuals
-        detcov1 = det(tuckerr1 * tuckerr1' / obs)
+        tuckest = tuckerreg(mardata, selectedrank, tucketa, maxiters, p, ϵ, stdize)
+        tuckerr = tuckest.residuals
+        detcov = det(tuckerr * tuckerr' / obs)
 
-        if tuckest1.converged == true
+        if tuckest.converged == true
             numconv += 1
         end
 
@@ -122,7 +121,6 @@ function infocrit(
         # tuckerr4 = tuckest4.residuals
         # detcov4 = det(tuckerr4 * tuckerr4' / obs)
         # detcov = min(detcov1, detcov2, detcov3, detcov4)
-        detcov = detcov1
 
         infocritest[1, i] = log(detcov) + (2 * numpars) / obs
         infocritest[2, i] = log(detcov) + (numpars * log(obs)) / obs
@@ -130,7 +128,7 @@ function infocrit(
         infocritest[4, i] = r2
         infocritest[5, i] = r3
         infocritest[6, i] = r4
-        regiters[i] = tuckest1.iters
+        infocritest[7, i] = tuckest.iters
     end
     nancols = findall(x -> any(isnan, x), eachcol(infocritest))
     filteredic = infocritest[:, setdiff(1:size(infocritest, 2), nancols)]
@@ -139,7 +137,7 @@ function infocrit(
     BICvec = argmin(filteredic[2, :])
     BICchosen = Int.(filteredic[3:end, BICvec])
 
-    return (BIC=BICchosen, AIC=AICchosen, ictable=infocritest, regiters=regiters, numconv=numconv)
+    return (BIC=BICchosen, AIC=AICchosen, ictable=infocritest, numconv=numconv)
 end
 
 """
