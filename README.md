@@ -24,7 +24,7 @@ In this way, we can either detect co-movements or impose a factor structure.
 ### SCCF Restriction
 
 We start with the VAR model with a reduced rank structure
-$$\mathbf{y}_t = \mathbf{A} \sum_{j=1}^p \mathbf{B}_j \mathbf{y}_{t-j} + \mathbf{u}_t$$
+$$y_t = A \sum_{j=1}^p B_j y_{t-j} + u_t$$
 Premultiplying the equation by a left null space matrix $\mathbf{A}_\perp$ then removes the serial correlation feature and we are left with the white noise model
 $$\mathbf{A}_\perp^\top \mathbf{y}_t = \mathbf{A}_\perp^\top \mathbf{u}_t$$
 This nullspace matrix gives us important information regarding the co-movements in the system.
