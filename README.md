@@ -22,7 +22,6 @@ Reduced Rank Regressions assume that the autoregressive coefficient of the VAR i
 In this way, we can either detect co-movements or impose a factor structure.
 
 ### SCCF Restriction
-
 $$\mathbf{y}_t = \mathbf{A} \sum_{j=1}^p \mathbf{B}_j \mathbf{y}_{t-j} + \mathbf{u}_t$$
 
 Premultiplying the equation by a left null space matrix $\mathbf{A}_\perp$ then removes the serial correlation feature and we are left with the white noise model
