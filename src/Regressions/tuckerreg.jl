@@ -51,7 +51,7 @@ function tuckerreg(
     mardata::AbstractArray,
     ranks::AbstractVector,
     eta::Real=1e-02,
-    maxiter::Int=1000,
+    maxiter::Int=500,
     p::Int=1,
     ϵ::AbstractFloat=1e-03,
     stdize::Bool=false,
@@ -141,7 +141,14 @@ function tuckerreg(
     end
 end
 
-function tuckerreg2(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractFloat=1e-04, maxiter::Int=1000, p::Int=1, ϵ::AbstractFloat=1e-02)
+function tuckerreg2(
+    mardata::AbstractArray,
+    ranks::AbstractVector,
+    eta::Real=1e-02,
+    maxiter::Int=500,
+    p::Int=1,
+    ϵ::AbstractFloat=1e-03
+)
     initest, cenorig, cenlag = art(mardata, p)
 
     ranks = vcat(ranks, p)
