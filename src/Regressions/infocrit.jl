@@ -88,8 +88,8 @@ function infocrit(
     infocritest = fill(NaN, 7, prod(r̄))
     grid = collect(Iterators.product(1:r̄[1], 1:r̄[2], 1:r̄[3], 1:r̄[4]))
     numconv = 0
-    Threads.@threads for i in ProgressBar(1:prod(r̄))
-        # for i in 1:prod(r̄)
+    # Threads.@threads for i in ProgressBar(1:prod(r̄))
+    for i in 1:prod(r̄)
         selectedrank = collect(grid[i])
         r1, r2, r3, r4 = selectedrank
         if r1 > r2 * r3 * r4 || r2 > r1 * r3 * r4 || r3 > r1 * r2 * r4 || r4 > r1 * r2 * r3
