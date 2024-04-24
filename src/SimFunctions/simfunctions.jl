@@ -34,15 +34,15 @@ function simstats(selectedranks::AbstractMatrix, correctrank::AbstractVector, si
     return (avgrank=avgrank, stdrank=stdrank, freqcorrect=freqcorrect, freqhigh=freqhigh, freqlow=freqlow)
 end
 
-function generaterrvarcoef(N, r, p, maxeigen, scale=0.5)
+function generaterrvarcoef(N, r, p, maxeigen, facscale=0.5)
     stabit = 0
     Aold = fill(NaN, N, r)
     Bold = fill(NaN, N * p, r)
     Cold = fill(NaN, N, N * p)
     while true
         stabit += 1
-        Aold .= scale .* randn(N, r)
-        Bold .= scale .* randn(N * p, r)
+        Aold .= facscale .* randn(N, r)
+        Bold .= facscale .* randn(N * p, r)
         Cold .= Aold * Bold'
 
         if isstable(Cold, maxeigen)
@@ -50,8 +50,8 @@ function generaterrvarcoef(N, r, p, maxeigen, scale=0.5)
         end
     end
     A, _, B = svd(Cold)
-    C = A * B'
-    return (A=A, B=B, C=C, stabit=stabit)
+    C = A[:, 1:r] * B[:, 1:r]'
+    return (A=A[:, 1:r], B=B[:, 1:r], C=C, stabit=stabit)
 
 end
 
@@ -113,7 +113,13 @@ A named tuple containing:
 result = simulatetuckerdata([5, 4], [2, 3, 2, 3], 100, 1.0)
 ```
 """
-function simulatetuckerdata(dimvals::AbstractVector, ranks::AbstractVector, obs::Int, A=nothing, p::Int=1, snr=0.7)
+function simulatetuckerdata(
+    dimvals::AbstractVector,
+    ranks::AbstractVector,
+    obs::Int,
+    A=nothing,
+    p::Int=1,
+    snr=0.7)
     if isnothing(A)
         A, _, _, _, _, _, _, _ = generatetuckercoef(dimvals, ranks, p)
     end
@@ -158,13 +164,13 @@ A named tuple containing:
 result = simulatemardata([5, 4], 100, 1.0)
 ```
 """
-function simulatemardata(dimvals::AbstractVector, obs::Int, scale::Real, maxeigen::Real=1)
+function simulatemardata(dimvals::AbstractVector, obs::Int, facscale::Real, maxeigen::Real=1)
     A = fill(NaN, dimvals[1], dimvals[2], dimvals[1], dimvals[2])
     stabit = 0
     while true
         stabit += 1
         randA = randn(dimvals[1], dimvals[2], dimvals[1], dimvals[2])
-        A .= rescaleten(randA, scale)
+        A .= rescaleten(randA, facscale)
         varA = tenmat(A, row=[1, 2])
         if isstable(varA, maxeigen)
             break
@@ -180,6 +186,26 @@ function simulatemardata(dimvals::AbstractVector, obs::Int, scale::Real, maxeige
 end
 
 
-function simulaterrvardata(N::Int, r::Int, obs::Int, maxeigen::Real=0.9)
+function simulaterrvardata(
+    N::Int,
+    r::Int,
+    obs::Int,
+    C=nothing,
+    p::Int=1,
+    snr::Real=0.7,
+    facscale::Real=0.6)
+    if isnothing(C)
+        A, B, C, stabit = generaterrvarcoef(N, r, p, 0.9, facscale)
+    end
 
+    rho = spectralradius(makecompanion(C))
+    Σ = diagm(repeat([rho / snr], N))
+    d = MultivariateNormal(zeros(N), Σ)
+
+    rrvardata = zeros(N, obs)
+    for i in (p+1):obs
+        ϵ = rand(d)
+        rrvardata[:, i] .= C * rrvardata[:, i-1] + ϵ
+    end
+    return (data=rrvardata, stabit=stabit, C=C, A=A, B=B)
 end
