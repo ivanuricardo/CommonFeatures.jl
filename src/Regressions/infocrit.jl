@@ -34,6 +34,28 @@ function tuckerpar(dimvals::AbstractVector, ranks::AbstractVector, p::Integer=1)
     return totalsum
 end
 
+function AIC(logdet::AbstractArray, numpars::Int, obs::Int)
+    return logdet + (2 * numpars) / obs
+end
+
+function BIC(logdet::AbstractArray, numpars::Int, obs::Int)
+    return logdet + (numpars * log(obs)) / obs
+end
+function HQ(logdet::AbstractArray, numpars::Int, obs::Int)
+    return log(logdet) + (numpars * 2 * log(log(obs))) / obs
+end
+
+function tuckercondition(r::Vector{Int})
+    n = length(r)
+    for i in 1:n
+        prod_except_i = prod(r[j] for j in 1:n if j != i)
+        if r[i] > prod_except_i
+            return false
+        end
+    end
+    return true
+end
+
 """
     infocrit(mardata, p, r̄, maxiters, tucketa, ϵ, stdize)
 
@@ -92,7 +114,7 @@ function infocrit(
     for i in 1:prod(r̄)
         selectedrank = collect(grid[i])
         r1, r2, r3, r4 = selectedrank
-        if r1 > r2 * r3 * r4 || r2 > r1 * r3 * r4 || r3 > r1 * r2 * r4 || r4 > r1 * r2 * r3
+        if tuckercondition(selectedrank)
             infocritest[3, i] = r1
             infocritest[4, i] = r2
             infocritest[5, i] = r3
@@ -109,21 +131,8 @@ function infocrit(
             numconv += 1
         end
 
-        # tuckest2 = tuckerreg(mardata, selectedrank, tucketa, maxiters, p, ϵ, stdize, tucketa .* randn(N1, N2, N1, N2, p))
-        # tuckerr2 = tuckest2.residuals
-        # detcov2 = det(tuckerr2 * tuckerr2' / obs)
-        #
-        # tuckest3 = tuckerreg(mardata, selectedrank, tucketa, maxiters, p, ϵ, stdize, 0.01 .* randn(N1, N2, N1, N2, p))
-        # tuckerr3 = tuckest3.residuals
-        # detcov3 = det(tuckerr3 * tuckerr3' / obs)
-        #
-        # tuckest4 = tuckerreg(mardata, selectedrank, tucketa, maxiters, p, ϵ, stdize, zeros(N1, N2, N1, N2, p))
-        # tuckerr4 = tuckest4.residuals
-        # detcov4 = det(tuckerr4 * tuckerr4' / obs)
-        # detcov = min(detcov1, detcov2, detcov3, detcov4)
-
-        infocritest[1, i] = log(detcov) + (2 * numpars) / obs
-        infocritest[2, i] = log(detcov) + (numpars * log(obs)) / obs
+        infocritest[1, i] = AIC(detcov, numpars, obs)
+        infocritest[2, i] = BIC(detcov, numpars, obs)
         infocritest[3, i] = r1
         infocritest[4, i] = r2
         infocritest[5, i] = r3
@@ -191,7 +200,7 @@ function fullinfocrit(mardata::AbstractArray, pmax::Int, r̄::AbstractVector=[],
     Threads.@threads for i in ProgressBar(1:(prod(r̄)*pmax))
         selectedrank = collect(grid[i])
         r1, r2, r3, r4, p = selectedrank
-        if r1 > r2 * r3 * r4 || r2 > r1 * r3 * r4 || r3 > r1 * r2 * r4 || r4 > r1 * r2 * r3
+        if tuckercondition(selectedrank)
             infocritest[4, i] = r1
             infocritest[5, i] = r2
             infocritest[6, i] = r3
@@ -216,9 +225,9 @@ function fullinfocrit(mardata::AbstractArray, pmax::Int, r̄::AbstractVector=[],
             numconv += 1
         end
 
-        infocritest[1, i] = log(detcov) + (2 * numpars) / obs
-        infocritest[2, i] = log(detcov) + (numpars * log(obs)) / obs
-        infocritest[3, i] = log(detcov) + (numpars * 2 * log(log(obs))) / obs
+        infocritest[1, i] = AIC(detcov, numpars, obs)
+        infocritest[2, i] = BIC(detcov, numpars, obs)
+        infocritest[3, i] = HQ(detcov, numpars, obs)
         infocritest[4, i] = r1
         infocritest[5, i] = r2
         infocritest[6, i] = r3
@@ -286,9 +295,9 @@ function rrvaric(vardata::AbstractMatrix, pmax::Int, stdize::Bool)
         detcov = det(rrvarerr * rrvarerr' / obs)
         numpars = (k * r) + (k * r * p)
 
-        infocritest[1, i] = log(detcov) + (2 * numpars) / obs
-        infocritest[2, i] = log(detcov) + (numpars * log(obs)) / obs
-        infocritest[3, i] = log(detcov) + (numpars * 2 * log(log(obs))) / obs
+        infocritest[1, i] = AIC(detcov, numpars, obs)
+        infocritest[2, i] = BIC(detcov, numpars, obs)
+        infocritest[3, i] = HQ(detcov, numpars, obs)
         infocritest[4, i] = r
         infocritest[5, i] = p
     end
