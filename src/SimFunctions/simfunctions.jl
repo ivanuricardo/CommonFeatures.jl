@@ -34,6 +34,27 @@ function simstats(selectedranks::AbstractMatrix, correctrank::AbstractVector, si
     return (avgrank=avgrank, stdrank=stdrank, freqcorrect=freqcorrect, freqhigh=freqhigh, freqlow=freqlow)
 end
 
+function generaterrvarcoef(N, r, p, maxeigen, scale=0.5)
+    stabit = 0
+    Aold = fill(NaN, N, r)
+    Bold = fill(NaN, N * p, r)
+    Cold = fill(NaN, N, N * p)
+    while true
+        stabit += 1
+        Aold .= scale .* randn(N, r)
+        Bold .= scale .* randn(N * p, r)
+        Cold .= Aold * Bold'
+
+        if isstable(Cold, maxeigen)
+            break
+        end
+    end
+    A, _, B = svd(Cold)
+    C = A * B'
+    return (A=A, B=B, C=C, stabit=stabit)
+
+end
+
 function generatetuckercoef(dimvals, ranks, p, gscale=3, maxeigen=0.9)
     A = fill(NaN, dimvals[1], dimvals[2], dimvals[1], dimvals[2], p)
     G = fill(NaN, ranks[1], ranks[2], ranks[3], ranks[4], p)
@@ -106,18 +127,13 @@ function simulatetuckerdata(dimvals::AbstractVector, ranks::AbstractVector, obs:
         vecϵ = rand(d)
         ϵ = reshape(vecϵ, (dimvals[1], dimvals[2]))
 
-        if p == 1
-            mardata[:, :, i] .= contract(A[:, :, :, :, 1], [3, 4], mardata[:, :, i-1], [1, 2]) + ϵ
-        elseif p == 2
-            mardata[:, :, i] .= contract(A[:, :, :, :, 1], [3, 4], mardata[:, :, i-1], [1, 2]) + contract(A[:, :, :, :, 2], [3, 4], mardata[:, :, i-2], [1, 2]) + ϵ
-        elseif p == 3
-            mardata[:, :, i] .= contract(A[:, :, :, :, 1], [3, 4], mardata[:, :, i-1], [1, 2]) + contract(A[:, :, :, :, 2], [3, 4], mardata[:, :, i-2], [1, 2]) + contract(A[:, :, :, :, 3], [3, 4], mardata[:, :, i-3], [1, 2]) + ϵ
-        elseif p == 4
-            mardata[:, :, i] .= contract(A[:, :, :, :, 1], [3, 4], mardata[:, :, i-1], [1, 2]) + contract(A[:, :, :, :, 2], [3, 4], mardata[:, :, i-2], [1, 2]) + contract(A[:, :, :, :, 3], [3, 4], mardata[:, :, i-3], [1, 2]) + contract(A[:, :, :, :, 4], [3, 4], mardata[:, :, i-4], [1, 2]) + ϵ
-        elseif p == 5
-            mardata[:, :, i] .= contract(A[:, :, :, :, 1], mardata[:, :, i-1], [1, 2]) + contract(A[:, :, :, :, 2], [3, 4], mardata[:, :, i-2], [1, 2]) + contract(A[:, :, :, :, 3], [3, 4], mardata[:, :, i-3], [1, 2]) + contract(A[:, :, :, :, 4], [3, 4], mardata[:, :, i-4], [1, 2]) + contract(A[:, :, :, :, 5], [3, 4], mardata[:, :, i-5], [1, 2]) + ϵ
+        mardata[:, :, i] .= contract(A[:, :, :, :, 1], [3, 4], mardata[:, :, i-1], [1, 2]) + ϵ
+
+        for j in 2:p
+            mardata[:, :, i] .+= contract(A[:, :, :, :, j], [3, 4], mardata[:, :, i-j], [1, 2])
         end
     end
+
     return (data=mardata, A=A, Σ=Σ)
 end
 
@@ -163,3 +179,7 @@ function simulatemardata(dimvals::AbstractVector, obs::Int, scale::Real, maxeige
     return (mardata=mardata, stabit=stabit, A=A)
 end
 
+
+function simulaterrvardata(N::Int, r::Int, obs::Int, maxeigen::Real=0.9)
+
+end
