@@ -10,8 +10,8 @@ function objtuckreg(Yt, Xt, G, U1, U2, U3, U4)
     return (1 / (2 * obs)) * norm(eq)^2
 end
 
-function dlbarest(origy, lagy, G, U1, U2, U3, U4, U5)
-    A = full(ttensor(G, [U1, U2, U3, U4, U5]))
+function dlbarest(origy, lagy, G, U::Vector{<:AbstractMatrix})
+    A = full(ttensor(G, [U[1], U[2], U[3], U[4], U[5]]))
     N1, N2, p, obs = size(lagy)
     dlbar = zeros(N1, N2, N1, N2, p)
     innert = zeros(N1, N2)
@@ -23,6 +23,36 @@ function dlbarest(origy, lagy, G, U1, U2, U3, U4, U5)
     dlbar .= dlbar ./ (obs)
 end
 
+function gradU(whichU::Int,
+    Y::AbstractArray,
+    X::AbstractArray,
+    G::AbstractArray,
+    U::Vector{<:AbstractMatrix})
+    dlbar = dlbarest(Y, X, G, U)
+
+    kronU_dict = Dict(
+        1 => kron(U[5], kron(U[4], kron(U[3], U[2]))) * tenmat(G, row=1)',
+        2 => kron(U[5], kron(U[4], kron(U[3], U[1]))) * tenmat(G, row=2)',
+        3 => kron(U[5], kron(U[4], kron(U[2], U[1]))) * tenmat(G, row=3)',
+        4 => kron(U[5], kron(U[3], kron(U[2], U[1]))) * tenmat(G, row=4)'
+    )
+
+    kronU = kronU_dict[whichU]
+    ∇U = tenmat(dlbar, row=whichU) * kronU
+    return ∇U
+end
+
+function gradG(
+    Y::AbstractArray,
+    X::AbstractArray,
+    G::AbstractArray,
+    U::Vector{<:AbstractMatrix})
+
+    dlbarG = dlbarest(Y, X, G, U)
+    facmat = [Matrix(U[1]'), Matrix(U[2]'), Matrix(U[3]'), Matrix(U[4]'), Matrix(U[5])]
+    return full(ttensor(dlbarG, facmat))
+end
+
 """
     tuckerreg(mardata, ranks::AbstractVector, eta::Real, a=1, b=1, ϵ=1e-04, maxiter=1000, p=1,ϵ=1e-02)
 
@@ -32,12 +62,12 @@ Uses the gradient descent algorithm of Wang, Zhang, and Li 2024.
 # Arguments
 - `mardata::AbstractArray`: Input tensor data. Should be ``N1 \times N2 \times T``
 - `ranks::AbstractVector`: Vector specifying the desired ranks of the Tucker decomposition.
-- `eta::AbstractFloat`: Learning rate for gradient descent (default: 1e-04).
+- `eta::AbstractFloat`: Learning rate for gradient descent (default: 1e-03).
 - `a::Real`: Regularization parameter (default: 1).
 - `b::Real`: Regularization parameter (default: 1).
 - `maxiter::Int`: Maximum number of iterations for gradient descent (default: 3000).
 - `p::Int`: Number of lags to include
-- `ϵ::AbstractFloat`: Convergence threshold for stopping criteria (default: 1e-04).
+- `ϵ::AbstractFloat`: Convergence threshold for stopping criteria (default: 1e-03).
 
 # Returns
 A tuple containing the Tucker decomposition components:
@@ -50,14 +80,13 @@ A tuple containing the Tucker decomposition components:
 function tuckerreg(
     mardata::AbstractArray,
     ranks::AbstractVector,
-    eta::Real=1e-02,
-    maxiter::Int=1000,
+    eta::Real=1e-03,
+    maxiter::Int=500,
     p::Int=1,
     ϵ::AbstractFloat=1e-03,
     stdize::Bool=false,
     initest::AbstractArray=[]
 )
-    N1, N2, _ = size(mardata)
     if initest == []
         initest, cenorig, cenlag = art(mardata, p, stdize)
     else
@@ -71,6 +100,7 @@ function tuckerreg(
     U1, U2, U3, U4, U5 = hosvdinit.fmat
     G = ttm(hosvdinit.cten, U5, 5)
     U5 = U5' * U5
+    U = [U1, U2, U3, U4, U5]
 
     trackG = fill(NaN, maxiter)
     trackU1 = fill(NaN, maxiter)
@@ -82,37 +112,27 @@ function tuckerreg(
     for s in 1:maxiter
         iters += 1
 
-        dlbar1 = dlbarest(cenorig, cenlag, G, U1, U2, U3, U4, U5)
-        kronU1 = kron(U5, kron(U4, kron(U3, U2))) * tenmat(G, row=1)'
-        ∇U1 = reshape(dlbar1, (N1, N2 * N1 * N2 * p)) * kronU1
-        U1 -= eta * ∇U1
+        ∇U1 = gradU(1, cenorig, cenlag, G, U)
+        U[1] -= eta * ∇U1
         trackU1[s] = norm(∇U1)
 
-        dlbar2 = dlbarest(cenorig, cenlag, G, U1, U2, U3, U4, U5)
-        kronU2 = kron(U5, kron(U4, kron(U3, U1))) * tenmat(G, row=2)'
-        ∇U2 = tenmat(dlbar2, row=2) * kronU2
-        U2 -= eta * ∇U2
+        ∇U2 = gradU(2, cenorig, cenlag, G, U)
+        U[2] -= eta * ∇U2
         trackU2[s] = norm(∇U2)
 
-        dlbar3 = dlbarest(cenorig, cenlag, G, U1, U2, U3, U4, U5)
-        kronU3 = kron(U5, kron(U4, kron(U2, U1))) * tenmat(G, row=3)'
-        ∇U3 = tenmat(dlbar3, row=3) * kronU3
-        U3 -= eta * ∇U3
+        ∇U3 = gradU(3, cenorig, cenlag, G, U)
+        U[3] -= eta * ∇U3
         trackU3[s] = norm(∇U3)
 
-        dlbar4 = dlbarest(cenorig, cenlag, G, U1, U2, U3, U4, U5)
-        kronU4 = kron(U5, kron(U3, kron(U2, U1))) * tenmat(G, row=4)'
-        ∇U4 = tenmat(dlbar4, row=4) * kronU4
-        U4 -= eta * ∇U4
+        ∇U4 = gradU(4, cenorig, cenlag, G, U)
+        U[4] -= eta * ∇U4
         trackU4[s] = norm(∇U4)
 
-        dlbarG = dlbarest(cenorig, cenlag, G, U1, U2, U3, U4, U5)
-        facmat = [Matrix(U1'), Matrix(U2'), Matrix(U3'), Matrix(U4'), Matrix(U5)]
-        ∇G = full(ttensor(dlbarG, facmat))
+        ∇G = gradG(cenorig, cenlag, G, U)
         trackG[s] = norm(∇G)
         G -= eta * ∇G
 
-        A = full(ttensor(G, [U1, U2, U3, U4, Matrix(U5)]))
+        A = full(ttensor(G, U))
 
         # Stopping Condition
         if s > 1
@@ -141,7 +161,14 @@ function tuckerreg(
     end
 end
 
-function tuckerreg2(mardata::AbstractArray, ranks::AbstractVector, eta::AbstractFloat=1e-04, maxiter::Int=1000, p::Int=1, ϵ::AbstractFloat=1e-02)
+function tuckerreg2(
+    mardata::AbstractArray,
+    ranks::AbstractVector,
+    eta::Real=1e-02,
+    maxiter::Int=500,
+    p::Int=1,
+    ϵ::AbstractFloat=1e-03
+)
     initest, cenorig, cenlag = art(mardata, p)
 
     ranks = vcat(ranks, p)
