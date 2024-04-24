@@ -14,6 +14,10 @@ TensorToolbox = "9c690861-8ade-587a-897e-15364bc6f718"
 
 [compat]
 Distributions = "0.25"
+ProgressBars = "1"
+Statistics = "1"
+ReverseDiff = "1"
+TensorToolbox = "1"
 julia = "1.9.4"
 
 [extras]

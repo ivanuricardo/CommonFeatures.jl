@@ -1,7 +1,7 @@
 using CommonFeatures
 using Documenter
 
-DocMeta.setdocmeta!(CommonFeatures, :DocTestSetup, :(using TensorEconometrics); recursive=true)
+DocMeta.setdocmeta!(CommonFeatures, :DocTestSetup, :(using CommonFeatures); recursive=true)
 
 makedocs(;
     modules=[CommonFeatures],

@@ -48,28 +48,10 @@ function art(Y::AbstractArray, p::Int=1, stdize::Bool=false)
         cenorig = stdorigy .- mean(stdorigy, dims=3)
         stdlagy = (laggedy ./ std(laggedy, dims=4))
         cenlag = stdlagy .- mean(stdlagy, dims=4)
-        # stdorigy = (origy ./ [10 1 5; 2 5 1; 0.2 4 10; 5 2 3])
-        # cenorig = stdorigy .- mean(stdorigy, dims=3)
-        # stdlagy = (laggedy ./ [10 1 5; 2 5 1; 0.2 4 10; 5 2 3])
-        # cenlag = stdlagy .- mean(stdlagy, dims=4)
     else
         cenorig = origy .- mean(origy, dims=3)
         cenlag = laggedy .- mean(laggedy, dims=4)
     end
-    #
-    # stdorigy = (origy ./ [10 10 10; 5 5 5; 10 10 10; 5 5 5])
-    # cenorig = stdorigy .- mean(stdorigy, dims=3)
-    # stdlagy = (laggedy ./ [10 10 10; 5 5 5; 10 10 10; 5 5 5])
-    # cenlag = stdlagy .- mean(stdlagy, dims=4)
-
-    # stdorigy = (origy ./ [10 1 5; 2 5 1; 0.2 4 10; 5 2 3])
-    # cenorig = stdorigy .- mean(stdorigy, dims=3)
-    # stdlagy = (laggedy ./ [10 1 5; 2 5 1; 0.2 4 10; 5 2 3])
-    # cenlag = stdlagy .- mean(stdlagy, dims=4)
-
-    # cenorig = origy .- mean(origy, dims=3)
-    # cenlag = laggedy .- mean(laggedy, dims=4)
-
     tols = tensorols(cenorig, cenlag)
 
     return (tols=tols, cenorig=cenorig, cenlag=cenlag)
