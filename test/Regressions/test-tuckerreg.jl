@@ -99,7 +99,7 @@ end
     snr = 0.7
 
     eta = 1e-04
-    maxiters = 100
+    maxiters = 10
     ϵ = 1e-02
 
     marsim = simulatetuckerdata(dimvals, ranks, obs, nothing, p, snr)
@@ -127,7 +127,7 @@ end
     snr = 0.7
 
     eta = 1e-04
-    maxiters = 100
+    maxiters = 10
     ϵ = 1e-02
 
     marsim = simulatetuckerdata(dimvals, ranks, obs, nothing, p, snr)
@@ -155,7 +155,7 @@ end
     snr = 0.7
 
     eta = 1e-04
-    maxiters = 100
+    maxiters = 10
     ϵ = 1e-02
 
     marsim = simulatetuckerdata(dimvals, ranks, obs, nothing, p, snr)

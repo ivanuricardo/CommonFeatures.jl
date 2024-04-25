@@ -143,7 +143,6 @@ function tuckerreg(
                 abs(trackG[s] - trackG[s-1])]
 
             c = all(∇diff .< ϵ)
-            # c = trackU1[s] < ϵ && trackU2[s] < ϵ && trackU3[s] < ϵ && trackU4[s] < ϵ && trackG[s] < ϵ
             converged = (s == maxiter)
 
             if c || converged
