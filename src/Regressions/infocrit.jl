@@ -42,7 +42,7 @@ function BIC(logdet::Real, numpars::Int, obs::Int)
     return logdet + (numpars * log(obs)) / obs
 end
 function HQ(logdet::Real, numpars::Int, obs::Int)
-    return log(logdet) + (numpars * 2 * log(log(obs))) / obs
+    return logdet + (numpars * 2 * log(log(obs))) / obs
 end
 
 function tuckercondition(r::Vector{Int})
@@ -125,14 +125,14 @@ function infocrit(
 
         tuckest = tuckerreg(mardata, selectedrank, tucketa, maxiters, p, ϵ, stdize)
         tuckerr = tuckest.residuals
-        detcov = det(tuckerr * tuckerr' / obs)
+        logdetcov = logdet(tuckerr * tuckerr' / obs)
 
         if tuckest.converged == true
             numconv += 1
         end
 
-        infocritest[1, i] = AIC(detcov, numpars, obs)
-        infocritest[2, i] = BIC(detcov, numpars, obs)
+        infocritest[1, i] = AIC(logdetcov, numpars, obs)
+        infocritest[2, i] = BIC(logdetcov, numpars, obs)
         infocritest[3, i] = r1
         infocritest[4, i] = r2
         infocritest[5, i] = r3
@@ -218,16 +218,16 @@ function fullinfocrit(mardata::AbstractArray, pmax::Int, r̄::AbstractVector=[],
             tuckest = tuckerreg(mardata[:, :, (pmax-3):end], [r1, r2, r3, r4], tucketa, maxiters, p, ϵ, stdize)
         end
         tuckerr = tuckest.residuals
-        detcov = det(tuckerr * tuckerr' / obs)
+        logdetcov = logdet(tuckerr * tuckerr' / obs)
         numpars = tuckerpar([N1, N2], [r1, r2, r3, r4], p)
 
         if tuckest.converged == true
             numconv += 1
         end
 
-        infocritest[1, i] = AIC(detcov, numpars, obs)
-        infocritest[2, i] = BIC(detcov, numpars, obs)
-        infocritest[3, i] = HQ(detcov, numpars, obs)
+        infocritest[1, i] = AIC(logdetcov, numpars, obs)
+        infocritest[2, i] = BIC(logdetcov, numpars, obs)
+        infocritest[3, i] = HQ(logdetcov, numpars, obs)
         infocritest[4, i] = r1
         infocritest[5, i] = r2
         infocritest[6, i] = r3
@@ -292,12 +292,12 @@ function rrvaric(vardata::AbstractMatrix, pmax::Int, stdize::Bool)
             rrvarest = rrvar(vardata[:, (pmax-3):end], r, p, stdize)
         end
         rrvarerr = rrvarest.rrvarerr
-        detcov = det(rrvarerr * rrvarerr' / obs)
+        logdetcov = logdet(rrvarerr * rrvarerr' / obs)
         numpars = (k * r) + (k * r * p)
 
-        infocritest[1, i] = AIC(detcov, numpars, obs)
-        infocritest[2, i] = BIC(detcov, numpars, obs)
-        infocritest[3, i] = HQ(detcov, numpars, obs)
+        infocritest[1, i] = AIC(logdetcov, numpars, obs)
+        infocritest[2, i] = BIC(logdetcov, numpars, obs)
+        infocritest[3, i] = HQ(logdetcov, numpars, obs)
         infocritest[4, i] = r
         infocritest[5, i] = p
     end

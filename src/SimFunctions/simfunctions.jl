@@ -36,21 +36,25 @@ end
 
 function generaterrvarcoef(N, r, p, maxeigen, facscale=0.5)
     stabit = 0
-    Aold = fill(NaN, N, r)
-    Bold = fill(NaN, N * p, r)
-    Cold = fill(NaN, N, N * p)
+    A = fill(NaN, N, r)
+    B = fill(NaN, N * p, r)
+    C = fill(NaN, N, N * p)
     while true
         stabit += 1
-        Aold .= facscale .* randn(N, r)
-        Bold .= facscale .* randn(N * p, r)
-        Cold .= Aold * Bold'
+        Aold = facscale .* randn(N, r)
+        Bold = facscale .* randn(N * p, r)
+        Cold = Aold * Bold'
 
-        if isstable(Cold, maxeigen)
+        Ad, _, Bd = svd(Cold)
+        A = facscale .* Ad[:, 1:r]
+        B = facscale .* Bd[:, 1:r]
+
+        C .= A * B'
+
+        if isstable(C, maxeigen)
             break
         end
     end
-    A, _, B = svd(Cold)
-    C = A[:, 1:r] * B[:, 1:r]'
     return (A=A[:, 1:r], B=B[:, 1:r], C=C, stabit=stabit)
 
 end
@@ -204,7 +208,7 @@ function simulaterrvardata(
 
     rrvardata = zeros(N, obs)
     for i in (p+1):obs
-        ϵ = rand(d)
+        ϵ = rand(N)
         rrvardata[:, i] .= C * rrvardata[:, i-1] + ϵ
     end
     return (data=rrvardata, stabit=stabit, C=C, A=A, B=B)
