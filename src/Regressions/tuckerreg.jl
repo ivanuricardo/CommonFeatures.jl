@@ -79,7 +79,7 @@ A tuple containing the Tucker decomposition components:
 """
 function tuckerreg(
     mardata::AbstractArray,
-    ranks::AbstractVector,
+    ranks::AbstractVector;
     eta::Real=1e-03,
     maxiter::Int=500,
     p::Int=1,
@@ -88,9 +88,9 @@ function tuckerreg(
     initest::AbstractArray=[]
 )
     if initest == []
-        initest, cenorig, cenlag = art(mardata, p, stdize)
+        initest, cenorig, cenlag = art(mardata, p; stdize)
     else
-        _, cenorig, cenlag = art(mardata, p, stdize)
+        _, cenorig, cenlag = art(mardata, p; stdize)
     end
 
     ranks = vcat(ranks, p)
@@ -162,7 +162,7 @@ end
 
 function tuckerreg2(
     mardata::AbstractArray,
-    ranks::AbstractVector,
+    ranks::AbstractVector;
     eta::Real=1e-02,
     maxiter::Int=500,
     p::Int=1,

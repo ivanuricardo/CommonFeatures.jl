@@ -1,7 +1,5 @@
 
-
-
-function generatetuckercoef(dimvals, ranks, p, gscale=3, maxeigen=0.9)
+function generatetuckercoef(dimvals, ranks, p; gscale=3, maxeigen=0.9)
     A = fill(NaN, dimvals[1], dimvals[2], dimvals[1], dimvals[2], p)
     G = fill(NaN, ranks[1], ranks[2], ranks[3], ranks[4], p)
     U1 = fill(NaN, dimvals[1], ranks[1])
@@ -62,7 +60,7 @@ result = simulatetuckerdata([5, 4], [2, 3, 2, 3], 100, 1.0)
 function simulatetuckerdata(
     dimvals::AbstractVector,
     ranks::AbstractVector,
-    obs::Int,
+    obs::Int;
     A=nothing,
     p::Int=1,
     snr=0.7)

@@ -5,11 +5,13 @@
     dimvals = [4, 3]
     ranks = [4, 3, 4, 3]
     obs = 1000
-    scale = 4
+    gscale = 3
+    maxeigen = 0.9
     p = 1
     snr = 0.9
 
-    marsim = simulatetuckerdata(dimvals, ranks, obs, nothing, p, snr)
+    A, _ = generatetuckercoef(dimvals, ranks, p; gscale, maxeigen)
+    marsim = simulatetuckerdata(dimvals, ranks, obs; A, p, snr)
     mardata = marsim.data
     vardata = tenmat(mardata, col=3)
     origy, lagy = tlag(mardata)

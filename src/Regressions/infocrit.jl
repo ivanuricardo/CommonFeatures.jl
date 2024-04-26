@@ -123,7 +123,7 @@ function infocrit(
         end
         numpars = tuckerpar([N1, N2], selectedrank, p)
 
-        tuckest = tuckerreg(mardata, selectedrank, tucketa, maxiters, p, ϵ, stdize)
+        tuckest = tuckerreg(mardata, selectedrank; tucketa, maxiters, p, ϵ, stdize)
         tuckerr = tuckest.residuals
         logdetcov = logdet(tuckerr * tuckerr' / obs)
 
@@ -209,13 +209,13 @@ function fullinfocrit(mardata::AbstractArray, pmax::Int, r̄::AbstractVector=[],
             continue
         end
         if p == 1
-            tuckest = tuckerreg(mardata[:, :, pmax:end], [r1, r2, r3, r4], tucketa, maxiters, p, ϵ, stdize)
+            tuckest = tuckerreg(mardata[:, :, pmax:end], [r1, r2, r3, r4]; tucketa, maxiters, p, ϵ, stdize)
         elseif p == 2
-            tuckest = tuckerreg(mardata[:, :, (pmax-1):end], [r1, r2, r3, r4], tucketa, maxiters, p, ϵ, stdize)
+            tuckest = tuckerreg(mardata[:, :, (pmax-1):end], [r1, r2, r3, r4]; tucketa, maxiters, p, ϵ, stdize)
         elseif p == 3
-            tuckest = tuckerreg(mardata[:, :, (pmax-2):end], [r1, r2, r3, r4], tucketa, maxiters, p, ϵ, stdize)
+            tuckest = tuckerreg(mardata[:, :, (pmax-2):end], [r1, r2, r3, r4]; tucketa, maxiters, p, ϵ, stdize)
         elseif p == 4
-            tuckest = tuckerreg(mardata[:, :, (pmax-3):end], [r1, r2, r3, r4], tucketa, maxiters, p, ϵ, stdize)
+            tuckest = tuckerreg(mardata[:, :, (pmax-3):end], [r1, r2, r3, r4]; tucketa, maxiters, p, ϵ, stdize)
         end
         tuckerr = tuckest.residuals
         logdetcov = logdet(tuckerr * tuckerr' / obs)
@@ -283,13 +283,13 @@ function rrvaric(vardata::AbstractMatrix, pmax::Int, stdize::Bool)
         selectedrank = collect(grid[i])
         r, p = selectedrank
         if p == 1
-            rrvarest = rrvar(vardata[:, pmax:end], r, p, stdize)
+            rrvarest = rrvar(vardata[:, pmax:end], r, p; stdize)
         elseif p == 2
-            rrvarest = rrvar(vardata[:, (pmax-1):end], r, p, stdize)
+            rrvarest = rrvar(vardata[:, (pmax-1):end], r, p; stdize)
         elseif p == 3
-            rrvarest = rrvar(vardata[:, (pmax-2):end], r, p, stdize)
+            rrvarest = rrvar(vardata[:, (pmax-2):end], r, p; stdize)
         elseif p == 4
-            rrvarest = rrvar(vardata[:, (pmax-3):end], r, p, stdize)
+            rrvarest = rrvar(vardata[:, (pmax-3):end], r, p; stdize)
         end
         rrvarerr = rrvarest.rrvarerr
         logdetcov = logdet(rrvarerr * rrvarerr' / obs)

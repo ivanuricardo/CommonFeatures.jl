@@ -13,8 +13,8 @@ export makecompanion, isstable
 export infocrit, tuckerpar, fullinfocrit, rrvaric
 export tuckerreg, tuckerreg2, dlbarest
 export rrmarcrossval
-include("./Regressions/MatrixAR.jl")
-include("./Regressions/utils.jl")
+include("./Regressions/matrixar.jl")
+include("./Regressions/regutils.jl")
 include("./Regressions/companionmatrix.jl")
 include("./Regressions/infocrit.jl")
 include("./Regressions/tuckerreg.jl")
@@ -25,6 +25,6 @@ export simulatevardata, generatevarcoef, generaterrvarcoef, simulaterrvardata
 export simstats
 include("./SimFunctions/simtucker.jl")
 include("./SimFunctions/simmar.jl")
-include("./SimFunctions/utils.jl")
+include("./SimFunctions/simutils.jl")
 
 end

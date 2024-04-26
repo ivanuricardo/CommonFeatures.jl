@@ -28,15 +28,16 @@ end
     burnin = 100
     obs = 5000 + burnin
     coefscale = 0.5
+    snr = 0.7
     maxeigen = 0.9
 
     Random.seed!(20231228)
-    A, _, _ = generatevarcoef(N, p, maxeigen, coefscale)
+    A, _, _ = generatevarcoef(N, p; maxeigen, coefscale)
 
     repeats = 1000
     bias = zeros(repeats)
     for i in eachindex(bias)
-        varsim = simulatevardata(N, p, obs, coefscale, maxeigen, A, burnin)
+        varsim = simulatevardata(N, p, obs; snr, coefscale, maxeigen, A, burnin)
         data = varsim.data
         origy = vlag(data)[1:N, :]
         lagy = vlag(data)[(N+1):end, :]

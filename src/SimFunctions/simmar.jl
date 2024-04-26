@@ -20,7 +20,8 @@ function generatevarcoef(
 
 end
 
-function simulatevardata(N::Int,
+function simulatevardata(
+    N::Int,
     p::Int,
     obs::Int;
     snr::Real=0.7,
