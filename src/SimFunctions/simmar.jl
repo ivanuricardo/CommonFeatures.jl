@@ -21,15 +21,21 @@ function simulatevardata(N::Int,
     obs::Int,
     coefscale::Real=0.5,
     maxeigen::Real=0.9,
-    burnin::Int=0)
+    A=nothing,
+    burnin::Int=1)
 
-    A, stabit, rho = generatevarcoef(N, p, maxeigen, coefscale)
+    if isnothing(A)
+        A, stabit, rho = generatevarcoef(N, p, maxeigen, coefscale)
+    else
+        _, stabit, rho = generatevarcoef(N, p, maxeigen, coefscale)
+    end
+
     data = zeros(N, obs)
     tenA = matten(A, [1], [2, 3], [N, N, p])
 
-    for i in p:obs
+    for i in (p+1):obs
         for j in 1:p
-            data[:, i] += tenA[:, :, j] * data[:, i-j+1]
+            data[:, i] += tenA[:, :, j] * data[:, i-j]
         end
         data[:, i] += randn(N)
     end
@@ -132,7 +138,7 @@ function simulaterrvardata(
 
     rrvardata = zeros(N, obs)
     for i in (p+1):obs
-        ϵ = rand(N)
+        ϵ = rand(d)
         rrvardata[:, i] .= C * rrvardata[:, i-1] + ϵ
     end
     return (data=rrvardata, stabit=stabit, C=C, A=A, B=B)
