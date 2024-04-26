@@ -21,7 +21,7 @@ include("./Regressions/tuckerreg.jl")
 include("./Regressions/crossval.jl")
 
 export simulatetuckerdata, generatetuckercoef
-export simulatemardata, generatemarcoef, simulatevardata, generatevarcoef, generaterrvarcoef, simulaterrvardata
+export simulatevardata, generatevarcoef, generaterrvarcoef, simulaterrvardata
 export simstats
 include("./SimFunctions/simtucker.jl")
 include("./SimFunctions/simmar.jl")

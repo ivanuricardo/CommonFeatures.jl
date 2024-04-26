@@ -41,7 +41,7 @@ p = 2
 result = art(Y, p)
 ```
 """
-function art(Y::AbstractArray, p::Int=1, stdize::Bool=false)
+function art(Y::AbstractArray, p::Int=1; stdize::Bool=false)
     origy, laggedy = tlag(Y, p)
     if stdize
         stdorigy = (origy ./ std(origy, dims=3))
@@ -76,7 +76,7 @@ Compute reduced-rank vector autoregressive (RRVAR) model parameters.
 This function computes the reduced-rank VAR parameters using the method.
 
 """
-function rrvar(vardata::AbstractMatrix, r::Int, p::Int, stdize::Bool=false)
+function rrvar(vardata::AbstractMatrix, r::Int, p::Int; stdize::Bool=false)
     k, _ = size(vardata)
 
     origy = vlag(vardata, p)[1:k, :]
