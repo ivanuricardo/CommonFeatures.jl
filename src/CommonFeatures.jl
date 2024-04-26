@@ -20,7 +20,11 @@ include("./Regressions/infocrit.jl")
 include("./Regressions/tuckerreg.jl")
 include("./Regressions/crossval.jl")
 
-export simulatetuckerdata, simulatemardata, simstats, generatetuckercoef, simulaterrvardata, generaterrvarcoef
-include("./SimFunctions/simfunctions.jl")
+export simulatetuckerdata, generatetuckercoef
+export simulatemardata, generatemarcoef, simulatevardata, generatevarcoef, generaterrvarcoef, simulaterrvardata
+export simstats
+include("./SimFunctions/simtucker.jl")
+include("./SimFunctions/simmar.jl")
+include("./SimFunctions/utils.jl")
 
 end
