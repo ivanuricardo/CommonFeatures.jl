@@ -111,4 +111,5 @@ function idhosvd(X::AbstractArray{<:Number,N}; reqrank=[]) where {N}
 end
 
 spectralradius(C::AbstractMatrix) = maximum(abs.(eigen(C).values))
+ρ(C::AbstractMatrix) = spectralradius(C)
 

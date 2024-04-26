@@ -8,7 +8,8 @@
     p = 1
     maxeigen = 0.9
 
-    rrvarsim = simulaterrvardata(N, r, obs, nothing, p, maxeigen)
+    C, _ = generaterrvarcoef(N, r, p, maxeigen=maxeigen)
+    rrvarsim = simulaterrvardata(N, r, p; obs=obs, C=C)
     rrvardata = rrvarsim.data
     origy = vlag(rrvardata)[1:N, :]
     lagy = vlag(rrvardata)[(N+1):end, :]

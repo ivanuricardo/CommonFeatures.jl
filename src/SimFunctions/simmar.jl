@@ -30,9 +30,9 @@ function simulatevardata(N::Int,
     burnin::Int=1)
 
     if isnothing(A)
-        A, stabit, rho = generatevarcoef(N, p, maxeigen, coefscale)
+        A, stabit, rho = generatevarcoef(N, p; maxeigen, coefscale)
     else
-        _, stabit, rho = generatevarcoef(N, p, maxeigen, coefscale)
+        _, stabit, rho = generatevarcoef(N, p; maxeigen, coefscale)
     end
 
     data = zeros(N, obs)
@@ -85,13 +85,16 @@ end
 function simulaterrvardata(
     N::Int,
     r::Int,
-    obs::Int;
+    p::Int;
+    obs::Int,
     C=nothing,
-    p::Int=1,
     snr::Real=0.7,
+    maxeigen::Real=0.9,
     facscale::Real=0.6)
     if isnothing(C)
-        A, B, C, stabit = generaterrvarcoef(N, r, p, 0.9, facscale)
+        _, _, C, stabit = generaterrvarcoef(N, r, p; maxeigen, facscale)
+    else
+        _, _, _, stabit = generaterrvarcoef(N, r, p; maxeigen, facscale)
     end
 
     rho = spectralradius(makecompanion(C))
@@ -103,5 +106,5 @@ function simulaterrvardata(
         ϵ = rand(d)
         rrvardata[:, i] .= C * rrvardata[:, i-1] + ϵ
     end
-    return (data=rrvardata, stabit=stabit, C=C, A=A, B=B)
+    return (data=rrvardata, stabit=stabit, C=C)
 end
