@@ -24,7 +24,7 @@ function rrmarcrossval(mardata, p, r̄=[], a=1, b=1, maxiters=1000, tucketa=1e-0
             for j in 1:testtotal
                 traindata = mardata[:, :, j:(traintotal+j)]
                 testdata = mardata[:, :, traintotal+j+1]
-                tuckest = tuckerreg(traindata, selectedrank, tucketa, a, b, maxiters, p, ϵ)
+                tuckest = tuckerreg(traindata, selectedrank; tucketa, a, b, maxiters, p, ϵ)
                 tuckpred = contract(tuckest.A[:, :, :, 1:9], [3, 4], traindata[:, :, end], [1, 2]) + contract(tuckest.A[:, :, :, 10:18], [3, 4], traindata[:, :, end-1], [1, 2])
                 # Root Mean Squared Error
                 errortable[j] = norm(tuckpred - testdata)

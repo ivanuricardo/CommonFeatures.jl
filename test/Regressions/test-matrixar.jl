@@ -39,8 +39,8 @@ end
     for i in eachindex(bias)
         varsim = simulatevardata(N, p, obs; snr, coefscale, maxeigen, A, burnin)
         data = varsim.data
-        origy = vlag(data)[1:N, :]
-        lagy = vlag(data)[(N+1):end, :]
+        origy = vlag(data, p)[1:N, :]
+        lagy = vlag(data, p)[(N+1):end, :]
         yy = origy .- mean(origy, dims=2)
         xx = lagy .- mean(lagy, dims=2)
 
@@ -50,4 +50,30 @@ end
 
 
     @test mean(bias) < 0.1
+end
+
+@testset "MAR estimation p = 2" begin
+    N = 12
+    p = 2
+    burnin = 100
+    obs = 5000 + burnin
+    coefscale = 0.1
+    snr = 0.7
+    maxeigen = 0.9
+
+    Random.seed!(20231228)
+    A, _, _ = generatevarcoef(N, p; maxeigen, coefscale)
+    varsim = simulatevardata(N, p, obs; snr, coefscale, maxeigen, A, burnin)
+    data = varsim.data
+    origy = vlag(data, p)[1:N, :]
+    lagy = vlag(data, p)[(N+1):end, :]
+    yy = origy .- mean(origy, dims=2)
+    xx = lagy .- mean(lagy, dims=2)
+
+    varest = yy * xx' * inv(xx * xx')
+
+    mardata = matten(data, [1, 2], [3], [4, 3, 5001])
+    marest = art(mardata, p)
+
+    @test tenmat(marest.tols, row=[1, 2]) ≈ varest
 end

@@ -34,16 +34,9 @@ function tuckerpar(dimvals::AbstractVector, ranks::AbstractVector, p::Integer=1)
     return totalsum
 end
 
-function AIC(logdet::Real, numpars::Int, obs::Int)
-    return logdet + (2 * numpars) / obs
-end
-
-function BIC(logdet::Real, numpars::Int, obs::Int)
-    return logdet + (numpars * log(obs)) / obs
-end
-function HQ(logdet::Real, numpars::Int, obs::Int)
-    return logdet + (numpars * 2 * log(log(obs))) / obs
-end
+AIC(logdet::Real, numpars::Int, obs::Int) = logdet + (2 * numpars) / obs
+BIC(logdet::Real, numpars::Int, obs::Int) = logdet + (numpars * log(obs)) / obs
+HQ(logdet::Real, numpars::Int, obs::Int) = logdet + (numpars * 2 * log(log(obs))) / obs
 
 function tuckercondition(r::Vector{Int})
     n = length(r)
