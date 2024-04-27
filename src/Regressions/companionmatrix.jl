@@ -61,7 +61,7 @@ The companion matrix is constructed using the makecompanion function.
 ## See Also
 - `makecompanion`: Function to create the VAR companion matrix.
 """
-function isstable(var::AbstractMatrix{T}, maxeigen::Real=0.9) where {T}
+function isstable(var::AbstractMatrix{T}; maxeigen::Real=0.9) where {T}
     C = makecompanion(var)
     return maximum(abs.(eigen(C).values)) < maxeigen
 end
