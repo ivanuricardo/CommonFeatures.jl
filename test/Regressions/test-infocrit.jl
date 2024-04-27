@@ -33,9 +33,9 @@ end
     r1 = [4, 3, 4, 2]
     r2 = [1, 1, 1, 2]
     r3 = [1, 3, 3, 4]
-    cond1 = tuckercond(r1)
-    cond2 = tuckercond(r2)
-    cond3 = tuckercond(r3)
+    cond1 = tuckercondition(r1)
+    cond2 = tuckercondition(r2)
+    cond3 = tuckercondition(r3)
 
 
     @test cond1
