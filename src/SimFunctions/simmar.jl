@@ -12,7 +12,7 @@ function generatevarcoef(
         stabit += 1
         randA = coefscale .* randn(N, N * p)
         A .= randA
-        if isstable(A, maxeigen)
+        if isstable(A; maxeigen)
             break
         end
     end
@@ -75,7 +75,7 @@ function generaterrvarcoef(
 
         C .= A * B'
 
-        if isstable(C, maxeigen)
+        if isstable(C; maxeigen)
             break
         end
     end

@@ -26,7 +26,7 @@ function generatetuckercoef(dimvals, ranks, p; gscale=3, maxeigen=0.9)
         hosvdA = ttensor(G, [U1, U2, U3, U4, Matrix(U5)])
         A .= full(hosvdA)
         varA = tenmat(A, row=[1, 2])
-        if isstable(varA, maxeigen)
+        if isstable(varA; maxeigen)
             break
         end
     end

@@ -49,7 +49,7 @@ function gradG(
     U::Vector{<:AbstractMatrix})
 
     dlbarG = dlbarest(Y, X, G, U)
-    facmat = [Matrix(U[1]'), Matrix(U[2]'), Matrix(U[3]'), Matrix(U[4]'), Matrix(U[5])]
+    facmat = [U[1]', U[2]', U[3]', U[4]', U[5]]
     return full(ttensor(dlbarG, facmat))
 end
 
@@ -94,7 +94,7 @@ function tuckerreg(
     end
 
     ranks = vcat(ranks, p)
-    hosvdinit = idhosvd(initest; reqrank=ranks)
+    hosvdinit = idhosvd(initest, ranks)
     A = full(hosvdinit)
 
     U1, U2, U3, U4, U5 = hosvdinit.fmat
@@ -147,7 +147,7 @@ function tuckerreg(
 
             if c || converged
                 fullgrads = hcat(trackU1, trackU2, trackU3, trackU4, trackG)
-                A = idhosvd(A; reqrank=ranks)
+                A = idhosvd(A, ranks)
                 U1, U2, U3, U4, U5 = A.fmat
                 G = ttm(A.cten, U5, 5)
                 U5 = U5'U5
@@ -171,7 +171,7 @@ function tuckerreg2(
     initest, cenorig, cenlag = art(mardata, p)
 
     ranks = vcat(ranks, p)
-    hosvdinit = idhosvd(initest; reqrank=ranks)
+    hosvdinit = idhosvd(initest, ranks)
     A = full(hosvdinit)
 
     U1, U2, U3, U4, U5 = hosvdinit.fmat
@@ -209,7 +209,7 @@ function tuckerreg2(
         trackG[s] = norm(∇G)
         G -= eta * ∇G
 
-        A = full(ttensor(G, [U1, U2, U3, U4, Matrix(U5)]))
+        A = full(ttensor(G, [U1, U2, U3, U4, U5]))
 
         # Stopping Condition
         if s > 1
@@ -225,7 +225,7 @@ function tuckerreg2(
 
             if c || converged
                 fullgrads = hcat(trackU1, trackU2, trackU3, trackU4, trackG)
-                A = idhosvd(A; reqrank=ranks)
+                A = idhosvd(A, ranks)
                 U1, U2, U3, U4, U5 = A.fmat
                 G = ttm(A.cten, U5, 5)
                 U5 = U5'U5

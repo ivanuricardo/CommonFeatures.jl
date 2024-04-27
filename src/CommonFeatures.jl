@@ -7,8 +7,10 @@ using ProgressBars
 using ReverseDiff
 using Distributions
 
+import TensorToolbox.ttensor
+
 export tensorols, art, rrvar
-export tlag, ridgerankselect, rescaleten, idhosvd, spectralradius, vlag
+export tlag, ridgerankselect, rescaleten, idhosvd, spectralradius, ρ, vlag, ttensor
 export makecompanion, isstable
 export infocrit, tuckerpar, fullinfocrit, rrvaric
 export tuckerreg, tuckerreg2, dlbarest

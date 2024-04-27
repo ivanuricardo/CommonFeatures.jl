@@ -98,8 +98,11 @@ function rescaleten(A, target_norm::Real=5)
     return scaled_matrix
 end
 
-function idhosvd(X::AbstractArray{<:Number,N}; reqrank=[]) where {N}
-    fmat = MatrixCell(undef, N)
+function idhosvd(
+    X::AbstractArray{<:Number,N},
+    reqrank::AbstractVector) where {N}
+
+    fmat = [Matrix{Float64}(undef, 2, 2) for _ in 1:N]
 
     for n in 1:N
         r = reqrank[n]
@@ -107,9 +110,11 @@ function idhosvd(X::AbstractArray{<:Number,N}; reqrank=[]) where {N}
         U, _, _ = svd(Xn)
         fmat[n] = U[:, 1:r]
     end
-    ttensor(ttm(X, fmat, 't'), fmat)
+    return ttensor(ttm(X, fmat, 't'), fmat)
 end
 
 spectralradius(C::AbstractMatrix) = maximum(abs.(eigen(C).values))
 ρ(C::AbstractMatrix) = spectralradius(C)
+ttensor(cten::Array{<:Number}, fmat::Array{M,1}) where {M<:AbstractMatrix} = ttensor(cten, MatrixCell(fmat), true)
+
 
