@@ -151,10 +151,14 @@ function tuckerreg(
                 U1, U2, U3, U4, U5 = A.fmat
                 G = ttm(A.cten, U5, 5)
                 U5 = U5'U5
-                Arot = full(ttensor(G, [U1, U2, U3, U4, U5]))
-                ax = tenmat(Arot, row=[1, 2]) * tenmat(cenlag, row=[1, 2, 3])
-                tuckerr = tenmat(cenorig, row=[1, 2]) - ax
-                return (G=G, U1=U1, U2=U2, U3=U3, U4=U4, U5=U5, A=Arot, iters=s, fullgrads=fullgrads, residuals=tuckerr, converged=(!converged))
+                A = full(ttensor(G, [U1, U2, U3, U4, U5]))
+                ax = tenmat(A, row=[1, 2]) * tenmat(cenlag, row=[1, 2, 3])
+                residuals = tenmat(cenorig, row=[1, 2]) - ax
+                U = [U1, U2, U3, U4, U5]
+                iters = s
+                converged = (!converged)
+
+                return LowRankTensorAutoRegression(G, U, A, iters, fullgrads, residuals, converged)
             end
         end
     end
@@ -229,10 +233,12 @@ function tuckerreg2(
                 U1, U2, U3, U4, U5 = A.fmat
                 G = ttm(A.cten, U5, 5)
                 U5 = U5'U5
-                Arot = full(ttensor(G, [U1, U2, U3, U4, U5]))
-                ax = tenmat(Arot, row=[1, 2]) * tenmat(cenlag, row=[1, 2, 3])
-                tuckerr = tenmat(cenorig, row=[1, 2]) - ax
-                return (G=G, U1=U1, U2=U2, U3=U3, U4=U4, U5=U5, A=Arot, iters=s, fullgrads=fullgrads, residuals=tuckerr, converged=(!converged))
+                A = full(ttensor(G, [U1, U2, U3, U4, U5]))
+                ax = tenmat(A, row=[1, 2]) * tenmat(cenlag, row=[1, 2, 3])
+                residuals = tenmat(cenorig, row=[1, 2]) - ax
+                U = [U1, U2, U3, U4, U5]
+                converged = (!converged)
+                return LowRankTensorAutoRegression(G, U, A, iters, fullgrads, residuals, converged)
             end
         end
     end

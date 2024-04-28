@@ -90,7 +90,7 @@ This function computes the reduced-rank VAR parameters using the method.
 
 """
 function rrvar(vardata::AbstractMatrix, r::Int, p::Int; stdize::Bool=false)
-    k, _ = size(vardata)
+    k, obs = size(vardata)
 
     origy = vlag(vardata, p)[1:k, :]
     laggedy = vlag(vardata, p)[(k+1):end, :]
@@ -125,6 +125,8 @@ function rrvar(vardata::AbstractMatrix, r::Int, p::Int; stdize::Bool=false)
     C = A * B
 
     rrvarerr = cenorig - C * cenlag
+    loglike = logdet(rrvarerr * rrvarerr' / (obs - p))
+    leftnullA = CommonFeatures.leftnull(A)
 
-    return (C=C, A=A, B=B, rrvarerr=rrvarerr, cenorig=cenorig, cenlag=cenlag)
+    return ReducedRankAutoRegression(C, B, A, leftnullA, loglike)
 end

@@ -4,22 +4,33 @@ function leftnull(A::AbstractMatrix)
     nA = nullspace(A')
     vecn = 1:N
     coms = collect(combinations(vecn, N - r))
-    vecsccf = []
-    for i in eachindex(coms)
-        filteredna = nA[coms[i], 1:(N-r)]
-        push!(vecsccf, nA / filteredna)
+    vecsccf = Vector{Matrix}(undef, length(coms))
+    for (i, comb) in enumerate(coms)
+        filteredna = nA[comb, 1:(N-r)]
+        vecsccf[i] = nA / filteredna
     end
     return vecsccf
 end
 
-function sccf(vecsccf::AbstractVector)
-    firstbase = []
-    N, _ = size(vecsccf[1])
+function sccf(vecsccf::Vector{Matrix})
+    N = size(vecsccf[1], 1)
+    firstbase = similar(vecsccf[1], N)
     for i in 1:(N-1)
-        matsccf = vecsccf[i]
-        push!(firstbase, matsccf[N-i+1, 1])
+        firstbase[i] = vecsccf[i][N-i+1, 1]
     end
-    return reverse!(push!(firstbase, 1))
+    firstbase[N] = -1
+    return reverse(-firstbase)
+end
+
+function matsccf(vecsccf::AbstractVector)
+    n = length(vecsccf)
+    matcf = similar(vecsccf, n, n)
+    for (i, vec1) in enumerate(vecsccf)
+        for (j, vec2) in enumerate(vecsccf)
+            matcf[i, j] = vec2 / vec1
+        end
+    end
+    return matcf
 end
 
 """

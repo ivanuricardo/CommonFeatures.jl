@@ -284,8 +284,7 @@ function rrvaric(vardata::AbstractMatrix, pmax::Int, stdize::Bool)
         elseif p == 4
             rrvarest = rrvar(vardata[:, (pmax-3):end], r, p; stdize)
         end
-        rrvarerr = rrvarest.rrvarerr
-        logdetcov = logdet(rrvarerr * rrvarerr' / obs)
+        logdetcov = rrvarest.loglike
         numpars = (k * r) + (k * r * p)
 
         infocritest[1, i] = aic(logdetcov, numpars, obs)
