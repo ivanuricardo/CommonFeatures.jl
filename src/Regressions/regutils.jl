@@ -1,3 +1,27 @@
+
+function leftnull(A::AbstractMatrix)
+    N, r = size(A)
+    nA = nullspace(A')
+    vecn = 1:N
+    coms = collect(combinations(vecn, N - r))
+    vecsccf = []
+    for i in eachindex(coms)
+        filteredna = nA[coms[i], 1:(N-r)]
+        push!(vecsccf, nA / filteredna)
+    end
+    return vecsccf
+end
+
+function sccf(vecsccf::AbstractVector)
+    firstbase = []
+    N, _ = size(vecsccf[1])
+    for i in 1:(N-1)
+        matsccf = vecsccf[i]
+        push!(firstbase, matsccf[N-i+1, 1])
+    end
+    return reverse!(push!(firstbase, 1))
+end
+
 """
     tlag(ten_data::AbstractArray, p=1)
 

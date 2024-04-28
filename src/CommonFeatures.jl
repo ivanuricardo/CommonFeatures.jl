@@ -6,10 +6,11 @@ using LinearAlgebra
 using ProgressBars
 using ReverseDiff
 using Distributions
+using Combinatorics
 
 import TensorToolbox.ttensor
 
-export tensorols, art, rrvar
+export tensorols, art, rrvar, leftnull
 export tlag, ridgerankselect, rescaleten, idhosvd, spectralradius, ρ, vlag, ttensor
 export makecompanion, isstable
 export infocrit, tuckerpar, fullinfocrit, rrvaric

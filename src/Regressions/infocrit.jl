@@ -34,9 +34,9 @@ function tuckerpar(dimvals::AbstractVector, ranks::AbstractVector, p::Integer=1)
     return totalsum
 end
 
-AIC(logdet::Real, numpars::Int, obs::Int) = logdet + (2 * numpars) / obs
-BIC(logdet::Real, numpars::Int, obs::Int) = logdet + (numpars * log(obs)) / obs
-HQ(logdet::Real, numpars::Int, obs::Int) = logdet + (numpars * 2 * log(log(obs))) / obs
+aic(logdet::Real, numpars::Int, obs::Int) = logdet + (2 * numpars) / obs
+bic(logdet::Real, numpars::Int, obs::Int) = logdet + (numpars * log(obs)) / obs
+hqc(logdet::Real, numpars::Int, obs::Int) = logdet + (numpars * 2 * log(log(obs))) / obs
 
 function tuckercondition(r::Vector{Int})
     n = length(r)
@@ -52,7 +52,7 @@ end
 """
     infocrit(mardata, p, r̄, maxiters, tucketa, ϵ, stdize)
 
-Calculate information criteria (AIC and BIC) for different combinations of Tucker ranks in a matrix autoregressive (MAR) model.
+Calculate information criteria (aic and bic) for different combinations of Tucker ranks in a matrix autoregressive (MAR) model.
 
 # Arguments
 - `mardata::AbstractArray`: The matrix-valued time series data.
@@ -65,11 +65,11 @@ Calculate information criteria (AIC and BIC) for different combinations of Tucke
 
 # Output
 A tuple with the following elements:
-- `BIC`: The Tucker ranks chosen based on the Bayesian Information Criterion (BIC).
-- `AIC`: The Tucker ranks chosen based on the Akaike Information Criterion (AIC).
+- `bic`: The Tucker ranks chosen based on the Bayesian Information Criterion (bic).
+- `aic`: The Tucker ranks chosen based on the Akaike Information Criterion (aic).
 - `ictable`: A 6xN matrix where N is the number of valid Tucker rank combinations. Each column corresponds to a combination, and rows contain the following information:
-  - Row 1: Log determinant of the covariance matrix plus a penalty term (BIC criterion).
-  - Row 2: Log determinant of the covariance matrix plus a penalty term (AIC criterion).
+  - Row 1: Log determinant of the covariance matrix plus a penalty term (bic criterion).
+  - Row 2: Log determinant of the covariance matrix plus a penalty term (aic criterion).
   - Rows 3-6: The chosen Tucker ranks for each mode.
   - Row 7: The number of iterations for each Tucker regression.
 - numconv: The number of converged Tucker regressions.
@@ -80,8 +80,8 @@ mardata = randn(4,3,100)  # Example matrix time series data
 p = 2
 r̄ = [2, 2, 2, 2]
 result = infocrit(mardata, p, r̄)
-println("BIC Chosen Ranks: ", result.BIC)
-println("AIC Chosen Ranks: ", result.AIC)
+println("bic Chosen Ranks: ", result.bic)
+println("aic Chosen Ranks: ", result.aic)
 println("Information Criteria Table: ", result.ictable)
 ```
 """
@@ -124,8 +124,8 @@ function infocrit(
             numconv += 1
         end
 
-        infocritest[1, i] = AIC(logdetcov, numpars, obs)
-        infocritest[2, i] = BIC(logdetcov, numpars, obs)
+        infocritest[1, i] = aic(logdetcov, numpars, obs)
+        infocritest[2, i] = bic(logdetcov, numpars, obs)
         infocritest[3, i] = r1
         infocritest[4, i] = r2
         infocritest[5, i] = r3
@@ -134,18 +134,18 @@ function infocrit(
     end
     nancols = findall(x -> any(isnan, x), eachcol(infocritest))
     filteredic = infocritest[:, setdiff(1:size(infocritest, 2), nancols)]
-    AICvec = argmin(filteredic[1, :])
-    AICchosen = Int.(filteredic[3:end, AICvec])
-    BICvec = argmin(filteredic[2, :])
-    BICchosen = Int.(filteredic[3:end, BICvec])
+    aicvec = argmin(filteredic[1, :])
+    aicchosen = Int.(filteredic[3:end, aicvec])
+    bicvec = argmin(filteredic[2, :])
+    bicchosen = Int.(filteredic[3:end, bicvec])
 
-    return (BIC=BICchosen, AIC=AICchosen, ictable=infocritest, numconv=numconv)
+    return (bic=bicchosen, aic=aicchosen, ictable=infocritest, numconv=numconv)
 end
 
 """
     fullinfocrit(mardata, p, r̄, maxiters, tucketa, ϵ, stdize)
 
-Calculate information criteria (AIC and BIC) for different combinations of Tucker ranks in a matrix autoregressive (MAR) model.
+Calculate information criteria (aic and bic) for different combinations of Tucker ranks in a matrix autoregressive (MAR) model.
 Iterates over different time lags to find the best Tucker ranks.
 
 # Fields
@@ -159,11 +159,11 @@ Iterates over different time lags to find the best Tucker ranks.
 
 # Output
 A tuple with the following elements:
-- `BIC`: The Tucker ranks chosen based on the Bayesian Information Criterion (BIC).
-- `AIC`: The Tucker ranks chosen based on the Akaike Information Criterion (AIC).
+- `bic`: The Tucker ranks chosen based on the Bayesian Information Criterion (bic).
+- `aic`: The Tucker ranks chosen based on the Akaike Information Criterion (aic).
 - `ictable`: A 6xN matrix where N is the number of valid Tucker rank combinations. Each column corresponds to a combination, and rows contain the following information:
-  - Row 1: Log determinant of the covariance matrix plus a penalty term (BIC criterion).
-  - Row 2: Log determinant of the covariance matrix plus a penalty term (AIC criterion).
+  - Row 1: Log determinant of the covariance matrix plus a penalty term (bic criterion).
+  - Row 2: Log determinant of the covariance matrix plus a penalty term (aic criterion).
   - Rows 3-6: The chosen Tucker ranks for each mode.
 - regiters: The number of iterations for each Tucker regression.
 - numconv: The number of converged Tucker regressions.
@@ -174,8 +174,8 @@ mardata = randn(4,3,100)  # Example matrix time series data
 p = 2
 r̄ = [2, 2, 2, 2]
 result = infocrit(mardata, p, r̄)
-println("BIC Chosen Ranks: ", result.BIC)
-println("AIC Chosen Ranks: ", result.AIC)
+println("bic Chosen Ranks: ", result.bic)
+println("aic Chosen Ranks: ", result.aic)
 println("Information Criteria Table: ", result.ictable)
 ```
 """
@@ -218,9 +218,9 @@ function fullinfocrit(mardata::AbstractArray, pmax::Int, r̄::AbstractVector=[],
             numconv += 1
         end
 
-        infocritest[1, i] = AIC(logdetcov, numpars, obs)
-        infocritest[2, i] = BIC(logdetcov, numpars, obs)
-        infocritest[3, i] = HQ(logdetcov, numpars, obs)
+        infocritest[1, i] = aic(logdetcov, numpars, obs)
+        infocritest[2, i] = bic(logdetcov, numpars, obs)
+        infocritest[3, i] = hqc(logdetcov, numpars, obs)
         infocritest[4, i] = r1
         infocritest[5, i] = r2
         infocritest[6, i] = r3
@@ -230,14 +230,14 @@ function fullinfocrit(mardata::AbstractArray, pmax::Int, r̄::AbstractVector=[],
     end
     nancols = findall(x -> any(isnan, x), eachcol(infocritest))
     filteredic = infocritest[:, setdiff(1:size(infocritest, 2), nancols)]
-    AICvec = argmin(filteredic[1, :])
-    AICchosen = Int.(filteredic[4:end, AICvec])
-    BICvec = argmin(filteredic[2, :])
-    BICchosen = Int.(filteredic[4:end, BICvec])
-    HQvec = argmin(filteredic[3, :])
-    HQchosen = Int.(filteredic[4:end, HQvec])
+    aicvec = argmin(filteredic[1, :])
+    aicchosen = Int.(filteredic[4:end, aicvec])
+    bicvec = argmin(filteredic[2, :])
+    bicchosen = Int.(filteredic[4:end, bicvec])
+    hqcvec = argmin(filteredic[3, :])
+    hqcchosen = Int.(filteredic[4:end, hqcvec])
 
-    return (BIC=BICchosen, AIC=AICchosen, HQ=HQchosen, ictable=infocritest, regiters=regiters, numconv=numconv)
+    return (bic=bicchosen, aic=aicchosen, hqc=hqcchosen, ictable=infocritest, regiters=regiters, numconv=numconv)
 end
 
 """
@@ -252,13 +252,13 @@ Compute the optimal rank of a reduced rank regression using information criteria
 
 # Returns
 A tuple with the following elements:
-- BIC: The optimal rank based on the Bayesian Information Criterion.
-- AIC: The optimal rank based on the Akaike Information Criterion.
-- HQ: The optimal rank based on the Hannan-Quinn Information Criterion.
+- bic: The optimal rank based on the Bayesian Information Criterion.
+- aic: The optimal rank based on the Akaike Information Criterion.
+- hqc: The optimal rank based on the Hannan-Quinn Information Criterion.
 - ictable: A 5xN matrix where N is the number of valid rank combinations. Each column corresponds to a combination, and rows contain the following information:
-  - Row 1: Log determinant of the covariance matrix plus a penalty term (BIC criterion).
-  - Row 2: Log determinant of the covariance matrix plus a penalty term (AIC criterion).
-  - Row 3: Log determinant of the covariance matrix plus a penalty term (HQ criterion).
+  - Row 1: Log determinant of the covariance matrix plus a penalty term (bic criterion).
+  - Row 2: Log determinant of the covariance matrix plus a penalty term (aic criterion).
+  - Row 3: Log determinant of the covariance matrix plus a penalty term (hqc criterion).
   - Row 4: The chosen rank.
   - Row 5: The chosen lag order.
 """
@@ -288,20 +288,20 @@ function rrvaric(vardata::AbstractMatrix, pmax::Int, stdize::Bool)
         logdetcov = logdet(rrvarerr * rrvarerr' / obs)
         numpars = (k * r) + (k * r * p)
 
-        infocritest[1, i] = AIC(logdetcov, numpars, obs)
-        infocritest[2, i] = BIC(logdetcov, numpars, obs)
-        infocritest[3, i] = HQ(logdetcov, numpars, obs)
+        infocritest[1, i] = aic(logdetcov, numpars, obs)
+        infocritest[2, i] = bic(logdetcov, numpars, obs)
+        infocritest[3, i] = hqc(logdetcov, numpars, obs)
         infocritest[4, i] = r
         infocritest[5, i] = p
     end
 
-    AICvec = argmin(infocritest[1, :])
-    AICchosen = Int.(infocritest[4:end, AICvec])
-    BICvec = argmin(infocritest[2, :])
-    BICchosen = Int.(infocritest[4:end, BICvec])
-    HQvec = argmin(infocritest[3, :])
-    HQchosen = Int.(infocritest[4:end, HQvec])
+    aicvec = argmin(infocritest[1, :])
+    aicchosen = Int.(infocritest[4:end, aicvec])
+    bicvec = argmin(infocritest[2, :])
+    bicchosen = Int.(infocritest[4:end, bicvec])
+    hqcvec = argmin(infocritest[3, :])
+    hqcchosen = Int.(infocritest[4:end, hqcvec])
 
-    return (BIC=BICchosen, AIC=AICchosen, HQ=HQchosen, ictable=infocritest)
+    return (bic=bicchosen, aic=aicchosen, hqc=hqcchosen, ictable=infocritest)
 
 end

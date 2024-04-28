@@ -16,7 +16,7 @@ function tensorols(Y::AbstractArray, X::AbstractArray)
     flaty = tenmat(Y, col=ndims(Y))
     flatx = tenmat(X, col=ndims(X))
 
-    flatols = flaty * flatx' * inv(flatx * flatx')
+    flatols = flaty * flatx' / (flatx * flatx')
 
     return reshape(flatols, fulldims)
 end
@@ -57,6 +57,19 @@ function art(Y::AbstractArray, p::Int=1; stdize::Bool=false)
     return (tols=tols, cenorig=cenorig, cenlag=cenlag)
 end
 
+# function leftnull!(m::AbstractMatrix, nA::AbstractVector)
+#     for i = 1:lastindex(nA)
+#         m[:, i] .= nA ./ nA[i]
+#     end
+# end
+# function leftnull(nA::AbstractMatrix)
+#     m = Array{eltype(nA)}(undef, size(nA, 1), size(nA, 1), size(nA, 2))
+#     for i = axes(nA, 2)
+#         leftnull!(view(m, :, :, i), nA[:, i])
+#     end
+#     return m
+# end
+#
 """
     rrvar(Y::AbstractMatrix, r::Int, p::Int)
 
@@ -108,7 +121,7 @@ function rrvar(vardata::AbstractMatrix, r::Int, p::Int; stdize::Bool=false)
 
     # Compute RRVAR parameters
     A = Vt
-    B = Vt' * cov_yx * inv(cov_x)
+    B = Vt' * cov_yx / (cov_x)
     C = A * B
 
     rrvarerr = cenorig - C * cenlag
