@@ -107,7 +107,7 @@ function infocrit(
     for i in 1:prod(r̄)
         selectedrank = collect(grid[i])
         r1, r2, r3, r4 = selectedrank
-        if tuckercondition(selectedrank)
+        if !tuckercondition(selectedrank)
             infocritest[3, i] = r1
             infocritest[4, i] = r2
             infocritest[5, i] = r3
@@ -116,7 +116,7 @@ function infocrit(
         end
         numpars = tuckerpar([N1, N2], selectedrank, p)
 
-        tuckest = tuckerreg(mardata, selectedrank; tucketa, maxiters, p, ϵ, stdize)
+        tuckest = tuckerreg(mardata, selectedrank; eta=tucketa, maxiter=maxiters, p, ϵ, stdize)
         tuckerr = tuckest.residuals
         logdetcov = logdet(tuckerr * tuckerr' / obs)
 

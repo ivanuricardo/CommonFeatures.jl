@@ -31,9 +31,7 @@ function simulatevardata(
     burnin::Int=1)
 
     if isnothing(A)
-        A, stabit, rho = generatevarcoef(N, p; maxeigen, coefscale)
-    else
-        _, stabit, rho = generatevarcoef(N, p; maxeigen, coefscale)
+        A, _, _ = generatevarcoef(N, p; maxeigen, coefscale)
     end
 
     data = zeros(N, obs)
@@ -49,7 +47,7 @@ function simulatevardata(
         end
         data[:, i] += rand(d)
     end
-    return (A=A, data=data[:, burnin:end], stabit=stabit, rho=rho)
+    return (A=A, data=data[:, burnin:end])
 end
 
 function generaterrvarcoef(
