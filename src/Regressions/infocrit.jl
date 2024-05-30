@@ -179,7 +179,15 @@ println("aic Chosen Ranks: ", result.aic)
 println("Information Criteria Table: ", result.ictable)
 ```
 """
-function fullinfocrit(mardata::AbstractArray, pmax::Int, r̄::AbstractVector=[], maxiters::Int=1000, tucketa::Real=1e-04, ϵ::Real=1e-01, stdize::Bool=false)
+function fullinfocrit(
+    mardata::AbstractArray,
+    pmax::Int,
+    r̄::AbstractVector=[];
+    maxiters::Int=1000,
+    tucketa::Real=1e-04,
+    ϵ::Real=1e-01,
+    stdize::Bool=false)
+
     origy, _ = tlag(mardata, pmax)
     N1, N2, obs = size(origy)
     if isempty(r̄)
@@ -193,7 +201,7 @@ function fullinfocrit(mardata::AbstractArray, pmax::Int, r̄::AbstractVector=[],
     Threads.@threads for i in ProgressBar(1:(prod(r̄)*pmax))
         selectedrank = collect(grid[i])
         r1, r2, r3, r4, p = selectedrank
-        if tuckercondition(selectedrank)
+        if !tuckercondition([r1, r2, r3, r4])
             infocritest[4, i] = r1
             infocritest[5, i] = r2
             infocritest[6, i] = r3
@@ -202,13 +210,13 @@ function fullinfocrit(mardata::AbstractArray, pmax::Int, r̄::AbstractVector=[],
             continue
         end
         if p == 1
-            tuckest = tuckerreg(mardata[:, :, pmax:end], [r1, r2, r3, r4]; tucketa, maxiters, p, ϵ, stdize)
+            tuckest = tuckerreg(mardata[:, :, pmax:end], [r1, r2, r3, r4]; eta=tucketa, maxiter=maxiters, p, ϵ, stdize)
         elseif p == 2
-            tuckest = tuckerreg(mardata[:, :, (pmax-1):end], [r1, r2, r3, r4]; tucketa, maxiters, p, ϵ, stdize)
+            tuckest = tuckerreg(mardata[:, :, (pmax-1):end], [r1, r2, r3, r4]; eta=tucketa, maxiter=maxiters, p, ϵ, stdize)
         elseif p == 3
-            tuckest = tuckerreg(mardata[:, :, (pmax-2):end], [r1, r2, r3, r4]; tucketa, maxiters, p, ϵ, stdize)
+            tuckest = tuckerreg(mardata[:, :, (pmax-2):end], [r1, r2, r3, r4]; eta=tucketa, maxiter=maxiters, p, ϵ, stdize)
         elseif p == 4
-            tuckest = tuckerreg(mardata[:, :, (pmax-3):end], [r1, r2, r3, r4]; tucketa, maxiters, p, ϵ, stdize)
+            tuckest = tuckerreg(mardata[:, :, (pmax-3):end], [r1, r2, r3, r4]; eta=tucketa, maxiter=maxiters, p, ϵ, stdize)
         end
         tuckerr = tuckest.residuals
         logdetcov = logdet(tuckerr * tuckerr' / obs)
