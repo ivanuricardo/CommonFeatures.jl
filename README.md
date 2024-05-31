@@ -1,6 +1,5 @@
 # CommonFeatures.jl
 
-[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://ivanuricardo.github.io/CommonFeatures.jl/stable/)
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://ivanuricardo.github.io/CommonFeatures.jl/dev/)
 [![Build Status](https://github.com/ivanuricardo/CommonFeatures.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/ivanuricardo/CommonFeatures.jl/actions/workflows/CI.yml?query=branch%3Amain)
 [![codecov](https://codecov.io/gh/ivanuricardo/CommonFeatures.jl/graph/badge.svg?token=YZX3FL55XS)](https://codecov.io/gh/ivanuricardo/CommonFeatures.jl)
