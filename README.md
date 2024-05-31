@@ -11,6 +11,4 @@ This includes reduced rank regressions as well as tensor regressions.
 Additionally, the package provides tools for model selection and information criteria.
 The bulk of the work is done for the purpose of detecting co-movements in multivariate time series models.
 
-## Installation
-
 

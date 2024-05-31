@@ -87,7 +87,7 @@ println("Information Criteria Table: ", result.ictable)
 """
 function infocrit(
     mardata::AbstractArray,
-    p::Int,
+    p::Int;
     r̄::AbstractVector=[],
     maxiters::Int=500,
     tucketa::Real=1e-02,
