@@ -26,8 +26,8 @@ function makecompanion(B::AbstractMatrix{T}) where {T}
     n = Int(size(B, 1))
     p = Int(size(B, 2) / n)
     ident = diagm(fill(T(1), n * (p - 1)))
-    companion_lower = hcat(ident, zeros(n * (p - 1), n))
-    companion = vcat(B, companion_lower)
+    companionlower = hcat(ident, zeros(n * (p - 1), n))
+    companion = vcat(B, companionlower)
     return companion
 end
 

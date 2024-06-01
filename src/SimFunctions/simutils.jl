@@ -31,5 +31,5 @@ function simstats(selectedranks::AbstractMatrix, correctrank::AbstractVector, si
         freqlow[i] = count(x -> x < crank, selectedranks[i, :]) / sims
     end
 
-    return (avgrank=avgrank, stdrank=stdrank, freqcorrect=freqcorrect, freqhigh=freqhigh, freqlow=freqlow)
+    return (; avgrank, stdrank, freqcorrect, freqhigh, freqlow)
 end

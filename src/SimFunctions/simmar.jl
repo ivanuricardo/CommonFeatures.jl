@@ -16,7 +16,7 @@ function generatevarcoef(
             break
         end
     end
-    return (A=A, stabit=stabit, rho=spectralradius(makecompanion(A)))
+    return (; A, stabit, rho=spectralradius(makecompanion(A)))
 
 end
 
@@ -31,7 +31,7 @@ function simulatevardata(
     burnin::Int=1)
 
     if isnothing(A)
-        A, _, _ = generatevarcoef(N, p; maxeigen, coefscale)
+        A = generatevarcoef(N, p; maxeigen, coefscale)[1]
     end
 
     data = zeros(N, obs)
@@ -47,7 +47,7 @@ function simulatevardata(
         end
         data[:, i] += rand(d)
     end
-    return (A=A, data=data[:, burnin:end])
+    return (; A, data=data[:, burnin:end])
 end
 
 function generaterrvarcoef(
@@ -91,19 +91,19 @@ function simulaterrvardata(
     maxeigen::Real=0.9,
     facscale::Real=0.6)
     if isnothing(C)
-        _, _, C, stabit = generaterrvarcoef(N, r, p; maxeigen, facscale)
+        @unpack C, stabit = generaterrvarcoef(N, r, p; maxeigen, facscale)
     else
-        _, _, _, stabit = generaterrvarcoef(N, r, p; maxeigen, facscale)
+        @unpack stabit = generaterrvarcoef(N, r, p; maxeigen, facscale)
     end
 
     rho = spectralradius(makecompanion(C))
     Σ = diagm(repeat([rho / snr], N))
     d = MultivariateNormal(zeros(N), Σ)
 
-    rrvardata = zeros(N, obs)
+    data = zeros(N, obs)
     for i in (p+1):obs
         ϵ = rand(d)
-        rrvardata[:, i] .= C * rrvardata[:, i-1] + ϵ
+        data[:, i] .= C * data[:, i-1] + ϵ
     end
-    return (data=rrvardata, stabit=stabit, C=C)
+    return (; data, stabit, C)
 end

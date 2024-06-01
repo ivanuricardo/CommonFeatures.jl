@@ -30,7 +30,7 @@ function generatetuckercoef(dimvals, ranks, p; gscale=3, maxeigen=0.9)
             break
         end
     end
-    return (A=A, G=G, U1=U1, U2=U2, U3=U3, U4=U4, U5=U5, stabit=stabit)
+    return (; A, G, U1, U2, U3, U4, U5, stabit)
 end
 
 """
@@ -65,25 +65,25 @@ function simulatetuckerdata(
     p::Int=1,
     snr=0.7)
     if isnothing(A)
-        A, _, _, _, _, _, _, _ = generatetuckercoef(dimvals, ranks, p)
+        A = generatetuckercoef(dimvals, ranks, p)[1]
     end
 
     rho = spectralradius(makecompanion(tenmat(A, row=[1, 2])))
     Σ = diagm(repeat([rho / snr], dimvals[1] * dimvals[2]))
     d = MultivariateNormal(zeros(dimvals[1] * dimvals[2]), Σ)
 
-    mardata = zeros(dimvals[1], dimvals[2], obs)
+    data = zeros(dimvals[1], dimvals[2], obs)
     for i in (p+1):obs
         vecϵ = rand(d)
         ϵ = reshape(vecϵ, (dimvals[1], dimvals[2]))
 
-        mardata[:, :, i] .= contract(A[:, :, :, :, 1], [3, 4], mardata[:, :, i-1], [1, 2]) + ϵ
+        data[:, :, i] .= contract(A[:, :, :, :, 1], [3, 4], data[:, :, i-1], [1, 2]) + ϵ
 
         for j in 2:p
-            mardata[:, :, i] .+= contract(A[:, :, :, :, j], [3, 4], mardata[:, :, i-j], [1, 2])
+            data[:, :, i] .+= contract(A[:, :, :, :, j], [3, 4], data[:, :, i-j], [1, 2])
         end
     end
 
-    return (data=mardata, A=A, Σ=Σ)
+    return (; data, A, Σ)
 end
 
