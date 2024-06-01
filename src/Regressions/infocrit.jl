@@ -41,8 +41,8 @@ hqc(logdet::Real, numpars::Int, obs::Int) = logdet + (numpars * 2 * log(log(obs)
 function tuckercondition(r::Vector{Int})
     n = length(r)
     for i in 1:n
-        prod_except_i = prod(r[j] for j in 1:n if j != i)
-        if r[i] > prod_except_i
+        prodexcepti = prod(r[j] for j in 1:n if j != i)
+        if r[i] > prodexcepti
             return false
         end
     end
@@ -100,7 +100,7 @@ function infocrit(
         r̄ = [N1, N2, N1, N2]
     end
 
-    infocritest = fill(NaN, 7, prod(r̄))
+    ictable = fill(NaN, 7, prod(r̄))
     grid = collect(Iterators.product(1:r̄[1], 1:r̄[2], 1:r̄[3], 1:r̄[4]))
     numconv = 0
     # Threads.@threads for i in ProgressBar(1:prod(r̄))
@@ -108,10 +108,10 @@ function infocrit(
         selectedrank = collect(grid[i])
         r1, r2, r3, r4 = selectedrank
         if !tuckercondition(selectedrank)
-            infocritest[3, i] = r1
-            infocritest[4, i] = r2
-            infocritest[5, i] = r3
-            infocritest[6, i] = r4
+            ictable[3, i] = r1
+            ictable[4, i] = r2
+            ictable[5, i] = r3
+            ictable[6, i] = r4
             continue
         end
         numpars = tuckerpar([N1, N2], selectedrank, p)
@@ -124,22 +124,22 @@ function infocrit(
             numconv += 1
         end
 
-        infocritest[1, i] = aic(logdetcov, numpars, obs)
-        infocritest[2, i] = bic(logdetcov, numpars, obs)
-        infocritest[3, i] = r1
-        infocritest[4, i] = r2
-        infocritest[5, i] = r3
-        infocritest[6, i] = r4
-        infocritest[7, i] = tuckest.iters
+        ictable[1, i] = aic(logdetcov, numpars, obs)
+        ictable[2, i] = bic(logdetcov, numpars, obs)
+        ictable[3, i] = r1
+        ictable[4, i] = r2
+        ictable[5, i] = r3
+        ictable[6, i] = r4
+        ictable[7, i] = tuckest.iters
     end
-    nancols = findall(x -> any(isnan, x), eachcol(infocritest))
-    filteredic = infocritest[:, setdiff(1:size(infocritest, 2), nancols)]
+    nancols = findall(x -> any(isnan, x), eachcol(ictable))
+    filteredic = ictable[:, setdiff(1:size(ictable, 2), nancols)]
     aicvec = argmin(filteredic[1, :])
-    aicchosen = Int.(filteredic[3:end, aicvec])
+    aic = Int.(filteredic[3:end, aicvec])
     bicvec = argmin(filteredic[2, :])
-    bicchosen = Int.(filteredic[3:end, bicvec])
+    bic = Int.(filteredic[3:end, bicvec])
 
-    return (bic=bicchosen, aic=aicchosen, ictable=infocritest, numconv=numconv)
+    return (; bic, aic, ictable, numconv)
 end
 
 """
@@ -188,13 +188,13 @@ function fullinfocrit(
     ϵ::Real=1e-01,
     stdize::Bool=false)
 
-    origy, _ = tlag(mardata, pmax)
+    origy = tlag(mardata, pmax)[1]
     N1, N2, obs = size(origy)
     if isempty(r̄)
         r̄ = [N1, N2, N1, N2]
     end
 
-    infocritest = fill(NaN, 8, prod(r̄) * pmax)
+    ictable = fill(NaN, 8, prod(r̄) * pmax)
     regiters = fill(NaN, prod(r̄) * pmax)
     grid = collect(Iterators.product(1:r̄[1], 1:r̄[2], 1:r̄[3], 1:r̄[4], 1:pmax))
     numconv = 0
@@ -202,11 +202,11 @@ function fullinfocrit(
         selectedrank = collect(grid[i])
         r1, r2, r3, r4, p = selectedrank
         if !tuckercondition([r1, r2, r3, r4])
-            infocritest[4, i] = r1
-            infocritest[5, i] = r2
-            infocritest[6, i] = r3
-            infocritest[7, i] = r4
-            infocritest[8, i] = p
+            ictable[4, i] = r1
+            ictable[5, i] = r2
+            ictable[6, i] = r3
+            ictable[7, i] = r4
+            ictable[8, i] = p
             continue
         end
         if p == 1
@@ -226,26 +226,26 @@ function fullinfocrit(
             numconv += 1
         end
 
-        infocritest[1, i] = aic(logdetcov, numpars, obs)
-        infocritest[2, i] = bic(logdetcov, numpars, obs)
-        infocritest[3, i] = hqc(logdetcov, numpars, obs)
-        infocritest[4, i] = r1
-        infocritest[5, i] = r2
-        infocritest[6, i] = r3
-        infocritest[7, i] = r4
-        infocritest[8, i] = p
+        ictable[1, i] = aic(logdetcov, numpars, obs)
+        ictable[2, i] = bic(logdetcov, numpars, obs)
+        ictable[3, i] = hqc(logdetcov, numpars, obs)
+        ictable[4, i] = r1
+        ictable[5, i] = r2
+        ictable[6, i] = r3
+        ictable[7, i] = r4
+        ictable[8, i] = p
         regiters[i] = tuckest.iters
     end
-    nancols = findall(x -> any(isnan, x), eachcol(infocritest))
-    filteredic = infocritest[:, setdiff(1:size(infocritest, 2), nancols)]
+    nancols = findall(x -> any(isnan, x), eachcol(ictable))
+    filteredic = ictable[:, setdiff(1:size(ictable, 2), nancols)]
     aicvec = argmin(filteredic[1, :])
-    aicchosen = Int.(filteredic[4:end, aicvec])
+    aic = Int.(filteredic[4:end, aicvec])
     bicvec = argmin(filteredic[2, :])
-    bicchosen = Int.(filteredic[4:end, bicvec])
+    bic = Int.(filteredic[4:end, bicvec])
     hqcvec = argmin(filteredic[3, :])
-    hqcchosen = Int.(filteredic[4:end, hqcvec])
+    hqc = Int.(filteredic[4:end, hqcvec])
 
-    return (bic=bicchosen, aic=aicchosen, hqc=hqcchosen, ictable=infocritest, regiters=regiters, numconv=numconv)
+    return (; bic, aic, hqc, ictable, regiters, numconv)
 end
 
 """
@@ -277,7 +277,7 @@ function rrvaric(vardata::AbstractMatrix, pmax::Int, stdize::Bool)
     pred = vlag(vardata, pmax)[(k+1):end, :]
     pred = pred .- mean(pred, dims=2)
 
-    infocritest = fill(NaN, 5, prod(k) * pmax)
+    ictable = fill(NaN, 5, prod(k) * pmax)
     grid = collect(Iterators.product(1:k, 1:pmax))
 
     for i in 1:(prod(k)*pmax)
@@ -295,20 +295,20 @@ function rrvaric(vardata::AbstractMatrix, pmax::Int, stdize::Bool)
         logdetcov = rrvarest.loglike
         numpars = (k * r) + (k * r * p)
 
-        infocritest[1, i] = aic(logdetcov, numpars, obs)
-        infocritest[2, i] = bic(logdetcov, numpars, obs)
-        infocritest[3, i] = hqc(logdetcov, numpars, obs)
-        infocritest[4, i] = r
-        infocritest[5, i] = p
+        ictable[1, i] = aic(logdetcov, numpars, obs)
+        ictable[2, i] = bic(logdetcov, numpars, obs)
+        ictable[3, i] = hqc(logdetcov, numpars, obs)
+        ictable[4, i] = r
+        ictable[5, i] = p
     end
 
-    aicvec = argmin(infocritest[1, :])
-    aicchosen = Int.(infocritest[4:end, aicvec])
-    bicvec = argmin(infocritest[2, :])
-    bicchosen = Int.(infocritest[4:end, bicvec])
-    hqcvec = argmin(infocritest[3, :])
-    hqcchosen = Int.(infocritest[4:end, hqcvec])
+    aicvec = argmin(ictable[1, :])
+    aic = Int.(ictable[4:end, aicvec])
+    bicvec = argmin(ictable[2, :])
+    bic = Int.(ictable[4:end, bicvec])
+    hqcvec = argmin(ictable[3, :])
+    hqc = Int.(ictable[4:end, hqcvec])
 
-    return (bic=bicchosen, aic=aicchosen, hqc=hqcchosen, ictable=infocritest)
+    return (; bic, aic, hqc, ictable)
 
 end
