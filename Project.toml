@@ -17,6 +17,7 @@ TensorToolbox = "9c690861-8ade-587a-897e-15364bc6f718"
 [compat]
 Combinatorics = "1"
 Distributions = "0.25"
+Parameters = "0.12"
 ProgressBars = "1"
 ReverseDiff = "1"
 Statistics = "1"
