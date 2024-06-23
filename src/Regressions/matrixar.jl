@@ -57,19 +57,6 @@ function art(Y::AbstractArray, p::Int=1; stdize::Bool=false)
     return (tols=tols, cenorig=cenorig, cenlag=cenlag)
 end
 
-# function leftnull!(m::AbstractMatrix, nA::AbstractVector)
-#     for i = 1:lastindex(nA)
-#         m[:, i] .= nA ./ nA[i]
-#     end
-# end
-# function leftnull(nA::AbstractMatrix)
-#     m = Array{eltype(nA)}(undef, size(nA, 1), size(nA, 1), size(nA, 2))
-#     for i = axes(nA, 2)
-#         leftnull!(view(m, :, :, i), nA[:, i])
-#     end
-#     return m
-# end
-#
 """
     rrvar(Y::AbstractMatrix, r::Int, p::Int)
 
