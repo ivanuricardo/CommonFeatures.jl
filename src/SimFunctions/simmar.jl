@@ -84,8 +84,8 @@ end
 function simulaterrvardata(
     N::Int,
     r::Int,
-    p::Int;
-    obs::Int,
+    p::Int,
+    obs::Int;
     C=nothing,
     snr::Real=0.7,
     maxeigen::Real=0.9,

@@ -41,14 +41,13 @@ p = 2
 result = art(Y, p)
 ```
 """
-function art(Y::AbstractArray, p::Int=1; stdize::Bool=false)
+function art(Y::AbstractArray, p::Int=1; center::Bool=true, stdize::Bool=false)
     origy, laggedy = tlag(Y, p)
     if stdize
-        stdorigy = (origy ./ std(origy, dims=3))
-        cenorig = stdorigy .- mean(stdorigy, dims=3)
+        # Only standardize the lagged values and not the original!
         stdlagy = (laggedy ./ std(laggedy, dims=4))
         cenlag = stdlagy .- mean(stdlagy, dims=4)
-    else
+    elseif center
         cenorig = origy .- mean(origy, dims=3)
         cenlag = laggedy .- mean(laggedy, dims=4)
     end

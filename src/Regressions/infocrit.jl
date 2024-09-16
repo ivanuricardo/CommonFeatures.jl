@@ -34,6 +34,11 @@ function tuckerpar(dimvals::AbstractVector, ranks::AbstractVector, p::Integer=1)
     return totalsum
 end
 
+function cointpar(N::AbstractVector, r::AbstractVector; p::Integer=0)
+    marpar = p * (N[1]^2 + N[2]^2)
+    return 2 * r[1] * (N[1] - r[1]) + 2 * r[2] * (N[2] - r[2]) + marpar
+end
+
 aic(logdet::Real, numpars::Int, obs::Int) = logdet + (2 * numpars) / obs
 bic(logdet::Real, numpars::Int, obs::Int) = logdet + (numpars * log(obs)) / obs
 hqc(logdet::Real, numpars::Int, obs::Int) = logdet + (numpars * 2 * log(log(obs))) / obs
