@@ -27,6 +27,13 @@ function objmecm(ΔY, Y, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
     return sigma - 0.5 * ssr
 end
 
+function clipper!(gradient::AbstractArray, threshold::Real)
+    grad_norm = norm(gradient)  # Compute the norm of the gradient
+    if grad_norm > threshold
+        gradient .= gradient * (threshold / grad_norm)  # Scale the gradient to clip it
+    end
+end
+
 function mecm(
     mardata::AbstractArray,
     ranks::AbstractVector;
@@ -34,6 +41,7 @@ function mecm(
     eta::Real=1e-02,
     maxiter::Int=500,
     ϵ::AbstractFloat=1e-03,
+    clipthresh::Real=20,
     batchsize::Int=100
 )
     if length(ranks) != 2
@@ -79,36 +87,41 @@ function mecm(
         # for s in 1:maxiter
 
         iters += 1
-        batchidx = rand(1:(obs-batchsize))
-        ΔYbatch = ΔY[:, batchidx:(batchidx+batchsize-1)]
-        Ybatch = Y[:, batchidx:(batchidx+batchsize-1)]
+        # batchidx = rand(1:(obs-batchsize))
+        # ΔYbatch = ΔY[:, batchidx:(batchidx+batchsize-1)]
+        # Ybatch = Y[:, batchidx:(batchidx+batchsize-1)]
 
-        ∇U1 = gradient(x -> objmecm(ΔYbatch, Ybatch, D, x, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2), U1)[1]
+        ∇U1 = gradient(x -> objmecm(ΔY, Y, D, x, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2), U1)[1]
+        # clipper!(∇U1, clipthresh)
         U1 += eta * ∇U1
         trackU1[s] = norm(∇U1)
 
-        ∇U2 = gradient(x -> objmecm(ΔYbatch, Ybatch, D, U1, x, U3, U4, Σ1, Σ2, ϕ1, ϕ2), U2)[1]
+        ∇U2 = gradient(x -> objmecm(ΔY, Y, D, U1, x, U3, U4, Σ1, Σ2, ϕ1, ϕ2), U2)[1]
+        # clipper!(∇U2, clipthresh)
         U2 += eta * ∇U2
         trackU2[s] = norm(∇U2)
 
-        ∇U3 = gradient(x -> objmecm(ΔYbatch, Ybatch, D, U1, U2, x, U4, Σ1, Σ2, ϕ1, ϕ2), U3)[1]
+        ∇U3 = gradient(x -> objmecm(ΔY, Y, D, U1, U2, x, U4, Σ1, Σ2, ϕ1, ϕ2), U3)[1]
+        # clipper!(∇U3, clipthresh)
         U3 += eta * ∇U3
         trackU3[s] = norm(∇U3)
 
-        ∇U4 = gradient(x -> objmecm(ΔYbatch, Ybatch, D, U1, U2, U3, x, Σ1, Σ2, ϕ1, ϕ2), U4)[1]
+        ∇U4 = gradient(x -> objmecm(ΔY, Y, D, U1, U2, U3, x, Σ1, Σ2, ϕ1, ϕ2), U4)[1]
+        # clipper!(∇U4, clipthresh)
         U4 += eta * ∇U4
         trackU4[s] = norm(∇U4)
 
-        ∇D = gradient(x -> objmecm(ΔYbatch, Ybatch, x, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2), D)[1]
+        ∇D = gradient(x -> objmecm(ΔY, Y, x, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2), D)[1]
+        # clipper!(∇D, clipthresh)
         D += eta * ∇D
         trackD[s] = norm(∇D)
 
         if p != 0
-            ∇ϕ1 = gradient(x -> objmecm(ΔYbatch, Ybatch, D, U1, U2, U3, U4, Σ1, Σ2, x, ϕ2), ϕ1)[1]
+            ∇ϕ1 = gradient(x -> objmecm(ΔY, Y, D, U1, U2, U3, U4, Σ1, Σ2, x, ϕ2), ϕ1)[1]
             ϕ1 += eta * ∇ϕ1
             trackϕ1[s] = norm(∇ϕ1)
 
-            ∇ϕ2 = gradient(x -> objmecm(ΔYbatch, Ybatch, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, x), ϕ2)[1]
+            ∇ϕ2 = gradient(x -> objmecm(ΔY, Y, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, x), ϕ2)[1]
             ϕ2 += eta * ∇ϕ2
             trackϕ2[s] = norm(∇ϕ2)
         end
