@@ -34,6 +34,17 @@ function clipper!(gradient::AbstractArray, threshold::Real)
     end
 end
 
+function orth!(A::AbstractArray)
+    A .= Matrix(qr(A).Q)
+end
+
+function rorth(n1::Int, n2::Int)
+    A = randn(n1, n2)
+    Q, R = qr(A)
+    randorth = Q * Diagonal(sign.(diag(R)))
+    return randorth
+end
+
 function mecm(
     mardata::AbstractArray,
     ranks::AbstractVector;
@@ -69,10 +80,23 @@ function mecm(
     Y = reshape(my, N1 * N2, obs)
     D = zeros(size(mdy, 1) * size(mdy, 2))
 
-    r = repeat(ranks, 2)
-    hosvdinit = idhosvd(initestcoint, r)
+    # r = repeat(ranks, 2)
+    # hosvdinit = idhosvd(initestcoint, r)
+    # U1, U2, U3, U4 = hosvdinit.fmat
+    # Alternative initialization
 
-    U1, U2, U3, U4 = hosvdinit.fmat
+    permA = tenmat(permutedims(initestcoint, (2, 4, 1, 3)), row=[1, 2])
+    ll, _, rr = svd(permA)
+    left = reshape(ll[:, 1], N2, N2)
+    right = reshape(rr[:, 1], N1, N1)
+    U2left, _, U4left = svd(left)
+    U1right, _, U3right = svd(right)
+    U1 = U1right[:, 1:ranks[1]]
+    U2 = U2left[:, 1:ranks[2]]
+    U3 = U3right[:, 1:ranks[1]]
+    U4 = U4left[:, 1:ranks[2]]
+
+
     Σ1, Σ2 = I(N1), I(N2)
 
     trackU1 = fill(NaN, maxiter)
@@ -92,27 +116,27 @@ function mecm(
         # Ybatch = Y[:, batchidx:(batchidx+batchsize-1)]
 
         ∇U1 = gradient(x -> objmecm(ΔY, Y, D, x, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2), U1)[1]
-        # clipper!(∇U1, clipthresh)
+        clipper!(∇U1, clipthresh)
         U1 += eta * ∇U1
         trackU1[s] = norm(∇U1)
 
         ∇U2 = gradient(x -> objmecm(ΔY, Y, D, U1, x, U3, U4, Σ1, Σ2, ϕ1, ϕ2), U2)[1]
-        # clipper!(∇U2, clipthresh)
+        clipper!(∇U2, clipthresh)
         U2 += eta * ∇U2
         trackU2[s] = norm(∇U2)
 
         ∇U3 = gradient(x -> objmecm(ΔY, Y, D, U1, U2, x, U4, Σ1, Σ2, ϕ1, ϕ2), U3)[1]
-        # clipper!(∇U3, clipthresh)
+        clipper!(∇U3, clipthresh)
         U3 += eta * ∇U3
         trackU3[s] = norm(∇U3)
 
         ∇U4 = gradient(x -> objmecm(ΔY, Y, D, U1, U2, U3, x, Σ1, Σ2, ϕ1, ϕ2), U4)[1]
-        # clipper!(∇U4, clipthresh)
+        clipper!(∇U4, clipthresh)
         U4 += eta * ∇U4
         trackU4[s] = norm(∇U4)
 
         ∇D = gradient(x -> objmecm(ΔY, Y, x, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2), D)[1]
-        # clipper!(∇D, clipthresh)
+        clipper!(∇D, clipthresh)
         D += eta * ∇D
         trackD[s] = norm(∇D)
 

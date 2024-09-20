@@ -27,7 +27,7 @@ using Base: start_base_include
 end
 
 using LinearAlgebra, Random, TensorToolbox, Plots, CommonFeatures, Zygote, ProgressBars
-Random.seed!(20230915)
+Random.seed!(20240920)
 
 n = [4, 3]
 ranks = [1, 3]
@@ -37,17 +37,40 @@ batchsize = 100
 clipthresh = 20
 maxiter = 100
 
-u1 = 0.5 .* randn(n[1], ranks[1])
-u2 = 0.5 .* randn(n[2], ranks[2])
-u3 = 0.5 .* randn(n[1], ranks[1])
-u4 = 0.5 .* randn(n[2], ranks[2])
+trueU1 = fill(NaN, n[1], ranks[1])
+trueU2 = fill(NaN, n[2], ranks[2])
+trueU3 = fill(NaN, n[1], ranks[1])
+trueU4 = fill(NaN, n[2], ranks[2])
+for i in 1:1000
+    Q1 = rorth(n[1], ranks[1])
+    Q2 = rorth(n[1], ranks[1])
+    Q3 = rorth(n[2], ranks[2])
+    Q4 = rorth(n[2], ranks[2])
 
-# ϕ1 = 0.4 .* randn(n[1], n[1])
-# ϕ2 = 0.4 .* randn(n[2], n[2])
-# drift = 0.0001
+    A = Q1 * diagm(randn(ranks[1])) * Q2'
+    B = Q3 * diagm(randn(ranks[2])) * Q4'
 
-kron21 = kron(u2, u1)
-kron43 = kron(u4, u3)
+    u2, s1, u4 = svd(A)
+    u1, s2, u3 = svd(B)
+    trueU1 .= 1.5 .* u1[:, 1:ranks[1]] * diagm(s2[1:ranks[1]])
+    trueU2 .= 1.5 .* u2[:, 1:ranks[2]] * diagm(s1[1:ranks[2]])
+    trueU3 .= 1.5 .* u3[:, 1:ranks[1]]
+    trueU4 .= 1.5 .* u4[:, 1:ranks[2]]
+
+    # ϕ1 = 0.4 .* randn(n[1], n[1])
+    # ϕ2 = 0.4 .* randn(n[2], n[2])
+    # drift = 0.0001
+
+    kron21 = kron(trueU2, trueU1)
+    kron43 = kron(trueU4, trueU3)
+
+    # Check I(1)
+    i1cond = (abs.(eigvals(I + kron43'kron21))[1] < 0.9)
+    if i1cond
+        println("I(1) condition satisfied")
+        break
+    end
+end
 
 obs = 1000
 burnin = 100
@@ -68,9 +91,9 @@ Y = reshape(my, N1 * N2, obs)
 D = zeros(size(mdy, 1) * size(mdy, 2))
 lltrue = objmecm(ΔY, Y, D, u1, u2, u3, u4, I(N1), I(N2), zeros(N1, N1), zeros(N2, N2))
 
-results = mecm(mardata, [1, 3]; p=0, eta=1e-07, maxiter=400, ϵ=0.01, batchsize=100, clipthresh=75)
+results = mecm(mardata, [1, 3]; p=0, eta=1e-05, maxiter=100, ϵ=1.0, batchsize=100, clipthresh=10000)
 results.llist[1:findlast(!isnan, results.llist)]
-startidx = 1
+startidx = 5
 plot(results.llist[startidx:findlast(!isnan, results.llist)])
 plot(results.fullgrads)
 
@@ -80,7 +103,7 @@ ictable = fill(NaN, 5, prod(n))
 for i in ProgressBar(1:prod(n))
     selectedrank = collect(grid[i])
     numpars = cointpar(n, ranks)
-    mecmest = mecm(mardata, selectedrank; p=0, eta=1e-04, maxiter=150, ϵ=0.01, clipthresh=50)
+    mecmest = mecm(mardata, selectedrank; p=0, eta=1e-05, maxiter=100, ϵ=1.0, clipthresh=10000)
     loglike = -mecmest.llist[findlast(!isnan, mecmest.llist)]
     ictable[1, i] = aic(loglike, numpars, obs)
     ictable[2, i] = bic(loglike, numpars, obs)

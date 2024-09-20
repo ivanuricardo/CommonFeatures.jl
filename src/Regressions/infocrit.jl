@@ -39,9 +39,9 @@ function cointpar(N::AbstractVector, r::AbstractVector; p::Integer=0)
     return r[1] * (2 * N[1] - r[1]) + r[2] * (2 * N[2] - r[2]) + marpar
 end
 
-aic(logdet::Real, numpars::Int, obs::Int) = logdet + (2 * numpars) / obs
-bic(logdet::Real, numpars::Int, obs::Int) = logdet + (numpars * log(obs)) / obs
-hqc(logdet::Real, numpars::Int, obs::Int) = logdet + (numpars * 2 * log(log(obs))) / obs
+aic(ll::Real, numpars::Int, obs::Int) = ll + (2 * numpars) / obs
+bic(ll::Real, numpars::Int, obs::Int) = ll + (numpars * log(obs)) / obs
+hqc(ll::Real, numpars::Int, obs::Int) = ll + (numpars * 2 * log(log(obs))) / obs
 
 function tuckercondition(r::Vector{Int})
     n = length(r)
