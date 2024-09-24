@@ -190,7 +190,7 @@ function mecm2(
     llist = fill(NaN, maxiter)
 
     iters = 0
-    for s in ProgressBar(1:maxiter)
+    for s in 1:maxiter
         # for s in 1:maxiter
 
         iters += 1
