@@ -35,7 +35,7 @@ include("./Regressions/mecmgrads.jl")
 export simulatetuckerdata, generatetuckercoef
 export simulatevardata, generatevarcoef, generaterrvarcoef, simulaterrvardata
 export simstats
-export rorth, mecmstable, generatemecmparams, generatemecmdata
+export rorth, mecmstable, generatemecmparams, generatemecmdata, selectmecm
 include("./SimFunctions/simtucker.jl")
 include("./SimFunctions/simmar.jl")
 include("./SimFunctions/simutils.jl")
