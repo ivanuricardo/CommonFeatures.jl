@@ -6,7 +6,7 @@ function mecmsumres(ΔY, Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
     U2U4 = U2 * U4'
     for i in 2:obs
         phiY = ϕ1 * ΔY[:, :, (i-1)] * ϕ2'
-        res += ΔY[:, :, i] - U1U3 * Y[:, :, (i-1)] * U2U4' - phiY - D
+        res += ΔY[:, :, i] - U1U3 * Y[:, :, i] * U2U4' - phiY - D
     end
     return res
 end
@@ -18,9 +18,9 @@ function U1grad(ΔY, Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
     U2U4 = U2 * U4'
     U1U3 = U1 * U3'
     for i in 2:obs
-        U2U4YU3 = U2U4 * Y[:, :, (i-1)]' * U3
+        U2U4YU3 = U2U4 * Y[:, :, i]' * U3
         phiY = ϕ1 * ΔY[:, :, (i-1)] * ϕ2'
-        res = ΔY[:, :, i] - U1U3 * Y[:, :, (i-1)] * U2U4' - phiY - D
+        res = ΔY[:, :, i] - U1U3 * Y[:, :, i] * U2U4' - phiY - D
         sumtot += res * U2U4YU3
     end
     return -sumtot
@@ -31,8 +31,8 @@ function U1hessian(Y, U2, U3, U4)
     totsum = zeros(r1, r1)
     obs = size(Y, 3)
     U4U2U2U4 = U4 * U2' * U2 * U4'
-    for i in 2:obs
-        totsum += U3' * Y[:, :, (i-1)] * U4U2U2U4 * Y[:, :, (i-1)]' * U3
+    for i in 1:obs
+        totsum += U3' * Y[:, :, i] * U4U2U2U4 * Y[:, :, i]' * U3
     end
     return totsum
 end
