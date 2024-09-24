@@ -44,9 +44,9 @@ function U2grad(ΔY, Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
     U2U4 = U2 * U4'
     U1U3 = U1 * U3'
     for i in 2:obs
-        U4YU3U1 = U1U3 * Y[:, :, (i-1)] * U4
+        U4YU3U1 = U1U3 * Y[:, :, i] * U4
         phiY = ϕ1 * ΔY[:, :, (i-1)] * ϕ2'
-        res = ΔY[:, :, i] - U1U3 * Y[:, :, (i-1)] * U2U4' - phiY - D
+        res = ΔY[:, :, i] - U1U3 * Y[:, :, i] * U2U4' - phiY - D
         sumtot += res' * U4YU3U1
     end
     return -sumtot
@@ -58,7 +58,7 @@ function U2hessian(Y, U1, U3, U4)
     obs = size(Y, 3)
     U3U1U1U3 = U3 * U1' * U1 * U3'
     for i in 2:obs
-        totsum += U4' * Y[:, :, (i-1)]' * U3U1U1U3 * Y[:, :, (i-1)] * U4
+        totsum += U4' * Y[:, :, i]' * U3U1U1U3 * Y[:, :, i] * U4
     end
     return totsum
 end
@@ -70,9 +70,9 @@ function U3grad(ΔY, Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
     U2U4 = U2 * U4'
     U1U3 = U1 * U3'
     for i in 2:obs
-        premul = Y[:, :, (i-1)] * U2U4'
+        premul = Y[:, :, i] * U2U4'
         phiY = ϕ1 * ΔY[:, :, (i-1)] * ϕ2'
-        res = ΔY[:, :, i]' - U2U4 * Y[:, :, (i-1)]' * U1U3' - phiY' - D'
+        res = ΔY[:, :, i]' - U2U4 * Y[:, :, i]' * U1U3' - phiY' - D'
         totsum += premul * res * U1
     end
     return -totsum
@@ -85,7 +85,7 @@ function U3hessian(Y, U1, U2, U4)
     U4U2U2U4 = U4 * U2' * U2 * U4'
     U1U1 = U1'U1
     for i in 2:obs
-        totsum += kron(U1U1, Y[:, :, (i-1)] * U4U2U2U4 * Y[:, :, (i-1)]')
+        totsum += kron(U1U1, Y[:, :, i] * U4U2U2U4 * Y[:, :, i]')
     end
     return totsum
 end
@@ -97,9 +97,9 @@ function U4grad(ΔY, Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
     U2U4 = U2 * U4'
     U1U3 = U1 * U3'
     for i in 2:obs
-        premul = Y[:, :, (i-1)]' * U1U3'
+        premul = Y[:, :, i]' * U1U3'
         phiY = ϕ1 * ΔY[:, :, (i-1)] * ϕ2'
-        res = ΔY[:, :, i] - U1U3 * Y[:, :, (i-1)] * U2U4' - phiY - D
+        res = ΔY[:, :, i] - U1U3 * Y[:, :, i] * U2U4' - phiY - D
         totsum += premul * res * U2
     end
     return -totsum
@@ -112,7 +112,7 @@ function U4hessian(Y, U1, U2, U3)
     U2U2 = U2'U2
     U3U1U1U3 = U3 * U1' * U1 * U3'
     for i in 2:obs
-        totsum += kron(U2U2, Y[:, :, (i-1)]' * U3U1U1U3 * Y[:, :, (i-1)])
+        totsum += kron(U2U2, Y[:, :, i]' * U3U1U1U3 * Y[:, :, i])
     end
     return totsum
 end
@@ -124,8 +124,8 @@ function ϕ1grad(ΔY, Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
     U2U4 = U2 * U4'
     for i in 2:obs
         phiY = ϕ1 * ΔY[:, :, (i-1)] * ϕ2'
-        res = ΔY[:, :, i] - U1U3 * Y[:, :, (i-1)] * U2U4' - phiY - D
-        totsum += res * ϕ2 * ΔY[:, :, (i-1)]'
+        res = ΔY[:, :, i] - U1U3 * Y[:, :, i] * U2U4' - phiY - D
+        totsum += res * ϕ2 * ΔY[:, :, i]'
     end
     return -totsum
 end
@@ -147,7 +147,7 @@ function ϕ2grad(ΔY, Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
     U2U4 = U2 * U4'
     for i in 2:obs
         phiY = ϕ1 * ΔY[:, :, (i-1)] * ϕ2'
-        res = ΔY[:, :, i] - U1U3 * Y[:, :, (i-1)] * U2U4' - phiY - D
+        res = ΔY[:, :, i] - U1U3 * Y[:, :, i] * U2U4' - phiY - D
         totsum += res' * ϕ1 * ΔY[:, :, (i-1)]
     end
     return -totsum
