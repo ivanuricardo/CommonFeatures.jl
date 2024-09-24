@@ -50,17 +50,20 @@ function mecmstable(U1, U2, U3, U4, ϕ1, ϕ2)
     return abs.(eigvals(companionmatrix))
 end
 
-function generatemecmdata(U1, U2, U3, U4, ϕ1, ϕ2, obs; burnin=100)
+function generatemecmdata(U1, U2, U3, U4, ϕ1, ϕ2, obs; burnin=100, snr::Real=0.7)
     n1 = size(ϕ1, 1)
     n2 = size(ϕ2, 1)
     Y = zeros(n1 * n2, obs + burnin)
     kron21 = kron(U2, U1)
     kron43 = kron(U4, U3)
     kronphi = kron(ϕ2, ϕ1)
+    rho = spectralradius(kron21 * kron43')
+    diagerr = repeat([rho / snr], n1 * n2)
+    d = MultivariateNormal(zeros(n1 * n2), diagm(diagerr))
     for i in 3:(obs+burnin)
         piy = kron21 * kron43' * Y[:, i-1]
         phiy = kronphi * (Y[:, i-1] - Y[:, i-2])
-        Y[:, i] .= Y[:, i-1] + piy + phiy + randn(n1 * n2)
+        Y[:, i] .= Y[:, i-1] + piy + phiy + rand(d)
     end
     data = matten(Y[:, (burnin+1):end], [1, 2], [3], [n1, n2, obs])
 
