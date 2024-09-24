@@ -2,7 +2,7 @@ using LinearAlgebra, Random, TensorToolbox, Plots, CommonFeatures, Zygote, Progr
 Random.seed!(20240922)
 
 n = [4, 3]
-ranks = [4, 1]
+ranks = [1, 1]
 eta = 2e-07
 p = 0
 maxiter = 100
@@ -38,19 +38,13 @@ burnin = 100
 
 mardata, flaty, lltrue = generatemecmdata(trueU1, trueU2, trueU3, trueU4, trueϕ1, trueϕ2, obs)
 
-results = mecm(mardata, [4, 1]; p=0, maxiter=50, ϵ=1e-02)
-results.llist[1:findlast(!isnan, results.llist)]
-startidx = 20
-plot(results.llist[startidx:findlast(!isnan, results.llist)])
-plot(results.fullgrads)
-
 grid = collect(Iterators.product(1:n[1], 1:n[2]))
 ictable = fill(NaN, 5, prod(n))
 
 for i in ProgressBar(1:prod(n))
     selectedrank = collect(grid[i])
     numpars = cointpar(n, ranks)
-    mecmest = mecm(mardata, selectedrank; p=0, maxiter=50, ϵ=1e-03)
+    mecmest = mecm(mardata, selectedrank; p=0, maxiter=100, ϵ=1e-02)
     loglike = -mecmest.llist[findlast(!isnan, mecmest.llist)]
     ictable[1, i] = aic(loglike, numpars, obs)
     ictable[2, i] = bic(loglike, numpars, obs)
@@ -67,3 +61,10 @@ bicvec = argmin(filteredic[2, :])
 bicselected = Int.(filteredic[4:end, bicvec])
 hqcvec = argmin(filteredic[3, :])
 hqcselected = Int.(filteredic[4:end, bicvec])
+
+results = mecm(mardata, [1, 1]; p=0, maxiter=5000, ϵ=1e-12)
+results.llist[1:findlast(!isnan, results.llist)]
+startidx = 20
+# plot(results.llist[startidx:findlast(!isnan, results.llist)])
+# plot(results.fullgrads)
+
