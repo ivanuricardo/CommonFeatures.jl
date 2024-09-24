@@ -1,37 +1,9 @@
-using Base: start_base_include
-
-@testset "Mecm objective" begin
-    using TensorToolbox, LinearAlgebra, Random, CommonFeatures, Zygote
-    Random.seed!(20231228)
-
-    N = [4, 3]
-    mardata = randn(N[1], N[2], 100)
-    ranks = [1, 2]
-    maxiter = 100
-    eta = 1e-04
-
-    D = randn(N[1] * N[2])
-    ΔY = randn(N[1] * N[2], 100)
-    Y = cumsum(ΔY, dims=2)
-
-    U1 = randn(N[1], ranks[1])
-    U2 = randn(N[2], ranks[2])
-    U3 = randn(N[1], ranks[1])
-    U4 = randn(N[2], ranks[2])
-    ϕ1 = randn(N[1], N[1])
-    ϕ2 = randn(N[2], N[2])
-
-    Σ1 = ϕ1 * ϕ1'
-    Σ2 = ϕ2 * ϕ2'
-
-end
-
 using LinearAlgebra, Random, TensorToolbox, Plots, CommonFeatures, Zygote, ProgressBars
-Random.seed!(20240920)
+Random.seed!(20240922)
 
 n = [4, 3]
-ranks = [1, 1]
-eta = 1e-05
+ranks = [4, 1]
+eta = 2e-07
 p = 0
 maxiter = 100
 
@@ -39,6 +11,8 @@ trueU1 = fill(NaN, n[1], ranks[1])
 trueU2 = fill(NaN, n[2], ranks[2])
 trueU3 = fill(NaN, n[1], ranks[1])
 trueU4 = fill(NaN, n[2], ranks[2])
+trueϕ1 = zeros(n[1], n[1])
+trueϕ2 = zeros(n[2], n[2])
 ct = 0
 
 for i in 1:1000
@@ -47,8 +21,8 @@ for i in 1:1000
     U1, U2, U3, U4, ϕ1, ϕ2 = generatemecmparams(n, ranks, genphi=false)
 
     # Check I(1)
-    i1cond = mecmstability(U1, U2, U3, U4, ϕ1, ϕ2)
-    if i1cond
+    i1cond = mecmstable(U1, U2, U3, U4, ϕ1, ϕ2)
+    if maximum(i1cond) < 0.9
         trueU1 = U1
         trueU2 = U2
         trueU3 = U3
@@ -57,17 +31,29 @@ for i in 1:1000
         break
     end
 end
+mecmstable(trueU1, trueU2, trueU3, trueU4, trueϕ1, trueϕ2)
 
 obs = 1000
 burnin = 100
 
-mardata, flaty, lltrue = generatemecmdata(U1, U2, U3, U4, ϕ1, ϕ2, obs)
+mardata, flaty, lltrue = generatemecmdata(trueU1, trueU2, trueU3, trueU4, trueϕ1, trueϕ2, obs)
 
-results = mecm(mardata, [1, 1]; p=0, eta=1e-05, maxiter=500, ϵ=1e-03, initcount=1, warmstart=1)
+mdy = mardata[:, :, 2:end] - mardata[:, :, 1:(end-1)]
+ΔY = tenmat(mdy, row=[1, 2])
+my = mardata[:, :, 1:(end-1)]
+Y = tenmat(my, row=[1, 2])
+D = zeros(n[1], n[2])
+Σ1, Σ2 = I(n[1]), I(n[2])
+ϕ1, ϕ2 = zeros(n[1], n[1]), zeros(n[2], n[2])
+objmecm(ΔY, Y, D, trueU1, trueU2, trueU3, trueU4, Σ1, Σ2, ϕ1, ϕ2)
+loss(mdy, my, D, trueU1, trueU2, trueU3, trueU4, ϕ1, ϕ2)
+
+results = mecm(mardata, [4, 1]; p=0, maxiter=50, ϵ=1e-09)
+results2 = mecm2(mardata, [4, 1]; p=0, maxiter=100, ϵ=1e-02)
 results.llist[1:findlast(!isnan, results.llist)]
-startidx = 1
-plot(results.llist[startidx:50])
-plot(results.fullgrads)
+startidx = 20
+plot(results2.llist[startidx:findlast(!isnan, results2.llist)])
+plot(results2.fullgrads)
 
 grid = collect(Iterators.product(1:n[1], 1:n[2]))
 ictable = fill(NaN, 5, prod(n))
@@ -75,7 +61,7 @@ ictable = fill(NaN, 5, prod(n))
 for i in ProgressBar(1:prod(n))
     selectedrank = collect(grid[i])
     numpars = cointpar(n, ranks)
-    mecmest = mecm(mardata, selectedrank; p=0, eta=1e-06, maxiter=200, ϵ=0.1)
+    mecmest = mecm2(mardata, selectedrank; p=0, maxiter=50, ϵ=1e-03)
     loglike = -mecmest.llist[findlast(!isnan, mecmest.llist)]
     ictable[1, i] = aic(loglike, numpars, obs)
     ictable[2, i] = bic(loglike, numpars, obs)

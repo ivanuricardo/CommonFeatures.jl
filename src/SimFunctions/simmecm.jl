@@ -29,8 +29,8 @@ function generatemecmparams(n, ranks; genphi=true)
     U4 = u4[:, 1:ranks[2]]
 
     if genphi
-        ϕ1 = Qϕ1 * diagm(randn(n[2])) * Qϕ2'
-        ϕ2 = Qϕ3 * diagm(randn(n[1])) * Qϕ4'
+        ϕ2 = Qϕ1 * diagm(randn(n[2])) * Qϕ2'
+        ϕ1 = Qϕ3 * diagm(randn(n[1])) * Qϕ4'
         return (; U1, U2, U3, U4, ϕ1, ϕ2)
     end
     ϕ1 = zeros(n[1], n[1])
@@ -39,7 +39,7 @@ function generatemecmparams(n, ranks; genphi=true)
     return (; U1, U2, U3, U4, ϕ1, ϕ2)
 end
 
-function mecmstability(U1, U2, U3, U4, ϕ1, ϕ2)
+function mecmstable(U1, U2, U3, U4, ϕ1, ϕ2)
     kronu21 = kron(U2, U1)
     kronu43 = kron(U4, U3)
     kronphi = kron(ϕ2, ϕ1)
@@ -47,12 +47,12 @@ function mecmstability(U1, U2, U3, U4, ϕ1, ϕ2)
     topright = kronu43' * kronphi
 
     companionmatrix = [topleft topright; kronu21 kronphi]
-    return maximum(abs.(eigvals(companionmatrix))) < 1
+    return abs.(eigvals(companionmatrix))
 end
 
 function generatemecmdata(U1, U2, U3, U4, ϕ1, ϕ2, obs; burnin=100)
     n1 = size(ϕ1, 1)
-    n2 = size(ϕ1, 2)
+    n2 = size(ϕ2, 1)
     Y = zeros(n1 * n2, obs + burnin)
     kron21 = kron(U2, U1)
     kron43 = kron(U4, U3)
