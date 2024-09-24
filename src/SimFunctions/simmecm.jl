@@ -62,16 +62,16 @@ function generatemecmdata(U1, U2, U3, U4, ϕ1, ϕ2, obs; burnin=100)
         phiy = kronphi * (Y[:, i-1] - Y[:, i-2])
         Y[:, i] .= Y[:, i-1] + piy + phiy + randn(n1 * n2)
     end
-    mardata = matten(Y[:, (burnin+1):end], [1, 2], [3], [n1, n2, obs])
+    data = matten(Y[:, (burnin+1):end], [1, 2], [3], [n1, n2, obs])
 
-    mdy = mardata[:, :, 2:end] - mardata[:, :, 1:end-1]
-    my = mardata[:, :, 1:end-1]
+    mdy = data[:, :, 2:end] - data[:, :, 1:end-1]
+    my = data[:, :, 1:end-1]
     N1, N2, obs = size(my)
     ΔY = Y[:, (burnin+1):end] - Y[:, burnin:(end-1)]
     flatdata = Y[:, burnin:(end-1)]
     D = zeros(size(mdy, 1) * size(mdy, 2))
     ll = objmecm(ΔY, flatdata, D, U1, U2, U3, U4, I(N1), I(N2), ϕ1, ϕ2)
-    return (; mardata, flatdata, ll)
+    return (; data, flatdata, ll)
 end
 
 function selectmecm(data; p=0, maxiters=50, ϵ=1e-02)
