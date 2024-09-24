@@ -58,7 +58,7 @@ function generatemecmdata(U1, U2, U3, U4, ϕ1, ϕ2, obs; burnin=100, snr::Real=0
     kron43 = kron(U4, U3)
     kronphi = kron(ϕ2, ϕ1)
     rho = spectralradius(kron21 * kron43')
-    diagerr = repeat([1], n1 * n2)
+    diagerr = repeat([rho / snr], n1 * n2)
     d = MultivariateNormal(zeros(n1 * n2), diagm(diagerr))
     for i in 3:(obs+burnin)
         piy = kron21 * kron43' * Y[:, i-1]
