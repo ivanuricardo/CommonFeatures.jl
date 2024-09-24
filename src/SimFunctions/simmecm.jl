@@ -60,7 +60,7 @@ function generatemecmdata(U1, U2, U3, U4, ϕ1, ϕ2, obs; burnin=100)
     for i in 3:(obs+burnin)
         piy = kron21 * kron43' * Y[:, i-1]
         phiy = kronphi * (Y[:, i-1] - Y[:, i-2])
-        Y[:, i] .= Y[:, i-1] + piy + phiy + (0.01 .* randn(n1 * n2))
+        Y[:, i] .= Y[:, i-1] + piy + phiy + (0.1 .* randn(n1 * n2))
     end
     data = matten(Y[:, (burnin+1):end], [1, 2], [3], [n1, n2, obs])
 
