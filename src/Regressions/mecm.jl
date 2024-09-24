@@ -14,20 +14,10 @@ function objmecm(ΔY, Y, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
     return sigma - 0.5 * ssr
 end
 
-function mecm(
-    mardata::AbstractArray,
-    ranks::AbstractVector;
-    p::Int=0,
-    maxiter::Int=500,
-    ϵ::AbstractFloat=1e-03,
-)
-    if length(ranks) != 2
-        error("ranks must be a vector of length 2")
-    end
-
+function mecminit(mardata::AbstractArray, ranks::AbstractVector; p::Int=0)
     ΔY = mardata[:, :, 2:end] - mardata[:, :, 1:(end-1)]
     Y = mardata[:, :, 1:(end-1)]
-    N1, N2, obs = size(ΔY)
+    N1, N2, _ = size(ΔY)
     initestcoint = tensorols(ΔY, Y)
 
     if p != 0
@@ -36,18 +26,11 @@ function mecm(
         vϕ1, _, vϕ2 = svd(tenmat(permutedmar, row=[1, 2]))
         ϕ1 = reshape(vϕ1[:, 1], N1, N1)
         ϕ2 = reshape(vϕ2[:, 1], N2, N2)
-        trackϕ1 = fill(NaN, maxiter)
-        trackϕ2 = fill(NaN, maxiter)
     else
         ϕ1 = zeros(N1, N1)
         ϕ2 = zeros(N2, N2)
     end
 
-    mdy = reshape(ΔY, N1 * N2, obs)
-    my = reshape(Y, N1 * N2, obs)
-    D = zeros(size(ΔY, 1), size(ΔY, 2))
-
-    # Alternative initialization
     permA = tenmat(permutedims(initestcoint, (2, 4, 1, 3)), row=[1, 2])
     ll, _, rr = svd(permA)
     left = reshape(ll[:, 1], N2, N2)
@@ -59,12 +42,34 @@ function mecm(
     U3 = U3right[:, 1:ranks[1]]
     U4 = U4left[:, 1:ranks[2]]
     Σ1, Σ2 = I(N1), I(N2)
+    D = zeros(size(ΔY, 1), size(ΔY, 2))
+
+    return (; ΔY, Y, U1, U2, U3, U4, D, ϕ1, ϕ2, Σ1, Σ2)
+end
+
+function mecm(
+    mardata::AbstractArray,
+    ranks::AbstractVector;
+    p::Int=0,
+    maxiter::Int=500,
+    ϵ::AbstractFloat=1e-03,
+)
+    if length(ranks) != 2
+        error("ranks must be a vector of length 2")
+    end
+
+    ΔY, Y, U1, U2, U3, U4, D, ϕ1, ϕ2, Σ1, Σ2 = mecminit(mardata, ranks; p)
+    N1, N2, obs = size(Y)
+    mdy = reshape(ΔY, N1 * N2, obs)
+    my = reshape(Y, N1 * N2, obs)
 
     trackU1 = fill(NaN, maxiter)
     trackU2 = fill(NaN, maxiter)
     trackU3 = fill(NaN, maxiter)
     trackU4 = fill(NaN, maxiter)
     trackD = fill(NaN, maxiter)
+    trackϕ1 = fill(NaN, maxiter)
+    trackϕ2 = fill(NaN, maxiter)
     llist = fill(NaN, maxiter)
 
     iters = 0
@@ -125,11 +130,8 @@ function mecm(
 
             if (∇diff < ϵ) || converged
                 fullgrads = hcat(trackU1, trackU2, trackU3, trackU4, trackD)
-                U2U1U4U3 = kron(U2, U1) * kron(U4, U3)'
-                phi21 = kron(ϕ2, ϕ1)
-                res = mdy - U2U1U4U3 * my - phi21 * mdy .- vec(D)
                 converged = (!converged)
-                return (; U1, U2, U3, U4, D, ϕ1, ϕ2, iters, fullgrads, res, converged, llist)
+                return (; U1, U2, U3, U4, D, ϕ1, ϕ2, iters, fullgrads, converged, llist)
             end
         end
     end
@@ -147,46 +149,17 @@ function mecm2(
         error("ranks must be a vector of length 2")
     end
 
-    mdy = mardata[:, :, 2:end] - mardata[:, :, 1:(end-1)]
-    my = mardata[:, :, 1:(end-1)]
-    N1, N2, obs = size(my)
-    initestcoint = tensorols(mdy, my)
-
-    if p != 0
-        initestmar = tensorols(mdy[:, :, 2:end], my[:, :, 1:(end-1)])
-        permutedmar = permutedims(initestmar, (1, 3, 2, 4))
-        vϕ1, _, vϕ2 = svd(tenmat(permutedmar, row=[1, 2]))
-        ϕ1 = reshape(vϕ1[:, 1], N1, N1)
-        ϕ2 = reshape(vϕ2[:, 1], N2, N2)
-        trackϕ1 = fill(NaN, maxiter)
-        trackϕ2 = fill(NaN, maxiter)
-    else
-        ϕ1 = zeros(N1, N1)
-        ϕ2 = zeros(N2, N2)
-    end
-
-    ΔY = reshape(mdy, N1 * N2, obs)
-    Y = reshape(my, N1 * N2, obs)
-    D = zeros(size(mdy, 1) * size(mdy, 2))
-
-    # Alternative initialization
-    permA = tenmat(permutedims(initestcoint, (2, 4, 1, 3)), row=[1, 2])
-    ll, _, rr = svd(permA)
-    left = reshape(ll[:, 1], N2, N2)
-    right = reshape(rr[:, 1], N1, N1)
-    U2left, _, U4left = svd(left)
-    U1right, _, U3right = svd(right)
-    U1 = U1right[:, 1:ranks[1]]
-    U2 = U2left[:, 1:ranks[2]]
-    U3 = U3right[:, 1:ranks[1]]
-    U4 = U4left[:, 1:ranks[2]]
-    Σ1, Σ2 = I(N1), I(N2)
+    ΔY, Y, U1, U2, U3, U4, D, ϕ1, ϕ2, Σ1, Σ2 = mecminit(mardata, ranks; p)
+    mdy = tenmat(ΔY, row=[1, 2])
+    my = tenmat(Y, row=[1, 2])
 
     trackU1 = fill(NaN, maxiter)
     trackU2 = fill(NaN, maxiter)
     trackU3 = fill(NaN, maxiter)
     trackU4 = fill(NaN, maxiter)
     trackD = fill(NaN, maxiter)
+    trackϕ1 = fill(NaN, maxiter)
+    trackϕ2 = fill(NaN, maxiter)
     llist = fill(NaN, maxiter)
 
     iters = 0
@@ -234,7 +207,7 @@ function mecm2(
             ϕ2 += eta * ∇ϕ2
             trackϕ2[s] = norm(∇ϕ2)
         end
-        llist[s] = objmecm(ΔY, Y, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
+        llist[s] = objmecm(mdy, my, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
 
         # Stopping Condition
         if s > 1
@@ -244,11 +217,8 @@ function mecm2(
 
             if (∇diff < ϵ) || converged
                 fullgrads = hcat(trackU1, trackU2, trackU3, trackU4, trackD)
-                U2U1U4U3 = kron(U2, U1) * kron(U4, U3)'
-                phi21 = kron(ϕ2, ϕ1)
-                res = ΔY - U2U1U4U3 * Y - phi21 * ΔY .- D
                 converged = (!converged)
-                return (; U1, U2, U3, U4, D, ϕ1, ϕ2, iters, fullgrads, res, converged, llist)
+                return (; U1, U2, U3, U4, D, ϕ1, ϕ2, iters, fullgrads, converged, llist)
             end
         end
     end
