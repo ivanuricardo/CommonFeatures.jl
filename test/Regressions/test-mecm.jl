@@ -38,22 +38,11 @@ burnin = 100
 
 mardata, flaty, lltrue = generatemecmdata(trueU1, trueU2, trueU3, trueU4, trueϕ1, trueϕ2, obs)
 
-mdy = mardata[:, :, 2:end] - mardata[:, :, 1:(end-1)]
-ΔY = tenmat(mdy, row=[1, 2])
-my = mardata[:, :, 1:(end-1)]
-Y = tenmat(my, row=[1, 2])
-D = zeros(n[1], n[2])
-Σ1, Σ2 = I(n[1]), I(n[2])
-ϕ1, ϕ2 = zeros(n[1], n[1]), zeros(n[2], n[2])
-objmecm(ΔY, Y, D, trueU1, trueU2, trueU3, trueU4, Σ1, Σ2, ϕ1, ϕ2)
-loss(mdy, my, D, trueU1, trueU2, trueU3, trueU4, ϕ1, ϕ2)
-
 results = mecm(mardata, [4, 1]; p=0, maxiter=50, ϵ=1e-02)
-results2 = mecm2(mardata, [4, 1]; p=0, maxiter=50, ϵ=1e-02)
 results.llist[1:findlast(!isnan, results.llist)]
 startidx = 20
-plot(results2.llist[startidx:findlast(!isnan, results2.llist)])
-plot(results2.fullgrads)
+plot(results.llist[startidx:findlast(!isnan, results.llist)])
+plot(results.fullgrads)
 
 grid = collect(Iterators.product(1:n[1], 1:n[2]))
 ictable = fill(NaN, 5, prod(n))
@@ -61,7 +50,7 @@ ictable = fill(NaN, 5, prod(n))
 for i in ProgressBar(1:prod(n))
     selectedrank = collect(grid[i])
     numpars = cointpar(n, ranks)
-    mecmest = mecm2(mardata, selectedrank; p=0, maxiter=50, ϵ=1e-03)
+    mecmest = mecm(mardata, selectedrank; p=0, maxiter=50, ϵ=1e-03)
     loglike = -mecmest.llist[findlast(!isnan, mecmest.llist)]
     ictable[1, i] = aic(loglike, numpars, obs)
     ictable[2, i] = bic(loglike, numpars, obs)
