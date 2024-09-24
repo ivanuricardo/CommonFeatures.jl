@@ -74,5 +74,33 @@ function generatemecmdata(U1, U2, U3, U4, ϕ1, ϕ2, obs; burnin=100)
     return (; mardata, flatdata, ll)
 end
 
+function selectmecm(data; p=0, maxiters=50, ϵ=1e-02)
+    n1, n2, obs = size(data)
+    grid = collect(Iterators.product(1:n1, 1:n2))
+    ictable = fill(NaN, 5, n1 * n2)
+
+    for i in 1:(n1*n2)
+        selectedrank = collect(grid[i])
+        numpars = cointpar([n1, n2], selectedrank)
+        mecmest = mecm(data, selectedrank; p=p, maxiter=maxiters, ϵ=ϵ)
+        loglike = -mecmest.llist[findlast(!isnan, mecmest.llist)]
+        ictable[1, i] = aic(loglike, numpars, obs)
+        ictable[2, i] = bic(loglike, numpars, obs)
+        ictable[3, i] = hqc(loglike, numpars, obs)
+        ictable[4, i] = selectedrank[1]
+        ictable[5, i] = selectedrank[2]
+    end
+
+    nancols = findall(x -> any(isnan, x), eachcol(ictable))
+    filteredic = ictable[:, setdiff(1:size(ictable, 2), nancols)]
+    aicvec = argmin(filteredic[1, :])
+    aicsel = Int.(filteredic[4:end, aicvec])
+    bicvec = argmin(filteredic[2, :])
+    bicsel = Int.(filteredic[4:end, bicvec])
+    hqcvec = argmin(filteredic[3, :])
+    hqcsel = Int.(filteredic[4:end, hqcvec])
+    return (; aicsel, bicsel, hqcsel)
+end
+
 
 
