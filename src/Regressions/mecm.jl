@@ -47,6 +47,36 @@ function mecminit(mardata::AbstractArray, ranks::AbstractVector; p::Int=0)
     return (; ΔY, Y, U1, U2, U3, U4, D, ϕ1, ϕ2, Σ1, Σ2)
 end
 
+"""
+    mecm(mardata::AbstractArray, ranks::AbstractVector; p::Int=0, maxiter::Int=500, ϵ::AbstractFloat=1e-03)
+
+Performs gradient descent optimization for a Matrix Error Correction Model (MECM), iteratively adjusting the estimated parameters to minimize the objective function. The function operates on matrix autoregressive data and returns the optimized matrices along with convergence details.
+
+# Arguments
+- `mardata::AbstractArray`: 3D array representing the matrix autoregressive (MAR) data with dimensions (N1, N2, T), where N1 and N2 are the dimensions of each matrix, and T is the number of observations (time points).
+- `ranks::AbstractVector`: A vector of length 2 specifying the ranks for matrices U1, U2, U3, and U4 used in the factorization of the model.
+  
+# Keyword Arguments
+- `p::Int=0`: The lag order of the autoregressive process. If p > 0, the model includes autoregressive terms.
+- `maxiter::Int=500`: Maximum number of iterations for the gradient descent algorithm.
+- `ϵ::AbstractFloat=1e-03`: Convergence threshold for the gradient descent. The algorithm stops when the difference between consecutive objective values is smaller than this value.
+
+# Returns
+- `U1, U2, U3, U4`: Estimated factors from the factorization of the matrices.
+- `D`: Estimated matrix of intercept terms.
+- `ϕ1, ϕ2`: Autoregressive coefficient matrices (if `p > 0`).
+- `iters::Int`: Number of iterations performed.
+- `fullgrads::Matrix`: A matrix tracking the learning rates for U1, U2, U3, U4, and D during each iteration.
+- `converged::Bool`: Boolean indicating whether the optimization converged.
+- `llist::Vector`: A vector containing the objective function values across iterations.
+
+# Description
+The function initializes the matrices (U1, U2, U3, U4, D, ϕ1, ϕ2) based on the provided data, then iteratively updates these parameters using gradient descent. At each iteration, it computes gradients with respect to each parameter and updates the parameters accordingly. The learning rate for each update is dynamically adjusted using the Hessians of the gradients.
+
+If autoregressive terms (`p > 0`) are specified, additional gradient updates for `ϕ1` and `ϕ2` are performed.
+
+The function tracks the progress of the optimization by storing the learning rates, objective function values, and the number of iterations. The optimization stops when convergence is reached (based on the threshold `ϵ`) or when the maximum number of iterations is exceeded.
+"""
 function mecm(
     mardata::AbstractArray,
     ranks::AbstractVector;
@@ -73,8 +103,7 @@ function mecm(
     llist = fill(NaN, maxiter)
 
     iters = 0
-    for s in ProgressBar(1:maxiter)
-        # for s in 1:maxiter
+    for s in 1:maxiter
 
         iters += 1
 
@@ -122,10 +151,8 @@ function mecm(
         end
         llist[s] = objmecm(mdy, my, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
 
-        # Stopping Condition
         if s > 1
             ∇diff = abs(llist[s] - llist[s-1])
-
             converged = (s == maxiter)
 
             if (∇diff < ϵ) || converged

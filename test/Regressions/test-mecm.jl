@@ -48,7 +48,7 @@ D = zeros(n[1], n[2])
 objmecm(ΔY, Y, D, trueU1, trueU2, trueU3, trueU4, Σ1, Σ2, ϕ1, ϕ2)
 loss(mdy, my, D, trueU1, trueU2, trueU3, trueU4, ϕ1, ϕ2)
 
-results = mecm(mardata, [4, 1]; p=0, maxiter=50, ϵ=1e-09)
+results = mecm(mardata, [4, 1]; p=0, maxiter=50, ϵ=1e-02)
 results2 = mecm2(mardata, [4, 1]; p=0, maxiter=50, ϵ=1e-02)
 results.llist[1:findlast(!isnan, results.llist)]
 startidx = 20
