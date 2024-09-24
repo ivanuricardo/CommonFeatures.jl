@@ -70,7 +70,7 @@ function generatemecmdata(U1, U2, U3, U4, ϕ1, ϕ2, obs; burnin=100)
     ΔY = Y[:, (burnin+1):end] - Y[:, burnin:(end-1)]
     flatdata = Y[:, burnin:(end-1)]
     D = zeros(size(mdy, 1) * size(mdy, 2))
-    ll = objmecm(ΔY, Y, D, U1, U2, U3, U4, I(N1), I(N2), ϕ1, ϕ2)
+    ll = objmecm(ΔY, flatdata, D, U1, U2, U3, U4, I(N1), I(N2), ϕ1, ϕ2)
     return (; mardata, flatdata, ll)
 end
 
