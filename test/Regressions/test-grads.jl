@@ -24,8 +24,8 @@ end
 # Test gradients: We expect the differences between computed and true gradients to be close to zero
 @testset "Gradient Tests" begin
     # Gradients for D
-    truegradD = gradient(x -> objmecm(mdy, my, x, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2), D)[1]
-    matgradD = gradient(x -> -matobj(ΔY, Y, x, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2), D)[1]
+    truegradD = gradient(x -> objmecm(my, x, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2), D)[1]
+    matgradD = gradient(x -> -matobj(Y, x, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2), D)[1]
     approx_gradD = mecmsumres(ΔY, Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
     @test isapprox(truegradD, approx_gradD, atol=1e-6)
 

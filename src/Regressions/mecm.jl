@@ -165,7 +165,7 @@ function mecm(
             ϕ2 += etaϕ2 * ∇ϕ2
             trackϕ2[s] = norm(∇ϕ2)
         end
-        llist[s] = objmecm(mdy, my, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
+        llist[s] = objmecm(my, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
 
         if s > 1
             ∇diff = abs(llist[s] - llist[s-1])
@@ -211,46 +211,46 @@ function mecm2(
 
         iters += 1
 
-        ∇D = gradient(x -> objmecm(mdy, my, x, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2), D)[1]
-        hD = hessian(x -> objmecm(mdy, my, x, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2), D)
+        ∇D = gradient(x -> objmecm(my, x, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2), D)[1]
+        hD = hessian(x -> objmecm(my, x, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2), D)
         etaD = 1 / (maximum(abs.(eigvals(hD))))
         D += etaD * ∇D
         trackD[s] = etaD
 
-        ∇U1 = gradient(x -> objmecm(mdy, my, D, x, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2), U1)[1]
-        hU1 = hessian(x -> objmecm(mdy, my, D, x, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2), U1)
+        ∇U1 = gradient(x -> objmecm(my, D, x, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2), U1)[1]
+        hU1 = hessian(x -> objmecm(my, D, x, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2), U1)
         etaU1 = 1 / (maximum(abs.(eigvals(hU1))))
         U1 += etaU1 * ∇U1
         trackU1[s] = etaU1
 
-        ∇U2 = gradient(x -> objmecm(mdy, my, D, U1, x, U3, U4, Σ1, Σ2, ϕ1, ϕ2), U2)[1]
-        hU2 = hessian(x -> objmecm(mdy, my, D, U1, x, U3, U4, Σ1, Σ2, ϕ1, ϕ2), U2)
+        ∇U2 = gradient(x -> objmecm(my, D, U1, x, U3, U4, Σ1, Σ2, ϕ1, ϕ2), U2)[1]
+        hU2 = hessian(x -> objmecm(my, D, U1, x, U3, U4, Σ1, Σ2, ϕ1, ϕ2), U2)
         etaU2 = 1 / (maximum(abs.(eigvals(hU2))))
         U2 += etaU2 * ∇U2
         trackU2[s] = etaU2
 
-        ∇U3 = gradient(x -> objmecm(mdy, my, D, U1, U2, x, U4, Σ1, Σ2, ϕ1, ϕ2), U3)[1]
-        hU3 = hessian(x -> objmecm(mdy, my, D, U1, U2, x, U4, Σ1, Σ2, ϕ1, ϕ2), U3)
+        ∇U3 = gradient(x -> objmecm(my, D, U1, U2, x, U4, Σ1, Σ2, ϕ1, ϕ2), U3)[1]
+        hU3 = hessian(x -> objmecm(my, D, U1, U2, x, U4, Σ1, Σ2, ϕ1, ϕ2), U3)
         etaU3 = 1 / (maximum(abs.(eigvals(hU3))))
         U3 += etaU3 * ∇U3
         trackU3[s] = etaU3
 
-        ∇U4 = gradient(x -> objmecm(mdy, my, D, U1, U2, U3, x, Σ1, Σ2, ϕ1, ϕ2), U4)[1]
-        hU4 = hessian(x -> objmecm(mdy, my, D, U1, U2, U3, x, Σ1, Σ2, ϕ1, ϕ2), U4)
+        ∇U4 = gradient(x -> objmecm(my, D, U1, U2, U3, x, Σ1, Σ2, ϕ1, ϕ2), U4)[1]
+        hU4 = hessian(x -> objmecm(my, D, U1, U2, U3, x, Σ1, Σ2, ϕ1, ϕ2), U4)
         etaU4 = 1 / (maximum(abs.(eigvals(hU4))))
         U4 += etaU4 * ∇U4
         trackU4[s] = etaU4
 
         if p != 0
-            ∇ϕ1 = gradient(x -> objmecm(mdy, my, D, U1, U2, U3, U4, Σ1, Σ2, x, ϕ2), ϕ1)[1]
+            ∇ϕ1 = gradient(x -> objmecm(my, D, U1, U2, U3, U4, Σ1, Σ2, x, ϕ2), ϕ1)[1]
             ϕ1 += eta * ∇ϕ1
             trackϕ1[s] = norm(∇ϕ1)
 
-            ∇ϕ2 = gradient(x -> objmecm(mdy, my, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, x), ϕ2)[1]
+            ∇ϕ2 = gradient(x -> objmecm(my, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, x), ϕ2)[1]
             ϕ2 += eta * ∇ϕ2
             trackϕ2[s] = norm(∇ϕ2)
         end
-        llist[s] = objmecm(mdy, my, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
+        llist[s] = objmecm(my, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
 
         # Stopping Condition
         if s > 1
