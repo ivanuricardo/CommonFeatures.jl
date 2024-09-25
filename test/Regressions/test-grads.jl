@@ -32,31 +32,36 @@ end
     # Gradients for U1
     truegrad1 = gradient(x -> objmecm(mdy, my, D, x, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2), U1)[1]
     matgrad1 = gradient(x -> -matobj(ΔY, Y, D, x, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2), U1)[1]
-    approx_gradD = U1grad(ΔY, Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
+    approx_grad1 = U1grad(ΔY, Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
     @test isapprox(truegrad1, approx_grad1, atol=1e-6)
 
     # Gradients for U2
-    truegrad2 = gradient(x -> loss(ΔY, Y, D, U1, x, U3, U4, ϕ1, ϕ2), U2)[1]
+    truegrad2 = gradient(x -> objmecm(mdy, my, D, U1, x, U3, U4, Σ1, Σ2, ϕ1, ϕ2), U2)[1]
+    matgrad2 = gradient(x -> -matobj(ΔY, Y, D, U1, x, U3, U4, Σ1, Σ2, ϕ1, ϕ2), U2)[1]
     approx_grad2 = U2grad(ΔY, Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
     @test isapprox(truegrad2, approx_grad2, atol=1e-6)
 
     # Gradients for U3
-    truegrad3 = gradient(x -> loss(ΔY, Y, D, U1, U2, x, U4, ϕ1, ϕ2), U3)[1]
+    truegrad3 = gradient(x -> objmecm(mdy, my, D, U1, U2, x, U4, Σ1, Σ2, ϕ1, ϕ2), U3)[1]
+    matgrad3 = gradient(x -> -matobj(ΔY, Y, D, U1, U2, x, U4, Σ1, Σ2, ϕ1, ϕ2), U3)[1]
     approx_grad3 = U3grad(ΔY, Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
     @test isapprox(truegrad3, approx_grad3, atol=1e-6)
 
     # Gradients for U4
-    truegrad4 = gradient(x -> loss(ΔY, Y, D, U1, U2, U3, x, ϕ1, ϕ2), U4)[1]
+    truegrad4 = gradient(x -> objmecm(mdy, my, D, U1, U2, U3, x, Σ1, Σ2, ϕ1, ϕ2), U4)[1]
+    matgrad4 = gradient(x -> -matobj(ΔY, Y, D, U1, U2, U3, x, Σ1, Σ2, ϕ1, ϕ2), U4)[1]
     approx_grad4 = U4grad(ΔY, Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
     @test isapprox(truegrad4, approx_grad4, atol=1e-6)
 
     # Gradients for ϕ1
-    truegradϕ1 = gradient(x -> loss(ΔY, Y, D, U1, U2, U3, U4, x, ϕ2), ϕ1)[1]
+    truegradϕ1 = gradient(x -> objmecm(mdy, my, D, U1, U2, U3, U4, Σ1, Σ2, x, ϕ2), ϕ1)[1]
+    matgradϕ1 = gradient(x -> -matobj(ΔY, Y, D, U1, U2, U3, U4, Σ1, Σ2, x, ϕ2), ϕ1)[1]
     approx_gradϕ1 = ϕ1grad(ΔY, Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
     @test isapprox(truegradϕ1, approx_gradϕ1, atol=1e-6)
 
     # Gradients for ϕ2
-    truegradϕ2 = gradient(x -> loss(ΔY, Y, D, U1, U2, U3, U4, ϕ1, x), ϕ2)[1]
+    truegradϕ2 = gradient(x -> objmecm(mdy, my, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, x), ϕ2)[1]
+    matgradϕ2 = gradient(x -> -matobj(ΔY, Y, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, x), ϕ2)[1]
     approx_gradϕ2 = ϕ2grad(ΔY, Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
     @test isapprox(truegradϕ2, approx_gradϕ2, atol=1e-6)
 end
@@ -64,32 +69,32 @@ end
 # Test Hessians: We expect the Hessians to be close to equal
 @testset "Hessian Tests" begin
     # Hessian for U1
-    hess1 = hessian(x -> loss(ΔY, Y, D, x, U2, U3, U4, ϕ1, ϕ2), U1)
+    hess1 = hessian(x -> objmecm(mdy, my, D, x, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2), U1)
     approx_hess1 = U1hessian(Y, U2, U3, U4)
-    @test isapprox(maximum(eigvals(hess1)), maximum(eigvals(approx_hess1)), atol=1e-6)
+    @test isapprox(maximum(abs.(eigvals(hess1))), maximum(abs.(eigvals(approx_hess1))), atol=1e-6)
 
     # Hessian for U2
-    hess2 = hessian(x -> loss(ΔY, Y, D, U1, x, U3, U4, ϕ1, ϕ2), U2)
+    hess2 = hessian(x -> objmecm(mdy, my, D, U1, x, U3, U4, Σ1, Σ2, ϕ1, ϕ2), U2)
     approx_hess2 = U2hessian(Y, U1, U3, U4)
-    @test isapprox(maximum(eigvals(hess2)), maximum(eigvals(approx_hess2)), atol=1e-6)
+    @test isapprox(maximum(abs.(eigvals(hess2))), maximum(abs.(eigvals(approx_hess2))), atol=1e-6)
 
     # Hessian for U3
-    hess3 = hessian(x -> loss(ΔY, Y, D, U1, U2, x, U4, ϕ1, ϕ2), U3)
+    hess3 = hessian(x -> objmecm(mdy, my, D, U1, U2, x, U4, Σ1, Σ2, ϕ1, ϕ2), U3)
     approx_hess3 = U3hessian(Y, U1, U2, U4)
-    @test isapprox(maximum(eigvals(hess3)), maximum(eigvals(approx_hess3)), atol=1e-6)
+    @test isapprox(maximum(abs.(eigvals(hess3))), maximum(abs.(eigvals(approx_hess3))), atol=1e-6)
 
     # Hessian for U4
-    hess4 = hessian(x -> loss(ΔY, Y, D, U1, U2, U3, x, ϕ1, ϕ2), U4)
-    approx_hess4 = U4hessian(Y, U1, U2, U3)
-    @test isapprox(maximum(eigvals(hess4)), maximum(eigvals(approx_hess4)), atol=1e-6)
+    hess4 = hessian(x -> objmecm(mdy, my, D, U1, U2, U3, x, Σ1, Σ2, ϕ1, ϕ2), U4)
+    approx_hess4 = U3hessian(Y, U1, U2, U3)
+    @test isapprox(maximum(abs.(eigvals(hess4))), maximum(abs.(eigvals(approx_hess4))), atol=1e-6)
 
     # Hessian for ϕ1
-    hessϕ1 = hessian(x -> loss(ΔY, Y, D, U1, U2, U3, U4, x, ϕ2), ϕ1)
+    hessϕ1 = hessian(x -> objmecm(mdy, my, D, U1, U2, U3, U4, Σ1, Σ2, x, ϕ2), ϕ1)
     approx_hessϕ1 = ϕ1hessian(ΔY, ϕ2)
     @test isapprox(maximum(eigvals(hessϕ1)), maximum(eigvals(approx_hessϕ1)), atol=1e-6)
 
     # Hessian for ϕ2
-    hessϕ2 = hessian(x -> loss(ΔY, Y, D, U1, U2, U3, U4, ϕ1, x), ϕ2)
-    approx_hessϕ2 = ϕ2hessian(ΔY, ϕ1)
+    hessϕ2 = hessian(x -> objmecm(mdy, my, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, x), ϕ2)
+    approx_hessϕ2 = ϕ1hessian(ΔY, ϕ1)
     @test isapprox(maximum(eigvals(hessϕ2)), maximum(eigvals(approx_hessϕ2)), atol=1e-6)
 end

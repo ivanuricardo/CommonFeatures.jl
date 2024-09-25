@@ -31,7 +31,7 @@ function U1hessian(Y, U2, U3, U4)
     totsum = zeros(r1, r1)
     obs = size(Y, 3)
     U4U2U2U4 = U4 * U2' * U2 * U4'
-    for i in 1:obs
+    for i in 2:obs
         totsum += U3' * Y[:, :, (i-1)] * U4U2U2U4 * Y[:, :, (i-1)]' * U3
     end
     return totsum
@@ -125,7 +125,7 @@ function ϕ1grad(ΔY, Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
     for i in 2:obs
         phiY = ϕ1 * ΔY[:, :, (i-1)] * ϕ2'
         res = ΔY[:, :, i] - U1U3 * Y[:, :, (i-1)] * U2U4' - phiY - D
-        totsum += res * ϕ2 * ΔY[:, :, i]'
+        totsum += res * ϕ2 * ΔY[:, :, (i-1)]'
     end
     return totsum
 end
