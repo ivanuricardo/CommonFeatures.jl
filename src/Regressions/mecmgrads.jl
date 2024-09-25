@@ -1,13 +1,13 @@
 
 function mecmsumres(Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
-    ΔY = Y[:, :, 2:end] - Y[:, :, 1:end-1]
-    N1, N2, obs = size(ΔY)
+    N1, N2, obs = size(Y)
     res = zeros(N1, N2)
     U1U3 = U1 * U3'
     U2U4 = U2 * U4'
-    for i in 3:(obs-1)
+    for i in 3:obs
         phiY = ϕ1 * (Y[:, :, (i-1)] - Y[:, :, (i-2)]) * ϕ2'
-        res += ΔY[:, :, i] - U1U3 * Y[:, :, (i-1)] * U2U4' - phiY - D
+        ΔY = Y[:, :, i] - Y[:, :, i-1]
+        res += ΔY - U1U3 * Y[:, :, (i-1)] * U2U4' - phiY - D
     end
     return res
 end
