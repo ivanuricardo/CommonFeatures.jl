@@ -85,7 +85,7 @@ function selectmecm(data; p=0, maxiters=50, ϵ=1e-02)
     for i in 1:(n1*n2)
         selectedrank = collect(grid[i])
         numpars = cointpar([n1, n2], selectedrank)
-        mecmest = mecm2(data, selectedrank; p=p, maxiter=maxiters, ϵ=ϵ)
+        mecmest = mecm(data, selectedrank; p=p, maxiter=maxiters, ϵ=ϵ)
         loglike = -mecmest.llist[findlast(!isnan, mecmest.llist)]
         ictable[1, i] = aic(loglike, numpars, obs)
         ictable[2, i] = bic(loglike, numpars, obs)
