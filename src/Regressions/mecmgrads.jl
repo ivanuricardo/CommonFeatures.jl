@@ -131,7 +131,7 @@ function ϕ1grad(Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
     for i in 3:(obs-1)
         phiY = ϕ1 * (Y[:, :, (i-1)] - Y[:, :, (i-2)]) * ϕ2'
         res = ΔY[:, :, i] - U1U3 * Y[:, :, (i-1)] * U2U4' - phiY - D
-        totsum += res * ϕ2 * ΔY[:, :, (i-1)]'
+        totsum += res * ϕ2 * (Y[:, :, (i-1)] - Y[:, :, (i-2)])'
     end
     return totsum
 end
@@ -140,7 +140,7 @@ function ϕ1hessian(Y, ϕ2)
     N1, _, obs = size(Y)
     ϕ2ϕ2 = ϕ2'ϕ2
     totsum = zeros(N1, N1)
-    for i in 3:(obs-2)
+    for i in 3:(obs-1)
         ΔY = Y[:, :, (i-1)] - Y[:, :, (i-2)]
         totsum += ΔY * ϕ2ϕ2 * ΔY'
     end
@@ -156,7 +156,7 @@ function ϕ2grad(Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
     for i in 3:(obs-1)
         phiY = ϕ1 * (Y[:, :, (i-1)] - Y[:, :, (i-2)]) * ϕ2'
         res = ΔY[:, :, i] - U1U3 * Y[:, :, (i-1)] * U2U4' - phiY - D
-        totsum += res' * ϕ1 * ΔY[:, :, (i-1)]
+        totsum += res' * ϕ1 * (Y[:, :, (i-1)] - Y[:, :, (i-2)])
     end
     return totsum
 end
@@ -165,7 +165,7 @@ function ϕ2hessian(Y, ϕ1)
     _, N2, obs = size(Y)
     ϕ1ϕ1 = ϕ1'ϕ1
     totsum = zeros(N2, N2)
-    for i in 3:(obs-2)
+    for i in 2:(obs-2)
         ΔY = Y[:, :, (i-1)] - Y[:, :, (i-2)]
         totsum += ΔY' * ϕ1ϕ1 * ΔY
     end
