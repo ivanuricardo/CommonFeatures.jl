@@ -10,7 +10,7 @@ function objmecm(Y, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
     ssr = 0
     for i in 3:(obs-1)
         phiY = phi12 * (Y[:, (i-1)] - Y[:, (i-2)])
-        res = ΔY[:, i] - U2U1 * U4U3 * Y[:, i-1] - phiY - vec(D)
+        res = (Y[:, i] - Y[:, i-1]) - U2U1 * U4U3 * Y[:, i-1] - phiY - vec(D)
         ssr += res' * iΣ21 * res
     end
     return sigma - 0.5 * ssr
