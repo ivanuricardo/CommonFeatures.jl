@@ -122,7 +122,7 @@ function mecm(
 
         iters += 1
 
-        ∇D = mecmsumres(ΔY, Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
+        ∇D = mecmsumres(Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
         etaD = 1 / obs
         D += etaD * ∇D
         trackD[s] = etaD
