@@ -101,7 +101,7 @@ function selectmecm(data; p=0, maxiters=50, ϵ=1e-02)
     bicsel = Int.(filteredic[4:end, bicvec])
     hqcvec = argmin(filteredic[3, :])
     hqcsel = Int.(filteredic[4:end, hqcvec])
-    return (; aicsel, bicsel, hqcsel)
+    return (; aicsel, bicsel, hqcsel, filteredic)
 end
 
 
