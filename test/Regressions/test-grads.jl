@@ -85,16 +85,16 @@ end
 
     # Hessian for U4
     hess4 = hessian(x -> objmecm(mdy, my, D, U1, U2, U3, x, Σ1, Σ2, ϕ1, ϕ2), U4)
-    approx_hess4 = U3hessian(Y, U1, U2, U3)
+    approx_hess4 = U4hessian(Y, U1, U2, U3)
     @test isapprox(maximum(abs.(eigvals(hess4))), maximum(abs.(eigvals(approx_hess4))), atol=1e-6)
 
     # Hessian for ϕ1
     hessϕ1 = hessian(x -> objmecm(mdy, my, D, U1, U2, U3, U4, Σ1, Σ2, x, ϕ2), ϕ1)
     approx_hessϕ1 = ϕ1hessian(ΔY, ϕ2)
-    @test isapprox(maximum(eigvals(hessϕ1)), maximum(eigvals(approx_hessϕ1)), atol=1e-6)
+    @test isapprox(maximum(abs.(eigvals(hessϕ1))), maximum(abs.(eigvals(approx_hessϕ1))), atol=1e-6)
 
     # Hessian for ϕ2
     hessϕ2 = hessian(x -> objmecm(mdy, my, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, x), ϕ2)
-    approx_hessϕ2 = ϕ1hessian(ΔY, ϕ1)
-    @test isapprox(maximum(eigvals(hessϕ2)), maximum(eigvals(approx_hessϕ2)), atol=1e-6)
+    approx_hessϕ2 = ϕ2hessian(ΔY, ϕ1)
+    @test isapprox(maximum(abs.(eigvals(hessϕ2))), maximum(abs.(eigvals(approx_hessϕ2))), atol=1e-6)
 end
