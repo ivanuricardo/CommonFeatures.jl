@@ -25,8 +25,8 @@ function generatemecmparams(n, ranks; genphi=true)
     u1, s2, u3 = svd(B)
     U1 = u1[:, 1:ranks[1]] * diagm(s2[1:ranks[1]])
     U2 = u2[:, 1:ranks[2]] * diagm(s1[1:ranks[2]])
-    U3 = u3[:, 1:ranks[1]]
-    U4 = u4[:, 1:ranks[2]]
+    U3 = u3[:, 1:ranks[1]] * diagm(s2[1:ranks[1]])
+    U4 = u4[:, 1:ranks[2]] * diagm(s1[1:ranks[2]])
 
     if genphi
         ϕ2 = Qϕ1 * diagm(randn(n[2])) * Qϕ2'
