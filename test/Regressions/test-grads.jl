@@ -17,7 +17,7 @@ D = 0.1 .* randn(N1, N2)
 
 @testset "loss equivalence" begin
     losswithvec = objmecm(mdy, my, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
-    losswithmat = matobj(ΔY, Y, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
+    losswithmat = -matobj(ΔY, Y, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
     @test isapprox(losswithvec, losswithmat, atol=1e-6)
 end
 
@@ -25,6 +25,7 @@ end
 @testset "Gradient Tests" begin
     # Gradients for D
     truegradD = gradient(x -> objmecm(mdy, my, x, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2), D)[1]
+    matgradD = gradient(x -> -matobj(ΔY, Y, x, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2), D)[1]
     approx_gradD = -mecmsumres(ΔY, Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
     @test isapprox(truegradD, approx_gradD, atol=1e-6)
 

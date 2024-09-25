@@ -6,7 +6,7 @@ function mecmsumres(ΔY, Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
     U2U4 = U2 * U4'
     for i in 2:obs
         phiY = ϕ1 * ΔY[:, :, (i-1)] * ϕ2'
-        res += ΔY[:, :, i] - U1U3 * Y[:, :, i] * U2U4' - phiY - D
+        res += ΔY[:, :, i] - U1U3 * Y[:, :, (i-1)] * U2U4' - phiY - D
     end
     return res
 end
