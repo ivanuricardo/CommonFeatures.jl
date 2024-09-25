@@ -23,7 +23,7 @@ function U1grad(ΔY, Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
         res = ΔY[:, :, i] - U1U3 * Y[:, :, (i-1)] * U2U4' - phiY - D
         sumtot += res * U2U4YU3
     end
-    return -sumtot
+    return sumtot
 end
 
 function U1hessian(Y, U2, U3, U4)
@@ -49,7 +49,7 @@ function U2grad(ΔY, Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
         res = ΔY[:, :, i] - U1U3 * Y[:, :, (i-1)] * U2U4' - phiY - D
         sumtot += res' * U4YU3U1
     end
-    return -sumtot
+    return sumtot
 end
 
 function U2hessian(Y, U1, U3, U4)
@@ -75,7 +75,7 @@ function U3grad(ΔY, Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
         res = ΔY[:, :, i]' - U2U4 * Y[:, :, (i-1)]' * U1U3' - phiY' - D'
         totsum += premul * res * U1
     end
-    return -totsum
+    return totsum
 end
 
 function U3hessian(Y, U1, U2, U4)
@@ -102,7 +102,7 @@ function U4grad(ΔY, Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
         res = ΔY[:, :, i] - U1U3 * Y[:, :, (i-1)] * U2U4' - phiY - D
         totsum += premul * res * U2
     end
-    return -totsum
+    return totsum
 end
 
 function U4hessian(Y, U1, U2, U3)
@@ -127,7 +127,7 @@ function ϕ1grad(ΔY, Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
         res = ΔY[:, :, i] - U1U3 * Y[:, :, (i-1)] * U2U4' - phiY - D
         totsum += res * ϕ2 * ΔY[:, :, i]'
     end
-    return -totsum
+    return totsum
 end
 
 function ϕ1hessian(ΔY, ϕ2)
@@ -150,7 +150,7 @@ function ϕ2grad(ΔY, Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
         res = ΔY[:, :, i] - U1U3 * Y[:, :, (i-1)] * U2U4' - phiY - D
         totsum += res' * ϕ1 * ΔY[:, :, (i-1)]
     end
-    return -totsum
+    return totsum
 end
 
 function ϕ2hessian(ΔY, ϕ1)
