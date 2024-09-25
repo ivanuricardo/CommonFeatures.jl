@@ -123,47 +123,47 @@ function mecm(
 
         ∇D = mecmsumres(mardata, U1, U2, U3, U4, ϕ1, ϕ2, D)
         etaD = 1 / obs
-        D -= etaD * ∇D
+        D += etaD * ∇D
         trackD[s] = etaD
 
         ∇U1 = U1grad(mardata, U1, U2, U3, U4, ϕ1, ϕ2, D)
         hU1 = U1hessian(mardata, U2, U3, U4)
         etaU1 = 1 / (maximum(abs.(eigvals(hU1))))
-        U1 -= etaU1 * ∇U1
+        U1 += etaU1 * ∇U1
         trackU1[s] = etaU1
 
         ∇U2 = U2grad(mardata, U1, U2, U3, U4, ϕ1, ϕ2, D)
         hU2 = U2hessian(mardata, U1, U3, U4)
         etaU2 = 1 / (maximum(abs.(eigvals(hU2))))
-        U2 -= etaU2 * ∇U2
+        U2 += etaU2 * ∇U2
         trackU2[s] = etaU2
 
         ∇U3 = U3grad(mardata, U1, U2, U3, U4, ϕ1, ϕ2, D)
         hU3 = U3hessian(mardata, U1, U2, U4)
         etaU3 = 1 / (maximum(abs.(eigvals(hU3))))
-        U3 -= etaU3 * ∇U3
+        U3 += etaU3 * ∇U3
         trackU3[s] = etaU3
 
         ∇U4 = U4grad(mardata, U1, U2, U3, U4, ϕ1, ϕ2, D)
         hU4 = U4hessian(mardata, U1, U2, U3)
         etaU4 = 1 / (maximum(abs.(eigvals(hU4))))
-        U4 -= etaU4 * ∇U4
+        U4 += etaU4 * ∇U4
         trackU4[s] = etaU4
 
         if p != 0
             ∇ϕ1 = ϕ1grad(mardata, U1, U2, U3, U4, ϕ1, ϕ2, D)
             hϕ1 = ϕ1hessian(mardata, ϕ2)
             etaϕ1 = 1 / (maximum(abs.(eigvals(hϕ1))))
-            ϕ1 -= etaϕ1 * ∇ϕ1
+            ϕ1 += etaϕ1 * ∇ϕ1
             trackϕ1[s] = norm(∇ϕ1)
 
             ∇ϕ2 = ϕ2grad(mardata, U1, U2, U3, U4, ϕ1, ϕ2, D)
             hϕ2 = ϕ2hessian(mardata, ϕ1)
             etaϕ2 = 1 / (maximum(abs.(eigvals(hϕ2))))
-            ϕ2 -= etaϕ2 * ∇ϕ2
+            ϕ2 += etaϕ2 * ∇ϕ2
             trackϕ2[s] = norm(∇ϕ2)
         end
-        llist[s] = matobj(mardata, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
+        llist[s] = -matobj(mardata, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
 
         if s > 1
             ∇diff = abs(llist[s] - llist[s-1])
