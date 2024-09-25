@@ -13,7 +13,7 @@ end
 
 function U1grad(ΔY, Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
     N1, r1 = size(U1)
-    obs = size(Y, 3)
+    obs = size(ΔY, 3)
     sumtot = zeros(N1, r1)
     U2U4 = U2 * U4'
     U1U3 = U1 * U3'
@@ -39,7 +39,7 @@ end
 
 function U2grad(ΔY, Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
     N2, r2 = size(U2)
-    obs = size(Y, 3)
+    obs = size(ΔY, 3)
     sumtot = zeros(N2, r2)
     U2U4 = U2 * U4'
     U1U3 = U1 * U3'
@@ -65,7 +65,7 @@ end
 
 function U3grad(ΔY, Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
     N1, r1 = size(U3)
-    obs = size(Y, 3)
+    obs = size(ΔY, 3)
     totsum = zeros(N1, r1)
     U2U4 = U2 * U4'
     U1U3 = U1 * U3'
@@ -92,7 +92,7 @@ end
 
 function U4grad(ΔY, Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
     N2, r2 = size(U4)
-    obs = size(Y, 3)
+    obs = size(ΔY, 3)
     totsum = zeros(N2, r2)
     U2U4 = U2 * U4'
     U1U3 = U1 * U3'
