@@ -18,11 +18,11 @@ function generatemecmparams(n, ranks; genphi=true)
         Qϕ4 = rorth(n[1], n[1])
     end
 
-    A = Q1 * diagm(randn(ranks[1])) * Q2'
-    B = Q3 * diagm(randn(ranks[2])) * Q4'
+    A = Q1 * diagm(randn(ranks[2])) * Q2'
+    B = Q3 * diagm(randn(ranks[1])) * Q4'
 
-    u1, s2, u3 = svd(A)
-    u4, s1, u2 = svd(B)
+    u2, s1, u4 = svd(A)
+    u1, s2, u3 = svd(B)
     U1 = u1[:, 1:ranks[1]] * diagm(s2[1:ranks[1]])
     U2 = u2[:, 1:ranks[2]] * diagm(s1[1:ranks[2]])
     U3 = u3[:, 1:ranks[1]]
