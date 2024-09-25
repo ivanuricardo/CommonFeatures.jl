@@ -1,7 +1,7 @@
 
 function objmecm(Y, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
     _, obs = size(Y)
-    ΔY = Y[:, obs] - Y[:, obs-1]
+    ΔY = Y[:, 2:obs] - Y[:, 1:(obs-1)]
     sigma = -(obs / 2) * logdet(Σ1) - (obs / 2) * logdet(Σ2)
     U2U1 = kron(U2, U1)
     U4U3 = kron(U4, U3)'
@@ -18,7 +18,7 @@ end
 
 function matobj(Y, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
     obs = size(Y, 3)
-    ΔY = Y[:, :, obs] - Y[:, :, obs-1]
+    ΔY = Y[:, :, 2:obs] - Y[:, :, 1:(obs-1)]
     U1U3 = U1 * U3'
     U2U4 = U2 * U4'
     ssr = 0
