@@ -1,7 +1,7 @@
 
 function objmecm(Y, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
-    _, obs = size(Y)
-    ΔY = Y[:, 2:obs] - Y[:, 1:(obs-1)]
+    ΔY = Y[:, 2:end] - Y[:, 1:(end-1)]
+    _, obs = size(ΔY)
     sigma = -(obs / 2) * logdet(Σ1) - (obs / 2) * logdet(Σ2)
     U2U1 = kron(U2, U1)
     U4U3 = kron(U4, U3)'
@@ -17,8 +17,8 @@ function objmecm(Y, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
 end
 
 function matobj(Y, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
-    obs = size(Y, 3)
-    ΔY = Y[:, :, 2:obs] - Y[:, :, 1:(obs-1)]
+    ΔY = Y[:, :, 2:end] - Y[:, :, 1:(end-1)]
+    obs = size(ΔY, 3)
     U1U3 = U1 * U3'
     U2U4 = U2 * U4'
     ssr = 0
@@ -127,7 +127,7 @@ function mecm(
         D += etaD * ∇D
         trackD[s] = etaD
 
-        ∇U1 = U1grad(ΔY, Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
+        ∇U1 = U1grad(Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
         hU1 = U1hessian(Y, U2, U3, U4)
         etaU1 = 1 / (maximum(abs.(eigvals(hU1))))
         U1 += etaU1 * ∇U1
