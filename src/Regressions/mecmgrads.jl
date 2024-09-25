@@ -5,7 +5,7 @@ function mecmsumres(Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
     res = zeros(N1, N2)
     U1U3 = U1 * U3'
     U2U4 = U2 * U4'
-    for i in 3:obs
+    for i in 3:(obs-1)
         phiY = ϕ1 * (Y[:, :, (i-1)] - Y[:, :, (i-2)]) * ϕ2'
         res += ΔY[:, :, i] - U1U3 * Y[:, :, (i-1)] * U2U4' - phiY - D
     end

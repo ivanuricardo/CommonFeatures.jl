@@ -26,7 +26,7 @@ end
     # Gradients for D
     truegradD = gradient(x -> objmecm(my, x, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2), D)[1]
     matgradD = gradient(x -> -matobj(Y, x, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2), D)[1]
-    approx_gradD = mecmsumres(ΔY, Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
+    approx_gradD = mecmsumres(Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
     @test isapprox(truegradD, approx_gradD, atol=1e-6)
 
     # Gradients for U1
