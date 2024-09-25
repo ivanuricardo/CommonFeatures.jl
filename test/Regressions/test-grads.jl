@@ -90,11 +90,11 @@ end
 
     # Hessian for ϕ1
     hessϕ1 = hessian(x -> objmecm(my, D, U1, U2, U3, U4, Σ1, Σ2, x, ϕ2), ϕ1)
-    approx_hessϕ1 = ϕ1hessian(ΔY, ϕ2)
+    approx_hessϕ1 = ϕ1hessian(Y, ϕ2)
     @test isapprox(maximum(abs.(eigvals(hessϕ1))), maximum(abs.(eigvals(approx_hessϕ1))), atol=1e-6)
 
     # Hessian for ϕ2
     hessϕ2 = hessian(x -> objmecm(my, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, x), ϕ2)
-    approx_hessϕ2 = ϕ2hessian(ΔY, ϕ1)
+    approx_hessϕ2 = ϕ2hessian(Y, ϕ1)
     @test isapprox(maximum(abs.(eigvals(hessϕ2))), maximum(abs.(eigvals(approx_hessϕ2))), atol=1e-6)
 end
