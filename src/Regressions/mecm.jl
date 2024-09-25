@@ -8,7 +8,7 @@ function objmecm(Y, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
     phi12 = kron(ϕ2, ϕ1)
     iΣ21 = inv(kron(Σ2, Σ1))
     ssr = 0
-    for i in 3:obs
+    for i in 3:(obs-1)
         phiY = phi12 * (Y[:, (i-1)] - Y[:, (i-2)])
         res = ΔY[:, i] - U2U1 * U4U3 * Y[:, i-1] - phiY - vec(D)
         ssr += res' * iΣ21 * res
@@ -22,7 +22,7 @@ function matobj(Y, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
     U1U3 = U1 * U3'
     U2U4 = U2 * U4'
     ssr = 0
-    for i in 3:obs
+    for i in 3:(obs-1)
         phiY = ϕ1 * (Y[:, :, (i-1)] - Y[:, :, i-2]) * ϕ2'
         res = ΔY[:, :, i] - U1U3 * Y[:, :, (i-1)] * U2U4' - phiY - D
         ssr += tr(Σ1 * res * Σ2 * res')
