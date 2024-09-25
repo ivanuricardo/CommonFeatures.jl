@@ -33,7 +33,7 @@ function U1hessian(Y, U2, U3, U4)
     totsum = zeros(r1, r1)
     obs = size(Y, 3)
     U4U2U2U4 = U4 * U2' * U2 * U4'
-    for i in 3:(obs-1)
+    for i in 3:obs
         totsum += U3' * Y[:, :, (i-1)] * U4U2U2U4 * Y[:, :, (i-1)]' * U3
     end
     return totsum
