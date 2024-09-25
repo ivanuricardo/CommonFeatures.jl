@@ -19,7 +19,7 @@ function U1grad(Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
     sumtot = zeros(N1, r1)
     U2U4 = U2 * U4'
     U1U3 = U1 * U3'
-    for i in 3:obs
+    for i in 3:(obs-1)
         U2U4YU3 = U2U4 * Y[:, :, (i-1)]' * U3
         phiY = ϕ1 * (Y[:, :, (i-1)] - Y[:, :, (i-2)]) * ϕ2'
         res = ΔY[:, :, i] - U1U3 * Y[:, :, (i-1)] * U2U4' - phiY - D
