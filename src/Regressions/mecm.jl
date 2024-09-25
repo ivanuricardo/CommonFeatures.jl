@@ -37,7 +37,7 @@ function mecminit(mardata::AbstractArray, ranks::AbstractVector; p::Int=0)
     initestcoint = tensorols(ΔY, Y)
 
     if p != 0
-        initestmar = tensorols(ΔY[:, :, 2:end], Y[:, :, 1:(end-1)])
+        initestmar = tensorols(ΔY, Y)
         permutedmar = permutedims(initestmar, (1, 3, 2, 4))
         vϕ1, _, vϕ2 = svd(tenmat(permutedmar, row=[1, 2]))
         ϕ1 = reshape(vϕ1[:, 1], N1, N1)
@@ -106,7 +106,6 @@ function mecm(
 
     ΔY, Y, U1, U2, U3, U4, D, ϕ1, ϕ2, Σ1, Σ2 = mecminit(mardata, ranks; p)
     N1, N2, obs = size(Y)
-    mdy = reshape(ΔY, N1 * N2, obs)
     my = reshape(Y, N1 * N2, obs)
 
     trackU1 = fill(NaN, maxiter)
@@ -192,8 +191,7 @@ function mecm2(
         error("ranks must be a vector of length 2")
     end
 
-    ΔY, Y, U1, U2, U3, U4, D, ϕ1, ϕ2, Σ1, Σ2 = mecminit(mardata, ranks; p)
-    mdy = tenmat(ΔY, row=[1, 2])
+    Y, U1, U2, U3, U4, D, ϕ1, ϕ2, Σ1, Σ2 = mecminit(mardata, ranks; p)
     my = tenmat(Y, row=[1, 2])
 
     trackU1 = fill(NaN, maxiter)
