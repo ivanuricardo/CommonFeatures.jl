@@ -16,8 +16,8 @@ D = 0.1 .* randn(N1, N2)
 Σ1, Σ2 = I(N1), I(N2)
 
 @testset "loss equivalence" begin
-    losswithvec = objmecm(mdy, my, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
-    losswithmat = -matobj(ΔY, Y, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
+    losswithvec = objmecm(my, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
+    losswithmat = -matobj(Y, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
     @test isapprox(losswithvec, losswithmat, atol=1e-6)
 end
 
