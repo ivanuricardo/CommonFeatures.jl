@@ -30,9 +30,9 @@ end
     @test isapprox(truegradD, approx_gradD, atol=1e-6)
 
     # Gradients for U1
-    truegrad1 = gradient(x -> objmecm(mdy, my, D, x, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2), U1)[1]
-    matgrad1 = gradient(x -> -matobj(ΔY, Y, D, x, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2), U1)[1]
-    approx_grad1 = U1grad(ΔY, Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
+    truegrad1 = gradient(x -> objmecm(my, D, x, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2), U1)[1]
+    matgrad1 = gradient(x -> -matobj(Y, D, x, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2), U1)[1]
+    approx_grad1 = U1grad(Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
     @test isapprox(truegrad1, approx_grad1, atol=1e-6)
 
     # Gradients for U2
