@@ -13,6 +13,18 @@ function objmecm(ΔY, Y, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
     end
     return sigma - 0.5 * ssr
 end
+function matobj(ΔY, Y, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
+    obs = size(Y, 3)
+    U1U3 = U1 * U3'
+    U2U4 = U2 * U4'
+    ssr = 0
+    for i in 2:obs
+        phiY = ϕ1 * ΔY[:, :, (i-1)] * ϕ2'
+        res = ΔY[:, :, i] - U1U3 * Y[:, :, (i-1)] * U2U4' - phiY - D
+        ssr += tr(Σ1 * res * Σ2 * res')
+    end
+    return 0.5 * ssr
+end
 
 function mecminit(mardata::AbstractArray, ranks::AbstractVector; p::Int=0)
     ΔY = mardata[:, :, 2:end] - mardata[:, :, 1:(end-1)]

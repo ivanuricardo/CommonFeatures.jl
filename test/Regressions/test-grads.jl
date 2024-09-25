@@ -1,3 +1,4 @@
+using LinearAlgebra, CommonFeatures, TensorToolbox, Plots, Statistics, Random, Zygote
 
 Random.seed!(20240921)
 N1 = 4
@@ -9,21 +10,29 @@ obs = 100
 U1, U2, U3, U4, ϕ1, ϕ2 = generatemecmparams([N1, N2], [r1, r2], genphi=true)
 ΔY = randn(N1, N2, obs)
 Y = randn(N1, N2, obs)
-D = zeros(N1, N2)
+mdy = reshape(ΔY, N1 * N2, obs)
+my = reshape(Y, N1 * N2, obs)
+D = 0.1 .* randn(N1, N2)
 Σ1, Σ2 = I(N1), I(N2)
+
+@testset "loss equivalence" begin
+    losswithvec = objmecm(mdy, my, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
+    losswithmat = matobj(ΔY, Y, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
+    @test isapprox(losswithvec, losswithmat, atol=1e-6)
+end
 
 # Test gradients: We expect the differences between computed and true gradients to be close to zero
 @testset "Gradient Tests" begin
     # Gradients for D
-    truegradD = gradient(x -> loss(ΔY, Y, x, U1, U2, U3, U4, ϕ1, ϕ2), D)[1]
+    truegradD = gradient(x -> objmecm(mdy, my, x, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2), D)[1]
     approx_gradD = -mecmsumres(ΔY, Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
     @test isapprox(truegradD, approx_gradD, atol=1e-6)
-    
+
     # Gradients for U1
     truegrad1 = gradient(x -> loss(ΔY, Y, D, x, U2, U3, U4, ϕ1, ϕ2), U1)[1]
     approx_grad1 = U1grad(ΔY, Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
     @test isapprox(truegrad1, approx_grad1, atol=1e-6)
-    
+
     # Gradients for U2
     truegrad2 = gradient(x -> loss(ΔY, Y, D, U1, x, U3, U4, ϕ1, ϕ2), U2)[1]
     approx_grad2 = U2grad(ΔY, Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
