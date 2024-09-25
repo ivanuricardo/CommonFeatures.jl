@@ -165,7 +165,7 @@ function ϕ2hessian(Y, ϕ1)
     _, N2, obs = size(Y)
     ϕ1ϕ1 = ϕ1'ϕ1
     totsum = zeros(N2, N2)
-    for i in 2:(obs-2)
+    for i in 3:(obs-2)
         ΔY = Y[:, :, (i-1)] - Y[:, :, (i-2)]
         totsum += ΔY' * ϕ1ϕ1 * ΔY
     end
