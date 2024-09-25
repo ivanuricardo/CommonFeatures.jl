@@ -1,14 +1,13 @@
 
 function objmecm(Y, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
-    ΔY = Y[:, 2:end] - Y[:, 1:(end-1)]
-    _, obs = size(ΔY)
+    _, obs = size(Y)
     sigma = -(obs / 2) * logdet(Σ1) - (obs / 2) * logdet(Σ2)
     U2U1 = kron(U2, U1)
     U4U3 = kron(U4, U3)'
     phi12 = kron(ϕ2, ϕ1)
     iΣ21 = inv(kron(Σ2, Σ1))
     ssr = 0
-    for i in 3:(obs-1)
+    for i in 3:obs
         phiY = phi12 * (Y[:, (i-1)] - Y[:, (i-2)])
         res = (Y[:, i] - Y[:, i-1]) - U2U1 * U4U3 * Y[:, i-1] - phiY - vec(D)
         ssr += res' * iΣ21 * res
@@ -17,14 +16,13 @@ function objmecm(Y, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
 end
 
 function matobj(Y, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
-    ΔY = Y[:, :, 2:end] - Y[:, :, 1:(end-1)]
-    obs = size(ΔY, 3)
+    obs = size(Y, 3)
     U1U3 = U1 * U3'
     U2U4 = U2 * U4'
     ssr = 0
-    for i in 3:(obs-1)
+    for i in 3:obs
         phiY = ϕ1 * (Y[:, :, (i-1)] - Y[:, :, i-2]) * ϕ2'
-        res = ΔY[:, :, i] - U1U3 * Y[:, :, (i-1)] * U2U4' - phiY - D
+        res = (Y[:, :, i] - Y[:, :, i-1]) - U1U3 * Y[:, :, (i-1)] * U2U4' - phiY - D
         ssr += tr(Σ1 * res * Σ2 * res')
     end
     return 0.5 * ssr
