@@ -93,15 +93,13 @@ function selectmecm(data; p=0, maxiters=50, ϵ=1e-02)
         ictable[5, i] = selectedrank[2]
     end
 
-    nancols = findall(x -> any(isnan, x), eachcol(ictable))
-    filteredic = ictable[:, setdiff(1:size(ictable, 2), nancols)]
-    aicvec = argmin(filteredic[1, :])
-    aicsel = Int.(filteredic[4:end, aicvec])
-    bicvec = argmin(filteredic[2, :])
-    bicsel = Int.(filteredic[4:end, bicvec])
-    hqcvec = argmin(filteredic[3, :])
-    hqcsel = Int.(filteredic[4:end, hqcvec])
-    return (; aicsel, bicsel, hqcsel, filteredic)
+    aicvec = argmin(ictable[1, :])
+    aicsel = Int.(ictable[4:end, aicvec])
+    bicvec = argmin(ictable[2, :])
+    bicsel = Int.(ictable[4:end, bicvec])
+    hqcvec = argmin(ictable[3, :])
+    hqcsel = Int.(ictable[4:end, hqcvec])
+    return (; aicsel, bicsel, hqcsel, ictable)
 end
 
 
