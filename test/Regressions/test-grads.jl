@@ -82,7 +82,7 @@ end
 
     # Hessian for U3
     hess3 = hessian(x -> objmecm(my, D, U1, U2, x, U4, Σ1, Σ2, ϕ1, ϕ2), U3)
-    approx_hess3 = U3hessian(Y, U1, U2, U4)
+    approx_hess3 = U3hessian(Y, U1, U2, U4, Σ1, Σ2)
     @test isapprox(maximum(abs.(eigvals(hess3))), maximum(abs.(eigvals(approx_hess3))), atol=1e-6)
 
     # Hessian for U4

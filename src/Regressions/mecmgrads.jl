@@ -105,7 +105,7 @@ function U3hessian(Y, U1, U2, U4, Σ1, Σ2)
     for i in 3:obs
         totsum += kron(U1U1, Y[:, :, (i-1)] * U4U2U2U4 * Y[:, :, (i-1)]')
     end
-    return totsum
+    return -totsum
 end
 
 function U4grad(Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
