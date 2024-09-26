@@ -31,8 +31,8 @@ function U1grad(Y, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
 end
 
 function U1hessian(Y, U2, U3, U4, Σ1, Σ2)
-    _, r1 = size(U3)
-    totsum = zeros(r1, r1)
+    N1, r1 = size(U3)
+    totsum = zeros(N1 * r1, N1 * r1)
     obs = size(Y, 3)
     iS1 = inv(Σ1)
     iS2 = inv(Σ2)

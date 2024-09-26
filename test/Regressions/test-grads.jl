@@ -72,7 +72,7 @@ end
 @testset "Hessian Tests" begin
     # Hessian for U1
     hess1 = hessian(x -> objmecm(my, D, x, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2), U1)
-    approx_hess1 = U1hessian(Y, U2, U3, U4)
+    approx_hess1 = U1hessian(Y, U2, U3, U4, Σ1, Σ2)
     @test isapprox(maximum(abs.(eigvals(hess1))), maximum(abs.(eigvals(approx_hess1))), atol=1e-6)
 
     # Hessian for U2
