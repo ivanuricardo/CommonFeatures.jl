@@ -19,13 +19,16 @@ function matobj(Y, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
     obs = size(Y, 3)
     U1U3 = U1 * U3'
     U2U4 = U2 * U4'
+    iS1 = inv(Σ1)
+    iS2 = inv(Σ2)
+    sigma = -(obs / 2) * logdet(Σ1) - (obs / 2) * logdet(Σ2)
     ssr = 0
     for i in 3:obs
         phiY = ϕ1 * (Y[:, :, (i-1)] - Y[:, :, i-2]) * ϕ2'
         res = (Y[:, :, i] - Y[:, :, i-1]) - U1U3 * Y[:, :, (i-1)] * U2U4' - phiY - D
-        ssr += tr(Σ1 * res * Σ2 * res')
+        ssr += tr(iS1 * res * iS2 * res')
     end
-    return 0.5 * ssr
+    return sigma - 0.5 * ssr
 end
 
 function mecminit(mardata::AbstractArray, ranks::AbstractVector; p::Int=0)

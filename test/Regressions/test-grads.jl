@@ -1,6 +1,7 @@
 using LinearAlgebra, CommonFeatures, TensorToolbox, Plots, Statistics, Random, Zygote
+using Distributions
 
-Random.seed!(20240921)
+rng = StableRNG(20240921)
 N1 = 4
 N2 = 3
 r1 = 2
@@ -13,7 +14,8 @@ Y = randn(N1, N2, obs)
 mdy = reshape(ΔY, N1 * N2, obs)
 my = reshape(Y, N1 * N2, obs)
 D = 0.1 .* randn(N1, N2)
-Σ1, Σ2 = I(N1), I(N2)
+Σ1 = rand(Wishart(N1, diagm(ones(N1))))
+Σ2 = rand(Wishart(N2, diagm(ones(N2))))
 
 @testset "loss equivalence" begin
     losswithvec = objmecm(my, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
