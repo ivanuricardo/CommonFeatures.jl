@@ -94,12 +94,14 @@ function U3grad(Y, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
     return totsum
 end
 
-function U3hessian(Y, U1, U2, U4)
+function U3hessian(Y, U1, U2, U4, Σ1, Σ2)
     N1, r1 = size(U1)
     obs = size(Y, 3)
     totsum = zeros(N1 * r1, N1 * r1)
-    U4U2U2U4 = U4 * U2' * U2 * U4'
-    U1U1 = U1'U1
+    iS1 = inv(Σ1)
+    iS2 = inv(Σ2)
+    U4U2U2U4 = U4 * U2' * iS2 * U2 * U4'
+    U1U1 = U1' * iS1 * U1
     for i in 3:obs
         totsum += kron(U1U1, Y[:, :, (i-1)] * U4U2U2U4 * Y[:, :, (i-1)]')
     end
