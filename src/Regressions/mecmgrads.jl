@@ -76,18 +76,20 @@ function U2hessian(Y, U1, U3, U4, Σ1, Σ2)
     return -totsum
 end
 
-function U3grad(Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
+function U3grad(Y, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
     N1, r1 = size(U3)
     obs = size(Y, 3)
     totsum = zeros(N1, r1)
     U2U4 = U2 * U4'
     U1U3 = U1 * U3'
+    iS1 = inv(Σ1)
+    iS2 = inv(Σ2)
     for i in 3:obs
-        premul = Y[:, :, (i-1)] * U2U4'
+        premul = Y[:, :, (i-1)] * iS2 * U2U4'
         phiY = ϕ1 * (Y[:, :, (i-1)] - Y[:, :, (i-2)]) * ϕ2'
         ΔY = Y[:, :, i] - Y[:, :, i-1]
         res = ΔY' - U2U4 * Y[:, :, (i-1)]' * U1U3' - phiY' - D'
-        totsum += premul * res * U1
+        totsum += premul * res * iS1 * U1
     end
     return totsum
 end

@@ -77,7 +77,7 @@ end
 
     # Hessian for U2
     hess2 = hessian(x -> objmecm(my, D, U1, x, U3, U4, Σ1, Σ2, ϕ1, ϕ2), U2)
-    approx_hess2 = U2hessian(Y, U1, U3, U4)
+    approx_hess2 = U2hessian(Y, U1, U3, U4, Σ1, Σ2)
     @test isapprox(maximum(abs.(eigvals(hess2))), maximum(abs.(eigvals(approx_hess2))), atol=1e-6)
 
     # Hessian for U3
