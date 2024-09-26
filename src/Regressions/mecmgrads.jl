@@ -85,7 +85,7 @@ function U3grad(Y, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
     iS1 = inv(Σ1)
     iS2 = inv(Σ2)
     for i in 3:obs
-        premul = Y[:, :, (i-1)] * iS2 * U2U4'
+        premul = Y[:, :, (i-1)] * U2U4' * iS2
         phiY = ϕ1 * (Y[:, :, (i-1)] - Y[:, :, (i-2)]) * ϕ2'
         ΔY = Y[:, :, i] - Y[:, :, i-1]
         res = ΔY' - U2U4 * Y[:, :, (i-1)]' * U1U3' - phiY' - D'

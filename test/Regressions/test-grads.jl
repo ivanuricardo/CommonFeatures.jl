@@ -46,7 +46,7 @@ end
     # Gradients for U3
     truegrad3 = gradient(x -> objmecm(my, D, U1, U2, x, U4, Σ1, Σ2, ϕ1, ϕ2), U3)[1]
     matgrad3 = gradient(x -> matobj(Y, D, U1, U2, x, U4, Σ1, Σ2, ϕ1, ϕ2), U3)[1]
-    approx_grad3 = U3grad(Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
+    approx_grad3 = U3grad(Y, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
     @test isapprox(truegrad3, approx_grad3, atol=1e-6)
 
     # Gradients for U4
