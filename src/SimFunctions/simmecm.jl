@@ -6,7 +6,7 @@ function rorth(n1::Int, n2::Int)
     return randorth
 end
 
-function generatemecmparams(n, ranks; genphi=true)
+function generatemecmparams(n, ranks; genphi=false)
     Q1 = rorth(n[2], ranks[2])
     Q2 = rorth(n[2], ranks[2])
     Q3 = rorth(n[1], ranks[1])
