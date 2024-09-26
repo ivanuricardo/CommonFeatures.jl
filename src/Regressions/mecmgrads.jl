@@ -41,34 +41,39 @@ function U1hessian(Y, U2, U3, U4, Σ1, Σ2)
         dat = U3' * Y[:, :, (i-1)] * U4U2U2U4 * Y[:, :, (i-1)]' * U3
         totsum += kron(dat, iS1)
     end
-    return totsum
+    return -totsum
 end
 
-function U2grad(Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
+function U2grad(Y, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
     N2, r2 = size(U2)
     obs = size(Y, 3)
     sumtot = zeros(N2, r2)
     U2U4 = U2 * U4'
     U1U3 = U1 * U3'
+    iS1 = inv(Σ1)
+    iS2 = inv(Σ2)
     for i in 3:obs
         U4YU3U1 = U1U3 * Y[:, :, (i-1)] * U4
         phiY = ϕ1 * (Y[:, :, (i-1)] - Y[:, :, (i-2)]) * ϕ2'
         ΔY = Y[:, :, i] - Y[:, :, i-1]
         res = ΔY - U1U3 * Y[:, :, (i-1)] * U2U4' - phiY - D
-        sumtot += res' * U4YU3U1
+        sumtot += iS2 * res' * iS1 * U4YU3U1
     end
     return sumtot
 end
 
-function U2hessian(Y, U1, U3, U4)
+function U2hessian(Y, U1, U3, U4, Σ1, Σ2)
     _, r2 = size(U4)
     totsum = zeros(r2, r2)
     obs = size(Y, 3)
-    U3U1U1U3 = U3 * U1' * U1 * U3'
+    iS1 = inv(Σ1)
+    iS2 = inv(Σ2)
+    U3U1U1U3 = U3 * U1' * iS1 * U1 * U3'
     for i in 3:obs
-        totsum += U4' * Y[:, :, (i-1)]' * U3U1U1U3 * Y[:, :, (i-1)] * U4
+        dat = U4' * Y[:, :, (i-1)]' * U3U1U1U3 * Y[:, :, (i-1)] * U4
+        totsum += kron(dat, iS2)
     end
-    return totsum
+    return -totsum
 end
 
 function U3grad(Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
