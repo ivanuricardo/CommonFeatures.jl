@@ -63,8 +63,8 @@ function U2grad(Y, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
 end
 
 function U2hessian(Y, U1, U3, U4, Σ1, Σ2)
-    _, r2 = size(U4)
-    totsum = zeros(r2, r2)
+    N2, r2 = size(U4)
+    totsum = zeros(N2 * r2, N2 * r2)
     obs = size(Y, 3)
     iS1 = inv(Σ1)
     iS2 = inv(Σ2)
