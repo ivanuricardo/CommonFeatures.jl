@@ -1,6 +1,6 @@
 
 function objmecm(Y, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
-    obs = size(Y, 3)
+    obs = size(Y, 2)
     sigma = -(obs / 2) * logdet(Σ1) - (obs / 2) * logdet(Σ2)
     U2U1 = kron(U2, U1)
     U4U3 = kron(U4, U3)'
