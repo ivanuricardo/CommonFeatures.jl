@@ -30,13 +30,16 @@ function U1grad(Y, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
     return sumtot
 end
 
-function U1hessian(Y, U2, U3, U4)
+function U1hessian(Y, U2, U3, U4, Σ1, Σ2)
     _, r1 = size(U3)
     totsum = zeros(r1, r1)
     obs = size(Y, 3)
-    U4U2U2U4 = U4 * U2' * U2 * U4'
+    iS1 = inv(Σ1)
+    iS2 = inv(Σ2)
+    U4U2U2U4 = U4 * U2' * iS2 * U2 * U4'
     for i in 3:obs
-        totsum += U3' * Y[:, :, (i-1)] * U4U2U2U4 * Y[:, :, (i-1)]' * U3
+        dat = U3' * Y[:, :, (i-1)] * U4U2U2U4 * Y[:, :, (i-1)]' * U3
+        totsum += kron(dat, iS1)
     end
     return totsum
 end
