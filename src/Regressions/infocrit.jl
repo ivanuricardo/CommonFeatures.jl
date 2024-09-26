@@ -36,7 +36,7 @@ end
 
 function cointpar(N::AbstractVector, r::AbstractVector; p::Integer=0)
     marpar = p * (N[1]^2 + N[2]^2)
-    return r[1] * (2 * N[1] - r[1]) + r[2] * (2 * N[2] - r[2]) + marpar
+    return 2 * r[1] * (N[1] - r[1]) + 2 * r[2] * (N[2] - r[2]) + marpar
 end
 
 aic(ll::Real, numpars::Int, obs::Int) = ll + (2 * numpars) / obs
