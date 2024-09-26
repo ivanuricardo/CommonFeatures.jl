@@ -2,7 +2,8 @@
 function rorth(n1::Int, n2::Int)
     A = randn(n1, n2)
     Q, R = qr(A)
-    randorth = Q * Diagonal(sign.(diag(R)))
+    randorth = Q
+    # * Diagonal(sign.(diag(R)))
     return randorth
 end
 
