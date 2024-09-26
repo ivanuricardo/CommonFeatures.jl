@@ -27,37 +27,37 @@ end
 @testset "Gradient Tests" begin
     # Gradients for D
     truegradD = gradient(x -> objmecm(my, x, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2), D)[1]
-    matgradD = gradient(x -> -matobj(Y, x, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2), D)[1]
+    matgradD = gradient(x -> matobj(Y, x, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2), D)[1]
     approx_gradD = mecmsumres(Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
     @test isapprox(truegradD, approx_gradD, atol=1e-6)
 
     # Gradients for U1
     truegrad1 = gradient(x -> objmecm(my, D, x, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2), U1)[1]
-    matgrad1 = gradient(x -> -matobj(Y, D, x, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2), U1)[1]
+    matgrad1 = gradient(x -> matobj(Y, D, x, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2), U1)[1]
     approx_grad1 = U1grad(Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
     @test isapprox(truegrad1, approx_grad1, atol=1e-6)
 
     # Gradients for U2
     truegrad2 = gradient(x -> objmecm(my, D, U1, x, U3, U4, Σ1, Σ2, ϕ1, ϕ2), U2)[1]
-    matgrad2 = gradient(x -> -matobj(Y, D, U1, x, U3, U4, Σ1, Σ2, ϕ1, ϕ2), U2)[1]
+    matgrad2 = gradient(x -> matobj(Y, D, U1, x, U3, U4, Σ1, Σ2, ϕ1, ϕ2), U2)[1]
     approx_grad2 = U2grad(Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
     @test isapprox(truegrad2, approx_grad2, atol=1e-6)
 
     # Gradients for U3
     truegrad3 = gradient(x -> objmecm(my, D, U1, U2, x, U4, Σ1, Σ2, ϕ1, ϕ2), U3)[1]
-    matgrad3 = gradient(x -> -matobj(Y, D, U1, U2, x, U4, Σ1, Σ2, ϕ1, ϕ2), U3)[1]
+    matgrad3 = gradient(x -> matobj(Y, D, U1, U2, x, U4, Σ1, Σ2, ϕ1, ϕ2), U3)[1]
     approx_grad3 = U3grad(Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
     @test isapprox(truegrad3, approx_grad3, atol=1e-6)
 
     # Gradients for U4
     truegrad4 = gradient(x -> objmecm(my, D, U1, U2, U3, x, Σ1, Σ2, ϕ1, ϕ2), U4)[1]
-    matgrad4 = gradient(x -> -matobj(Y, D, U1, U2, U3, x, Σ1, Σ2, ϕ1, ϕ2), U4)[1]
+    matgrad4 = gradient(x -> matobj(Y, D, U1, U2, U3, x, Σ1, Σ2, ϕ1, ϕ2), U4)[1]
     approx_grad4 = U4grad(Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
     @test isapprox(truegrad4, approx_grad4, atol=1e-6)
 
     # Gradients for ϕ1
     truegradϕ1 = gradient(x -> objmecm(my, D, U1, U2, U3, U4, Σ1, Σ2, x, ϕ2), ϕ1)[1]
-    matgradϕ1 = gradient(x -> -matobj(Y, D, U1, U2, U3, U4, Σ1, Σ2, x, ϕ2), ϕ1)[1]
+    matgradϕ1 = gradient(x -> matobj(Y, D, U1, U2, U3, U4, Σ1, Σ2, x, ϕ2), ϕ1)[1]
     approx_gradϕ1 = ϕ1grad(Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
     @test isapprox(truegradϕ1, approx_gradϕ1, atol=1e-6)
 
