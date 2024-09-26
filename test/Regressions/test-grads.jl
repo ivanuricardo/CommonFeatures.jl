@@ -1,7 +1,7 @@
 using LinearAlgebra, CommonFeatures, TensorToolbox, Plots, Statistics, Random, Zygote
 using Distributions
 
-rng = StableRNG(20240921)
+Random.seed!(20240921)
 N1 = 4
 N2 = 3
 r1 = 2
