@@ -1,15 +1,17 @@
 
-function mecmsumres(Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
+function mecmsumres(Y, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
     N1, N2, obs = size(Y)
     res = zeros(N1, N2)
     U1U3 = U1 * U3'
     U2U4 = U2 * U4'
+    iS1 = inv(Σ1)
+    iS2 = inv(Σ2)
     for i in 3:obs
         phiY = ϕ1 * (Y[:, :, (i-1)] - Y[:, :, (i-2)]) * ϕ2'
         ΔY = Y[:, :, i] - Y[:, :, i-1]
         res += ΔY - U1U3 * Y[:, :, (i-1)] * U2U4' - phiY - D
     end
-    return res
+    return iS1 * res * iS2
 end
 
 function U1grad(Y, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
