@@ -58,7 +58,7 @@ end
     # Gradients for ϕ1
     truegradϕ1 = gradient(x -> objmecm(my, D, U1, U2, U3, U4, Σ1, Σ2, x, ϕ2), ϕ1)[1]
     matgradϕ1 = gradient(x -> matobj(Y, D, U1, U2, U3, U4, Σ1, Σ2, x, ϕ2), ϕ1)[1]
-    approx_gradϕ1 = ϕ1grad(Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
+    approx_gradϕ1 = ϕ1grad(Y, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
     @test isapprox(truegradϕ1, approx_gradϕ1, atol=1e-6)
 
     # Gradients for ϕ2
@@ -92,7 +92,7 @@ end
 
     # Hessian for ϕ1
     hessϕ1 = hessian(x -> objmecm(my, D, U1, U2, U3, U4, Σ1, Σ2, x, ϕ2), ϕ1)
-    approx_hessϕ1 = ϕ1hessian(Y, ϕ2)
+    approx_hessϕ1 = ϕ1hessian(Y, ϕ2, Σ1, Σ2)
     @test isapprox(maximum(abs.(eigvals(hessϕ1))), maximum(abs.(eigvals(approx_hessϕ1))), atol=1e-6)
 
     # Hessian for ϕ2
