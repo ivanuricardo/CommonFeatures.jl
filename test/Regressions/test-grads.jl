@@ -118,11 +118,18 @@ function ss(S)
     return logdet(inv(S))
 end
 
-S = rand(Wishart(N2, diagm(ones(N2))))
+S = [-0.6666666 0.33333333; 0.33333333 -0.6666666]
 gradient(ss, S)[1]
 -inv(S)
+iS = inv(S)
 hessian(ss, S)
-kron(S, S)^(-2)
+kron(iS, iS)
+function gg(S)
+    return S
+end
+jacobian(gg, S)[1]
+
+
 
 
 
