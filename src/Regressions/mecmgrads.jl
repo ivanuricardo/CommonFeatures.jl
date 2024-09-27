@@ -108,28 +108,32 @@ function U3hessian(Y, U1, U2, U4, Σ1, Σ2)
     return -totsum
 end
 
-function U4grad(Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
+function U4grad(Y, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
     N2, r2 = size(U4)
     obs = size(Y, 3)
     totsum = zeros(N2, r2)
     U2U4 = U2 * U4'
     U1U3 = U1 * U3'
+    iS1 = inv(Σ1)
+    iS2 = inv(Σ2)
     for i in 3:obs
-        premul = Y[:, :, (i-1)]' * U1U3'
+        premul = Y[:, :, (i-1)]' * U1U3' * iS1
         phiY = ϕ1 * (Y[:, :, (i-1)] - Y[:, :, (i-2)]) * ϕ2'
         ΔY = Y[:, :, i] - Y[:, :, i-1]
         res = ΔY - U1U3 * Y[:, :, (i-1)] * U2U4' - phiY - D
-        totsum += premul * res * U2
+        totsum += premul * res * iS2 * U2
     end
     return totsum
 end
 
-function U4hessian(Y, U1, U2, U3)
+function U4hessian(Y, U1, U2, U3, Σ1, Σ2)
     N2, r2 = size(U2)
     obs = size(Y, 3)
     totsum = zeros(N2 * r2, N2 * r2)
-    U2U2 = U2'U2
-    U3U1U1U3 = U3 * U1' * U1 * U3'
+    iS1 = inv(Σ1)
+    iS2 = inv(Σ2)
+    U2U2 = U2' * iS2 * U2
+    U3U1U1U3 = U3 * U1' * iS1 * U1 * U3'
     for i in 3:obs
         totsum += kron(U2U2, Y[:, :, (i-1)]' * U3U1U1U3 * Y[:, :, (i-1)])
     end
