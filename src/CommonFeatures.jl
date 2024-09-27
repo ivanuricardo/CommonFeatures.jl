@@ -18,7 +18,7 @@ export tlag, ridgerankselect, rescaleten, idhosvd, spectralradius, ρ, vlag, tte
 export makecompanion, isstable
 export infocrit, tuckerpar, fullinfocrit, rrvaric, aic, bic, hqc, cointpar
 export tuckerreg, tuckerreg2, dlbarest
-export mecm, mecm2, objmecm, matobj
+export mecm, mecm2, objmecm, matobj, mecminit
 export rrmarcrossval
 export mecmsumres, U1grad, U1hessian, U2grad, U2hessian, U3grad, U3hessian
 export U4grad, U4hessian, ϕ1grad, ϕ1hessian, ϕ2grad, ϕ2hessian, Σ1grad, Σ2grad
