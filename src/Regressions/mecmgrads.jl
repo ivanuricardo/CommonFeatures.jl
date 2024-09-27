@@ -214,6 +214,6 @@ function Σ1grad(Y, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
         res = ΔY - U1U3 * Y[:, :, (i-1)] * U2U4' - phiY - D
         totsum += res * iS2 * res'
     end
-    return (obs / 2) * Σ1 - 0.5 .* totsum
+    return (obs / 2) .* Σ1 - 0.5 .* totsum
 end
 
