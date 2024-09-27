@@ -14,6 +14,8 @@ function mecmsumres(Y, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
     return iS1 * res * iS2
 end
 
+Dhessian(Σ1, Σ2, obs) = obs * kron(inv(Σ1), inv(Σ2))
+
 function U1grad(Y, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
     N1, r1 = size(U1)
     obs = size(Y, 3)
@@ -198,5 +200,20 @@ function ϕ2hessian(Y, ϕ1, Σ1, Σ2)
         totsum += kron(ΔY' * ϕ1ϕ1 * ΔY, iS2)
     end
     return -totsum
+end
+
+function Σ1grad(Y, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
+    N1, _, obs = size(Y)
+    iS2 = inv(Σ2)
+    U1U3 = U1 * U3'
+    U2U4 = U2 * U4'
+    totsum = zeros(N1, N1)
+    for i in 3:obs
+        phiY = ϕ1 * (Y[:, :, (i-1)] - Y[:, :, (i-2)]) * ϕ2'
+        ΔY = Y[:, :, i] - Y[:, :, i-1]
+        res = ΔY - U1U3 * Y[:, :, (i-1)] * U2U4' - phiY - D
+        totsum += res * iS2 * res'
+    end
+    return (obs / 2) * Σ1 - totsum
 end
 

@@ -28,7 +28,7 @@ end
     # Gradients for D
     truegradD = gradient(x -> objmecm(my, x, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2), D)[1]
     matgradD = gradient(x -> matobj(Y, x, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2), D)[1]
-    approx_gradD = mecmsumres(Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
+    approx_gradD = mecmsumres(Y, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
     @test isapprox(truegradD, approx_gradD, atol=1e-6)
 
     # Gradients for U1
@@ -66,6 +66,10 @@ end
     matgradϕ2 = gradient(x -> matobj(Y, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, x), ϕ2)[1]
     approx_gradϕ2 = ϕ2grad(Y, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
     @test isapprox(truegradϕ2, approx_gradϕ2, atol=1e-6)
+
+    truegradΣ1 = gradient(x -> objmecm(my, D, U1, U2, U3, U4, x, Σ2, ϕ1, ϕ2), Σ1)[1]
+    matgradΣ1 = gradient(x -> matobj(Y, D, U1, U2, U3, U4, x, Σ2, ϕ1, ϕ2), Σ1)[1]
+    approx_gradΣ1 = Σ1grad(Y, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
 end
 
 # Test Hessians: We expect the Hessians to be close to equal
