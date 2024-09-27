@@ -70,10 +70,12 @@ end
     truegradΣ1 = gradient(x -> objmecm(my, D, U1, U2, U3, U4, x, Σ2, ϕ1, ϕ2), Σ1)[1]
     matgradΣ1 = gradient(x -> matobj(Y, D, U1, U2, U3, U4, x, Σ2, ϕ1, ϕ2), Σ1)[1]
     approx_gradΣ1 = Σ1grad(Y, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
+    @test isapprox(truegradΣ1, approx_gradΣ1, atol=1e-6)
 
     truegradΣ2 = gradient(x -> objmecm(my, D, U1, U2, U3, U4, Σ1, x, ϕ1, ϕ2), Σ2)[1]
     matgradΣ2 = gradient(x -> matobj(Y, D, U1, U2, U3, U4, Σ1, x, ϕ1, ϕ2), Σ2)[1]
     approx_gradΣ2 = Σ2grad(Y, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
+    @test isapprox(truegradΣ2, approx_gradΣ2, atol=1e-6)
 end
 
 # Test Hessians: We expect the Hessians to be close to equal
@@ -107,4 +109,21 @@ end
     hessϕ2 = hessian(x -> objmecm(my, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, x), ϕ2)
     approx_hessϕ2 = ϕ2hessian(Y, ϕ1, Σ1, Σ2)
     @test isapprox(maximum(abs.(eigvals(hessϕ2))), maximum(abs.(eigvals(approx_hessϕ2))), atol=1e-6)
+
+    hessΣ1 = hessian(x -> objmecm(my, D, U1, U2, U3, U4, x, Σ2, ϕ1, ϕ2), Σ1)
+    approx_hessΣ1 = Σ1hessian(Y, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
 end
+
+function ss(S)
+    return logdet(inv(S))
+end
+
+S = rand(Wishart(N2, diagm(ones(N2))))
+gradient(ss, S)[1]
+-inv(S)
+hessian(ss, S)
+kron(S, S)^(-2)
+
+
+
+
