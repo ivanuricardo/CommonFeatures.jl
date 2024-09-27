@@ -21,7 +21,7 @@ export tuckerreg, tuckerreg2, dlbarest
 export mecm, mecm2, objmecm, matobj
 export rrmarcrossval
 export mecmsumres, U1grad, U1hessian, U2grad, U2hessian, U3grad, U3hessian
-export U4grad, U4hessian, ϕ1grad, ϕ1hessian, ϕ2grad, ϕ2hessian
+export U4grad, U4hessian, ϕ1grad, ϕ1hessian, ϕ2grad, ϕ2hessian, Σ1grad
 include("./Regressions/abstract.jl")
 include("./Regressions/matrixar.jl")
 include("./Regressions/regutils.jl")
