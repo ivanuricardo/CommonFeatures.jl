@@ -233,5 +233,4 @@ function Σ2grad(Y, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
     end
     return -(obs / 2) .* iS2 + 0.5 .* iS2 * totsum * iS2
 end
-end
 
