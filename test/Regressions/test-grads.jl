@@ -52,7 +52,7 @@ end
     # Gradients for U4
     truegrad4 = gradient(x -> objmecm(my, D, U1, U2, U3, x, Σ1, Σ2, ϕ1, ϕ2), U4)[1]
     matgrad4 = gradient(x -> matobj(Y, D, U1, U2, U3, x, Σ1, Σ2, ϕ1, ϕ2), U4)[1]
-    approx_grad4 = U4grad(Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
+    approx_grad4 = U4grad(Y, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
     @test isapprox(truegrad4, approx_grad4, atol=1e-6)
 
     # Gradients for ϕ1
@@ -87,7 +87,7 @@ end
 
     # Hessian for U4
     hess4 = hessian(x -> objmecm(my, D, U1, U2, U3, x, Σ1, Σ2, ϕ1, ϕ2), U4)
-    approx_hess4 = U4hessian(Y, U1, U2, U3)
+    approx_hess4 = U4hessian(Y, U1, U2, U3, Σ1, Σ2)
     @test isapprox(maximum(abs.(eigvals(hess4))), maximum(abs.(eigvals(approx_hess4))), atol=1e-6)
 
     # Hessian for ϕ1

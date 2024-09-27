@@ -137,32 +137,36 @@ function U4hessian(Y, U1, U2, U3, Σ1, Σ2)
     for i in 3:obs
         totsum += kron(U2U2, Y[:, :, (i-1)]' * U3U1U1U3 * Y[:, :, (i-1)])
     end
-    return totsum
+    return -totsum
 end
 
-function ϕ1grad(Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
+function ϕ1grad(Y, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
     N1, _, obs = size(Y)
     totsum = zeros(N1, N1)
     U1U3 = U1 * U3'
     U2U4 = U2 * U4'
+    iS1 = inv(Σ1)
+    iS2 = inv(Σ2)
     for i in 3:obs
         phiY = ϕ1 * (Y[:, :, (i-1)] - Y[:, :, (i-2)]) * ϕ2'
         ΔY = Y[:, :, i] - Y[:, :, i-1]
         res = ΔY - U1U3 * Y[:, :, (i-1)] * U2U4' - phiY - D
-        totsum += res * ϕ2 * (Y[:, :, (i-1)] - Y[:, :, (i-2)])'
+        totsum += res * iS2 * ϕ2 * (Y[:, :, (i-1)] - Y[:, :, (i-2)])'
     end
-    return totsum
+    return iS1 * totsum
 end
 
-function ϕ1hessian(Y, ϕ2)
+function ϕ1hessian(Y, ϕ2, Σ1, Σ2)
     N1, _, obs = size(Y)
-    ϕ2ϕ2 = ϕ2'ϕ2
+    iS1 = inv(Σ1)
+    iS2 = inv(Σ2)
+    ϕ2ϕ2 = ϕ2' * iS2 * ϕ2
     totsum = zeros(N1, N1)
     for i in 3:obs
         ΔY = Y[:, :, (i-1)] - Y[:, :, (i-2)]
-        totsum += ΔY * ϕ2ϕ2 * ΔY'
+        totsum += kron(ΔY * ϕ2ϕ2 * ΔY', iS1)
     end
-    return totsum
+    return -totsum
 end
 
 function ϕ2grad(Y, U1, U2, U3, U4, ϕ1, ϕ2, D)
