@@ -178,7 +178,7 @@ function mecm(
             ϕ2 += etaϕ2 * ∇ϕ2
             trackϕ2[s] = norm(∇ϕ2)
         end
-        llist[s] = -matobj(mardata, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
+        llist[s] = matobj(mardata, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
 
         if s > 1
             ∇diff = abs(llist[s] - llist[s-1])
