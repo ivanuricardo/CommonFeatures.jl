@@ -107,7 +107,6 @@ function mecm(
 
     U1, U2, U3, U4, D, ϕ1, ϕ2, Σ1, Σ2 = mecminit(mardata, ranks; p)
     obs = size(mardata, 3)
-    etaD = 1 / spectralradius(obs * kron(inv(Σ2), inv(Σ1)))
 
     trackU1 = fill(NaN, maxiter)
     trackU2 = fill(NaN, maxiter)
@@ -126,6 +125,7 @@ function mecm(
         iters += 1
 
         ∇D = mecmsumres(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
+        etaD = 1 / spectralradius(obs * kron(inv(Σ2), inv(Σ1)))
         D += etaD * ∇D
         trackD[s] = etaD
 
