@@ -114,23 +114,23 @@ end
     approx_hessΣ1 = Σ1hessian(Y, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
 end
 
-function ss(S)
-    return logdet(inv(S))
+function ll(Σ)
+    ldS = logdet(inv(Σ))
+    e = randn(size(Σ, 1), 100)
+    ssr = 0
+    for i in 1:100
+        ssr += e[:, i]' * inv(Σ) * e[:, i]
+    end
+    return 0.5 * (ldS - ssr)
 end
 
-S = [-0.6666666 0.33333333; 0.33333333 -0.6666666]
-gradient(ss, S)[1]
--inv(S)
-iS = inv(S)
-hessian(ss, S)
-kron(iS, iS)
-function gg(S)
-    return S
+S = rand(Wishart(4, diagm(ones(4))))
+
+truegradϕ2 = gradient(x -> objmecm(my, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, x), ϕ2)[1]
+gradient(x -> ll(x), inv(S))[1]
+ss = 0
+for i in 1:100
+    e = randn(4)
+    ss += e[:, i]' * e[:, i]
 end
-jacobian(gg, S)[1]
-
-
-
-
-
-
+-0.5 .* inv(S) - 0.5 * ss

@@ -25,7 +25,8 @@ function matobj(Y, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
     ssr = 0
     for i in 3:obs
         phiY = ϕ1 * (Y[:, :, (i-1)] - Y[:, :, i-2]) * ϕ2'
-        res = (Y[:, :, i] - Y[:, :, i-1]) - U1U3 * Y[:, :, (i-1)] * U2U4' - phiY - D
+        ΔY = Y[:, :, i] - Y[:, :, i-1]
+        res = ΔY - U1U3 * Y[:, :, (i-1)] * U2U4' - phiY - D
         ssr += tr(iS1 * res * iS2 * res')
     end
     return sigma - 0.5 * ssr
@@ -154,13 +155,13 @@ function mecm(
         trackU4[s] = etaU4
 
         ∇Σ1 = Σ1grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
-        hΣ1 = hessian(x -> matobj(mardata, D, U1, U2, U3, U4, x, Σ2, ϕ1, ϕ2), Σ1)
+        # hΣ1 = hessian(x -> matobj(mardata, D, U1, U2, U3, U4, x, Σ2, ϕ1, ϕ2), Σ1)
         etaΣ1 = 1e-06
         Σ1 += etaΣ1 * ∇Σ1
         trackΣ1[s] = etaΣ1
 
         ∇Σ2 = Σ2grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
-        hΣ2 = hessian(x -> matobj(mardata, D, U1, U2, U3, U4, Σ1, x, ϕ1, ϕ2), Σ2)
+        # hΣ2 = hessian(x -> matobj(mardata, D, U1, U2, U3, U4, Σ1, x, ϕ1, ϕ2), Σ2)
         etaΣ2 = 1e-06
         Σ2 += etaΣ2 * ∇Σ2
         trackΣ2[s] = etaΣ2
