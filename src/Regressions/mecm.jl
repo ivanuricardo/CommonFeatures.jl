@@ -126,7 +126,7 @@ function mecm(
         iters += 1
 
         ∇D = mecmsumres(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
-        etaD = 1 / spectralradius(obs * kron(inv(Σ2), inv(Σ1)))
+        etaD = 1 / spectralradius((obs) * kron(inv(Σ2), inv(Σ1)))
         D += etaD * ∇D
         trackD[s] = etaD
 
@@ -144,6 +144,7 @@ function mecm(
 
         ∇Σ1 = Σ1grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
         # hΣ1 = hessian(x -> matobj(mardata, D, U1, U2, U3, U4, x, Σ2, ϕ1, ϕ2), Σ1)
+        # etaΣ1 = 1 / maximum(abs.(eigvals(hΣ1)))
         etaΣ1 = 1e-04
         Σ1 += etaΣ1 * ∇Σ1
         trackΣ1[s] = etaΣ1
@@ -162,6 +163,7 @@ function mecm(
 
         ∇Σ2 = Σ2grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
         # hΣ2 = hessian(x -> matobj(mardata, D, U1, U2, U3, U4, Σ1, x, ϕ1, ϕ2), Σ2)
+        # etaΣ2 = 1 / maximum(abs.(eigvals(hΣ2)))
         etaΣ2 = 1e-04
         Σ2 += etaΣ2 * ∇Σ2
         trackΣ2[s] = etaΣ2

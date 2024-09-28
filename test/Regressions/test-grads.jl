@@ -114,23 +114,23 @@ end
     approx_hessΣ1 = Σ1hessian(Y, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
 end
 
-function ll(Σ)
-    ldS = logdet(inv(Σ))
-    e = randn(size(Σ, 1), 100)
+function ll(Σ, e)
+    ldS = logdet(Σ)
     ssr = 0
     for i in 1:100
-        ssr += e[:, i]' * inv(Σ) * e[:, i]
+        ssr += e[:, i]' * Σ * e[:, i]
     end
     return 0.5 * (ldS - ssr)
 end
 
 S = rand(Wishart(4, diagm(ones(4))))
-
-truegradϕ2 = gradient(x -> objmecm(my, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, x), ϕ2)[1]
-gradient(x -> ll(x), inv(S))[1]
-ss = 0
+e = randn(size(S, 1), 100)
+ss = zeros(4, 4)
 for i in 1:100
-    e = randn(4)
-    ss += e[:, i]' * e[:, i]
+    ss += e[:, i] * e[:, i]'
 end
--0.5 .* inv(S) - 0.5 * ss
+0.5 .* inv(S) - 0.5 * ss
+gradient(x -> ll(x, e), S)[1]
+
+spectralradius(hessian(x -> ll(x, e), S))
+spectralradius(kron(-0.5 * inv(S), inv(S)))
