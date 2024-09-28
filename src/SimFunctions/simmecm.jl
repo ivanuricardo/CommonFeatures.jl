@@ -20,10 +20,10 @@ function generatemecmparams(n, ranks; genphi=false)
     A = Q1 * diagm(randn(ranks[2])) * Q2'
     B = Q3 * diagm(randn(ranks[1])) * Q4'
 
-    u2, s1, u4 = svd(A)
-    u1, s2, u3 = svd(B)
-    U1 = u1[:, 1:ranks[1]] * diagm(s2[1:ranks[1]])
-    U2 = u2[:, 1:ranks[2]] * diagm(s1[1:ranks[2]])
+    u2, _, u4 = svd(A)
+    u1, _, u3 = svd(B)
+    U1 = u1[:, 1:ranks[1]]
+    U2 = u2[:, 1:ranks[2]]
     U3 = u3[:, 1:ranks[1]]
     U4 = u4[:, 1:ranks[2]]
 
