@@ -2,7 +2,7 @@ using LinearAlgebra, Random, TensorToolbox, Plots, CommonFeatures, Zygote, Progr
 Random.seed!(20240922)
 
 n = [4, 3]
-ranks = [2, 1]
+ranks = [1, 1]
 eta = 2e-07
 p = 0
 maxiter = 100
