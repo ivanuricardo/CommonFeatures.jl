@@ -100,6 +100,7 @@ function mecm(
     ranks::AbstractVector;
     p::Int=0,
     maxiter::Int=500,
+    etaS,
     ϵ::AbstractFloat=1e-03,
 )
     if length(ranks) != 2
@@ -145,9 +146,9 @@ function mecm(
         ∇Σ1 = Σ1grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
         # hΣ1 = hessian(x -> matobj(mardata, D, U1, U2, U3, U4, x, Σ2, ϕ1, ϕ2), Σ1)
         # etaΣ1 = 1 / maximum(abs.(eigvals(hΣ1)))
-        etaΣ1 = 1e-04
-        Σ1 += etaΣ1 * ∇Σ1
-        trackΣ1[s] = etaΣ1
+        # etaΣ1 = 1e-04
+        Σ1 += etaS * ∇Σ1
+        # trackΣ1[s] = etaΣ1
 
         ∇U2 = U2grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
         hU2 = U2hessian(mardata, U1, U3, U4, Σ1, Σ2)
@@ -164,9 +165,9 @@ function mecm(
         ∇Σ2 = Σ2grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
         # hΣ2 = hessian(x -> matobj(mardata, D, U1, U2, U3, U4, Σ1, x, ϕ1, ϕ2), Σ2)
         # etaΣ2 = 1 / maximum(abs.(eigvals(hΣ2)))
-        etaΣ2 = 1e-04
-        Σ2 += etaΣ2 * ∇Σ2
-        trackΣ2[s] = etaΣ2
+        # etaΣ2 = 1e-04
+        Σ2 += etaS * ∇Σ2
+        # trackΣ2[s] = etaΣ2
 
         if p != 0
             ∇ϕ1 = ϕ1grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
