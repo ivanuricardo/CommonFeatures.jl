@@ -76,7 +76,7 @@ function generatemecmdata(U1, U2, U3, U4, ϕ1, ϕ2, obs; burnin=100, snr::Real=0
     return (; data, flatdata, ll)
 end
 
-function selectmecm(data; p=0, maxiters=50, ϵ=1e-02)
+function selectmecm(data; p=0, maxiters=50, ϵ=1e-02, etaS=1e-03)
     n1, n2, obs = size(data)
     grid = collect(Iterators.product(1:n1, 1:n2))
     ictable = fill(NaN, 5, n1 * n2)
@@ -84,7 +84,7 @@ function selectmecm(data; p=0, maxiters=50, ϵ=1e-02)
     for i in 1:(n1*n2)
         selectedrank = collect(grid[i])
         numpars = cointpar([n1, n2], selectedrank)
-        mecmest = mecm(data, selectedrank; p=p, maxiter=maxiters, ϵ=ϵ)
+        mecmest = mecm(data, selectedrank; p=p, maxiter=maxiters, etaS=etaS, ϵ=ϵ)
         loglike = -mecmest.llist[findlast(!isnan, mecmest.llist)]
         ictable[1, i] = aic(loglike, numpars, obs)
         ictable[2, i] = bic(loglike, numpars, obs)
