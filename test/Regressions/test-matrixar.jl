@@ -1,5 +1,4 @@
 @testset "Full RRVAR" begin
-    using TensorToolbox
     Random.seed!(20231228)
     # Match Tucker regression with VAR
     N = 5
@@ -9,7 +8,7 @@
     maxeigen = 0.9
 
     C, _ = generaterrvarcoef(N, r, p, maxeigen=maxeigen)
-    rrvarsim = simulaterrvardata(N, r, p; obs=obs, C=C)
+    rrvarsim = simulaterrvardata(N, r, p, obs; C=C)
     rrvardata = rrvarsim.data
     origy = vlag(rrvardata)[1:N, :]
     lagy = vlag(rrvardata)[(N+1):end, :]
