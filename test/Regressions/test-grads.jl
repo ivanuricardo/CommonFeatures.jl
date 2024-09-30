@@ -1,5 +1,3 @@
-using LinearAlgebra, CommonFeatures, TensorToolbox, Plots, Statistics, Random, Zygote
-using Distributions
 
 Random.seed!(20240921)
 N1 = 4
@@ -100,6 +98,4 @@ end
     hessϕ2 = hessian(x -> objmecm(my, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, x), ϕ2)
     approx_hessϕ2 = ϕ2hessian(Y, ϕ1, Σ1, Σ2)
     @test isapprox(maximum(abs.(eigvals(hessϕ2))), maximum(abs.(eigvals(approx_hessϕ2))), rtol=1e-8)
-
-    hessΣ1 = hessian(x -> objmecm(my, D, U1, U2, U3, U4, x, Σ2, ϕ1, ϕ2), Σ1)
 end

@@ -30,7 +30,7 @@ include("./Regressions/infocrit.jl")
 include("./Regressions/tuckerreg.jl")
 include("./Regressions/mecm.jl")
 include("./Regressions/crossval.jl")
-include("./Regressions/mecmgrads.jl")
+include("./Regressions/grads.jl")
 
 export simulatetuckerdata, generatetuckercoef
 export simulatevardata, generatevarcoef, generaterrvarcoef, simulaterrvardata
