@@ -183,8 +183,11 @@ function mecm(
             ϕ2 += etaϕ2 * ∇ϕ2
             trackϕ2[s] = norm(∇ϕ2)
         end
-        if det(Σ1) < 0 || det(Σ2) < 0
+        if det(Σ1) < 0
             Σ1 = -Σ1
+            negdet += 1
+        end
+        if det(Σ2) < 0
             Σ2 = -Σ2
             negdet += 1
         end
