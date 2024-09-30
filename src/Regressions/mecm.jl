@@ -122,6 +122,7 @@ function mecm(
     llist = fill(NaN, maxiter)
 
     iters = 0
+    negdet = 0
     for s in ProgressBar(1:maxiter)
 
         iters += 1
@@ -182,6 +183,11 @@ function mecm(
             ϕ2 += etaϕ2 * ∇ϕ2
             trackϕ2[s] = norm(∇ϕ2)
         end
+        if det(Σ1) < 0 || det(Σ2) < 0
+            Σ1 = -Σ1
+            Σ2 = -Σ2
+            negdet += 1
+        end
         llist[s] = matobj(mardata, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
 
         if s > 1
@@ -191,7 +197,7 @@ function mecm(
             if (∇diff < ϵ) || converged
                 fullgrads = hcat(trackU1, trackU2, trackU3, trackU4, trackD, trackΣ1, trackΣ2)
                 converged = (!converged)
-                return (; U1, U2, U3, U4, D, Σ1, Σ2, ϕ1, ϕ2, iters, fullgrads, converged, llist)
+                return (; U1, U2, U3, U4, D, Σ1, Σ2, ϕ1, ϕ2, iters, fullgrads, converged, llist, negdet)
             end
         end
     end
