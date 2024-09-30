@@ -148,7 +148,7 @@ function idhosvd(
     return ttensor(ttm(X, fmat, 't'), fmat)
 end
 
-spectralradius(C::AbstractMatrix) = maximum(abs.(eigen(C).values))
+spectralradius(C::AbstractMatrix) = maximum(abs.(eigvals(C)))
 ρ(C::AbstractMatrix) = spectralradius(C)
 ttensor(cten::Array{<:Number}, fmat::Array{M,1}) where {M<:AbstractMatrix} = ttensor(cten, MatrixCell(fmat), true)
 

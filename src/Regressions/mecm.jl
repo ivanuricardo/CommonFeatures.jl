@@ -100,7 +100,7 @@ function mecm(
     ranks::AbstractVector;
     p::Int=0,
     maxiter::Int=500,
-    etaS,
+    etaS::AbstractFloat=1e-03,
     ϵ::AbstractFloat=1e-03,
 )
     if length(ranks) != 2
@@ -130,52 +130,44 @@ function mecm(
 
         ∇U1 = U1grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
         hU1 = U1hessian(mardata, U2, U3, U4, Σ1, Σ2)
-        etaU1 = 1 / (maximum(abs.(eigvals(hU1))))
+        etaU1 = 1 / spectralradius(hU1)
         U1 += etaU1 * ∇U1
         trackU1[s] = etaU1
 
         ∇U2 = U2grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
         hU2 = U2hessian(mardata, U1, U3, U4, Σ1, Σ2)
-        etaU2 = 1 / (maximum(abs.(eigvals(hU2))))
+        etaU2 = 1 / spectralradius(hU2)
         U2 += etaU2 * ∇U2
         trackU2[s] = etaU2
 
         ∇U3 = U3grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
         hU3 = U3hessian(mardata, U1, U2, U4, Σ1, Σ2)
-        etaU3 = 1 / (maximum(abs.(eigvals(hU3))))
+        etaU3 = 1 / spectralradius(hU3)
         U3 += etaU3 * ∇U3
         trackU3[s] = etaU3
 
         ∇U4 = U4grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
         hU4 = U4hessian(mardata, U1, U2, U3, Σ1, Σ2)
-        etaU4 = 1 / (maximum(abs.(eigvals(hU4))))
+        etaU4 = 1 / spectralradius(hU4)
         U4 += etaU4 * ∇U4
         trackU4[s] = etaU4
 
         ∇Σ1 = Σ1grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
-        # hΣ1 = hessian(x -> matobj(mardata, D, U1, U2, U3, U4, x, Σ2, ϕ1, ϕ2), Σ1)
-        # etaΣ1 = 1 / maximum(abs.(eigvals(hΣ1)))
-        # etaΣ1 = 1e-04
         Σ1 += etaS * ∇Σ1
-        # trackΣ1[s] = etaΣ1
 
         ∇Σ2 = Σ2grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
-        # hΣ2 = hessian(x -> matobj(mardata, D, U1, U2, U3, U4, Σ1, x, ϕ1, ϕ2), Σ2)
-        # etaΣ2 = 1 / maximum(abs.(eigvals(hΣ2)))
-        # etaΣ2 = 1e-04
         Σ2 += etaS * ∇Σ2
-        # trackΣ2[s] = etaΣ2
 
         if p != 0
             ∇ϕ1 = ϕ1grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
             hϕ1 = ϕ1hessian(mardata, ϕ2, Σ1, Σ2)
-            etaϕ1 = 1 / (maximum(abs.(eigvals(hϕ1))))
+            etaϕ1 = 1 / spectralradius(hϕ1)
             ϕ1 += etaϕ1 * ∇ϕ1
             trackϕ1[s] = norm(∇ϕ1)
 
             ∇ϕ2 = ϕ2grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
             hϕ2 = ϕ2hessian(mardata, ϕ1, Σ1, Σ2)
-            etaϕ2 = 1 / (maximum(abs.(eigvals(hϕ2))))
+            etaϕ2 = 1 / spectralradius(hϕ2)
             ϕ2 += etaϕ2 * ∇ϕ2
             trackϕ2[s] = norm(∇ϕ2)
         end
