@@ -20,11 +20,12 @@ A named tuple containing the following statistics:
 function simstats(selectedranks::AbstractMatrix, correctrank::AbstractVector, sims::Int)
     avgrank = mean(selectedranks, dims=2)
     stdrank = std(selectedranks, dims=2)
-    freqcorrect = fill(NaN, 4)
-    freqhigh = fill(NaN, 4)
-    freqlow = fill(NaN, 4)
+    numranks = size(selectedranks, 1)
+    freqcorrect = fill(NaN, numranks)
+    freqhigh = fill(NaN, numranks)
+    freqlow = fill(NaN, numranks)
 
-    for i in 1:4
+    for i in 1:numranks
         crank = correctrank[i]
         freqcorrect[i] = count(x -> x == crank, selectedranks[i, :]) / sims
         freqhigh[i] = count(x -> x > crank, selectedranks[i, :]) / sims
