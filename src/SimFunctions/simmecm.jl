@@ -76,7 +76,7 @@ function generatemecmdata(U1, U2, U3, U4, ϕ1, ϕ2, obs; burnin=100, snr::Real=0
     return (; data, flatdata, ll)
 end
 
-function selectmecm(data; p=0, maxiters=50, ϵ=1e-02, etaS=1e-03)
+function selectmecm(data; p=0, maxiters=50, ϵ=1e-02, etaS=1e-04)
     n1, n2, obs = size(data)
     grid = collect(Iterators.product(1:n1, 1:n2))
     ictable = fill(NaN, 5, n1 * n2)
