@@ -86,9 +86,9 @@ function selectmecm(data; p=0, maxiters=50, ϵ=1e-02, etaS=1e-04)
         numpars = cointpar([n1, n2], selectedrank)
         mecmest = mecm(data, selectedrank; p=p, maxiter=maxiters, etaS=etaS, ϵ=ϵ)
         loglike = -mecmest.llist[findlast(!isnan, mecmest.llist)]
-        ictable[1, i] = aic(loglike, numpars)
-        ictable[2, i] = bic(loglike, numpars, obs)
-        ictable[3, i] = hqc(loglike, numpars, obs)
+        ictable[1, i] = mecmaic(loglike, numpars)
+        ictable[2, i] = mecmbic(loglike, numpars, obs)
+        ictable[3, i] = mecmhqc(loglike, numpars, obs)
         ictable[4, i] = selectedrank[1]
         ictable[5, i] = selectedrank[2]
     end
