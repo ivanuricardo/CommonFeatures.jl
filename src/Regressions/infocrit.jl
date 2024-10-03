@@ -36,12 +36,12 @@ end
 
 function cointpar(N::AbstractVector, r::AbstractVector; p::Integer=0)
     marpar = p * (N[1]^2 + N[2]^2)
-    return 2 * r[1] * (N[1] - r[1]) + 2 * r[2] * (N[2] - r[2]) + marpar
+    return r[1] * (2 * N[1] - r[1]) + r[2] * (2 * N[2] - r[2]) + marpar
 end
 
-aic(ll::Real, numpars::Int, obs::Int) = ll + (2 * numpars) / obs
-bic(ll::Real, numpars::Int, obs::Int) = ll + (numpars * log(obs)) / obs
-hqc(ll::Real, numpars::Int, obs::Int) = ll + (numpars * 2 * log(log(obs))) / obs
+aic(ll::Real, numpars::Int) = -2 * ll + (2 * numpars)
+bic(ll::Real, numpars::Int, obs::Int) = -2 * ll + (numpars * log(obs))
+hqc(ll::Real, numpars::Int, obs::Int) = -2 * ll + (numpars * 2 * log(log(obs)))
 
 function tuckercondition(r::Vector{Int})
     n = length(r)
@@ -129,7 +129,7 @@ function infocrit(
             numconv += 1
         end
 
-        ictable[1, i] = aic(logdetcov, numpars, obs)
+        ictable[1, i] = aic(logdetcov, numpars)
         ictable[2, i] = bic(logdetcov, numpars, obs)
         ictable[3, i] = r1
         ictable[4, i] = r2
@@ -231,7 +231,7 @@ function fullinfocrit(
             numconv += 1
         end
 
-        ictable[1, i] = aic(logdetcov, numpars, obs)
+        ictable[1, i] = aic(logdetcov, numpars)
         ictable[2, i] = bic(logdetcov, numpars, obs)
         ictable[3, i] = hqc(logdetcov, numpars, obs)
         ictable[4, i] = r1
@@ -300,7 +300,7 @@ function rrvaric(vardata::AbstractMatrix, pmax::Int, stdize::Bool)
         logdetcov = rrvarest.loglike
         numpars = (k * r) + (k * r * p)
 
-        ictable[1, i] = aic(logdetcov, numpars, obs)
+        ictable[1, i] = aic(logdetcov, numpars)
         ictable[2, i] = bic(logdetcov, numpars, obs)
         ictable[3, i] = hqc(logdetcov, numpars, obs)
         ictable[4, i] = r
