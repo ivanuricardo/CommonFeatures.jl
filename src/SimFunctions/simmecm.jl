@@ -91,7 +91,6 @@ function selectmecm(data; p=0, maxiters=50, ϵ=1e-02, etaS=1e-04)
         ictable[3, i] = mecmhqc(loglike, numpars, obs)
         ictable[4, i] = selectedrank[1]
         ictable[5, i] = selectedrank[2]
-        ictable[6, i] = mecmest.iters
     end
 
     aicvec = argmin(ictable[1, :])
