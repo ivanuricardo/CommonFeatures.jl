@@ -79,7 +79,7 @@ end
 function selectmecm(data; p=0, maxiters=50, ϵ=1e-02, etaS=1e-04)
     n1, n2, obs = size(data)
     grid = collect(Iterators.product(1:n1, 1:n2))
-    ictable = fill(NaN, 6, n1 * n2)
+    ictable = fill(NaN, 5, n1 * n2)
 
     for i in 1:(n1*n2)
         selectedrank = collect(grid[i])
