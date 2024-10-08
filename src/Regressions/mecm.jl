@@ -61,7 +61,9 @@ function mecminit(mardata::AbstractArray, ranks::AbstractVector; p::Int=0)
     U2 = U2left[:, 1:ranks[2]]
     U3 = U3right[:, 1:ranks[1]]
     U4 = U4left[:, 1:ranks[2]]
-    Σ1, Σ2 = I(N1), I(N2)
+    Σ1 = zeros(N1, N1)
+    Σ2 = zeros(N2, N2)
+    # Σ1, Σ2 = I(N1), I(N2)
     D = zeros(size(ΔY, 1), size(ΔY, 2))
 
     return (; U1, U2, U3, U4, D, ϕ1, ϕ2, Σ1, Σ2)
