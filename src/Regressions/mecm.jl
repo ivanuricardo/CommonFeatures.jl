@@ -119,6 +119,8 @@ function mecm(
     trackD = fill(NaN, maxiter)
     trackϕ1 = fill(NaN, maxiter)
     trackϕ2 = fill(NaN, maxiter)
+    trackΣ1 = fill(NaN, maxiter)
+    trackΣ2 = fill(NaN, maxiter)
     llist = fill(NaN, maxiter)
 
     iters = 0
@@ -155,10 +157,16 @@ function mecm(
         trackU4[s] = etaU4
 
         ∇Σ1 = Σ1grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
-        Σ1 += etaS * ∇Σ1
+        hS1 = hessian(x -> objmecm(mardata, D, U1, U2, U3, U4, x, Σ2, ϕ1, ϕ2), Σ1)
+        etaS1 = 1 / spectralradius(hS1)
+        Σ1 += etaS1 * ∇Σ1
+        trackΣ1[s] = etaS1
 
         ∇Σ2 = Σ2grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
-        Σ2 += etaS * ∇Σ2
+        hS2 = hessian(x -> objmecm(mardata, D, U1, U2, U3, U4, Σ1, x, ϕ1, ϕ2), Σ2)
+        etaS2 = 1 / spectralradius(hS2)
+        Σ2 += etaS2 * ∇Σ2
+        trackΣ2[s] = etaS2
 
         if p != 0
             ∇ϕ1 = ϕ1grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
@@ -180,7 +188,7 @@ function mecm(
             converged = (s == maxiter)
 
             if (∇diff < ϵ) || converged
-                fullgrads = hcat(trackU1, trackU2, trackU3, trackU4, trackD)
+                fullgrads = hcat(trackU1, trackU2, trackU3, trackU4, trackD, trackΣ1, trackΣ2)
                 converged = (!converged)
                 return (; U1, U2, U3, U4, D, Σ1, Σ2, ϕ1, ϕ2, iters, fullgrads, converged, llist)
             end
