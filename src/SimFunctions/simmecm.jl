@@ -81,7 +81,7 @@ function generatemecmdata(U1, U2, U3, U4, ϕ1, ϕ2, obs; burnin=100, snr::Real=0
     flatdata = Y[:, (burnin+1):end]
     D = zeros(size(mdy, 1) * size(mdy, 2))
     ll = objmecm(flatdata, D, U1, U2, U3, U4, I(N1), I(N2), ϕ1, ϕ2)
-    return (; data, flatdata, ll)
+    return (; data, flatdata, ll, Σ1, Σ2)
 end
 
 function selectmecm(data; p=0, maxiter=50, ϵ=1e-02, etaS=1e-04)
@@ -89,7 +89,7 @@ function selectmecm(data; p=0, maxiter=50, ϵ=1e-02, etaS=1e-04)
     grid = collect(Iterators.product(1:n1, 1:n2))
     ictable = fill(NaN, 5, n1 * n2)
 
-    for i in ProgressBar(1:(n1*n2))
+    for i in 1:(n1*n2)
         selectedrank = collect(grid[i])
         numpars = cointpar([n1, n2], selectedrank)
         mecmest = mecm(data, selectedrank; p, maxiter, etaS, ϵ)
