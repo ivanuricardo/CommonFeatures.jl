@@ -62,7 +62,7 @@ function generatemecmdata(U1, U2, U3, U4, ϕ1, ϕ2, obs; burnin=100, snr::Real=0
 
     if matrixnorm
         Σ1 = diagm(sqrt.(diagerr[1:n1]))
-        Σ2 = 1e-03 .* diagm(sqrt.(diagerr[1:n2]))
+        Σ2 = diagm(sqrt.(diagerr[1:n2]))
         d = MatrixNormal(zeros(n1, n2), Σ1, Σ2)
     else
         d = MultivariateNormal(zeros(n1 * n2), diagm(diagerr))
