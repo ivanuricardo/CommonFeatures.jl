@@ -157,13 +157,13 @@ function mecm(
         trackU4[s] = etaU4
 
         ∇Σ1 = Σ1grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
-        hS1 = hessian(x -> objmecm(mardata, D, U1, U2, U3, U4, x, Σ2, ϕ1, ϕ2), Σ1)
+        hS1 = hessian(x -> matobj(mardata, D, U1, U2, U3, U4, x, Σ2, ϕ1, ϕ2), Σ1)
         etaS1 = 1 / spectralradius(hS1)
         Σ1 += etaS1 * ∇Σ1
         trackΣ1[s] = etaS1
 
         ∇Σ2 = Σ2grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
-        hS2 = hessian(x -> objmecm(mardata, D, U1, U2, U3, U4, Σ1, x, ϕ1, ϕ2), Σ2)
+        hS2 = hessian(x -> matobj(mardata, D, U1, U2, U3, U4, Σ1, x, ϕ1, ϕ2), Σ2)
         etaS2 = 1 / spectralradius(hS2)
         Σ2 += etaS2 * ∇Σ2
         trackΣ2[s] = etaS2

@@ -67,9 +67,9 @@ end
     @test isapprox(truegradΣ2, approx_gradΣ2, rtol=1e-8)
 end
 
-# truehessΣ1 = hessian(x -> objmecm(my, D, U1, U2, U3, U4, x, Σ2, ϕ1, ϕ2), Σ1)
-# althessΣ1 = jacobian(x -> Σ1grad(Y, U1, U2, U3, U4, x, Σ2, ϕ1, ϕ2, D), Σ1)[1]
-# approx_hessΣ1 = Σ1hessian(Y, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
+truehessΣ1 = hessian(x -> objmecm(my, D, U1, U2, U3, U4, x, Σ2, ϕ1, ϕ2), Σ1)
+althessΣ1 = jacobian(x -> Σ1grad(Y, U1, U2, U3, U4, x, Σ2, ϕ1, ϕ2, D), Σ1)[1]
+approx_hessΣ1 = Σ1hessian(Y, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
 #
 # Test Hessians: We expect the Hessians to be close to equal
 @testset "Hessian Tests" begin
