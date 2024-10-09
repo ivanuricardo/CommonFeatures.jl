@@ -135,7 +135,7 @@ function mecm(
             D += etaD * ∇D
 
             ∇U1 = U1grad(mardata, U1, U2, U3, U4, newΣ1, newΣ2, ϕ1, ϕ2, D)
-            hU1 = U1hessian(mardata, U2, U3, U4, Σ1, newΣ2)
+            hU1 = U1hessian(mardata, U2, U3, U4, newΣ1, newΣ2)
             etaU1 = 1 / spectralradius(hU1)
             U1 += etaU1 * ∇U1
 
