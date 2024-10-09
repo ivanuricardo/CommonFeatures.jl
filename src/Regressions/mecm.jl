@@ -125,9 +125,9 @@ function mecm(
 
     iters = 0
 
-    for k in 1:10
-        newΣ1 = rand(Wishart(N1, (0.1 * k) .* diagm(ones(N1))))
-        newΣ2 = rand(Wishart(N2, (0.1 * k) .* diagm(ones(N2))))
+    for k in 1:100
+        newΣ1 = rand(Wishart(N1, (0.01 * k) .* diagm(ones(N1))))
+        newΣ2 = rand(Wishart(N2, (0.01 * k) .* diagm(ones(N2))))
         for _ in 1:10
 
             ∇D = mecmsumres(mardata, U1, U2, U3, U4, newΣ1, newΣ2, ϕ1, ϕ2, D)
