@@ -119,7 +119,7 @@ function mecm(
     trackϕ1 = fill(NaN, maxiter)
     trackϕ2 = fill(NaN, maxiter)
     llist = fill(NaN, maxiter)
-    Σ1, Σ2 = I(N1), I(N2)
+    Σ1, Σ2 = diagm(ones(N1)), diagm(ones(N2))
     oldobj = matobj(mardata, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
 
     iters = 0
