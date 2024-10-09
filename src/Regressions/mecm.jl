@@ -119,8 +119,7 @@ function mecm(
     trackϕ1 = fill(NaN, maxiter)
     trackϕ2 = fill(NaN, maxiter)
     llist = fill(NaN, maxiter)
-    Σ1 = rand(Wishart(N1, diagm(ones(N1))))
-    Σ2 = rand(Wishart(N2, diagm(ones(N2))))
+    Σ1, Σ2 = I(N1), I(N2)
 
     iters = 0
 
