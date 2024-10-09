@@ -65,7 +65,8 @@ function generatemecmdata(U1, U2, U3, U4, ϕ1, ϕ2, obs; burnin=100, snr::Real=0
         Σ2 = 0.01 .* diagm(sqrt.(diagerr[1:n2]))
         d = MatrixNormal(zeros(n1, n2), Σ1, Σ2)
     else
-        d = MultivariateNormal(zeros(n1 * n2), diagm(diagerr))
+        Σ = diagm(diagerr)
+        d = MultivariateNormal(zeros(n1 * n2), Σ)
     end
 
     for i in 3:(obs+burnin)
@@ -80,8 +81,14 @@ function generatemecmdata(U1, U2, U3, U4, ϕ1, ϕ2, obs; burnin=100, snr::Real=0
     N1, N2, obs = size(my)
     flatdata = Y[:, (burnin+1):end]
     D = zeros(size(mdy, 1) * size(mdy, 2))
-    ll = objmecm(flatdata, D, U1, U2, U3, U4, I(N1), I(N2), ϕ1, ϕ2)
-    return (; data, flatdata, ll, Σ1, Σ2)
+    if matrixnorm
+        ll = objmecm(flatdata, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
+        return (; data, flatdata, ll, Σ1, Σ2)
+    else
+        ll = objmecm(flatdata, D, U1, U2, U3, U4, I(N1), I(N2), ϕ1, ϕ2)
+        return (; data, flatdata, ll, Σ)
+    end
+
 end
 
 function selectmecm(data; p=0, maxiter=50, ϵ=1e-02, etaS=1e-04)
