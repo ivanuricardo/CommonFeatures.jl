@@ -102,7 +102,7 @@ function mecm(
     p::Int=0,
     maxiter::Int=500,
     etaS::AbstractFloat=1e-08,
-    ϵ::AbstractFloat=1e-03,
+    ϵ::AbstractFloat=1e-03
 )
     if length(ranks) != 2
         error("ranks must be a vector of length 2")
@@ -127,7 +127,7 @@ function mecm(
     for k in 1:99
         newΣ1 = (0.01 * k) * I(N1)
         newΣ2 = (0.01 * k) * I(N2)
-        for _ in 1:10
+        for _ in 1:5
 
             ∇D = mecmsumres(mardata, U1, U2, U3, U4, newΣ1, newΣ2, ϕ1, ϕ2, D)
             etaD = 1 / spectralradius((obs) * kron(inv(newΣ2), inv(newΣ1)))
