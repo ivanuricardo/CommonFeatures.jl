@@ -156,7 +156,7 @@ function mecm(
 
         ∇Σ1 = Σ1grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
         Σ1unscaled = Σ1 + etaS * ∇Σ1
-        Σ1 = Σ1unscaled ./ Σ1unscaled[1]
+        Σ1 = Σ1unscaled ./ norm(Σ1unscaled)
         # preΣ1 = Σ1 + etaS * ∇Σ1
         # eΣ1 = eigen(preΣ1)
         # Σ1 = eΣ1.vectors * diagm(max.(eΣ1.values, 0)) * eΣ1.vectors' + 1e-06I
