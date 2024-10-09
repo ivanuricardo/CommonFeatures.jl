@@ -119,7 +119,7 @@ function mecm(
     trackϕ1 = fill(NaN, maxiter)
     trackϕ2 = fill(NaN, maxiter)
     llist = fill(NaN, maxiter)
-    Σ1, Σ2 = 0.5 .* I(N1), 0.5 .* I(N2)
+    Σ1, Σ2 = 0.2 .* I(N1), 0.2 .* I(N2)
 
     iters = 0
 
