@@ -101,7 +101,7 @@ function mecm(
     ranks::AbstractVector;
     p::Int=0,
     maxiter::Int=500,
-    etaS::AbstractFloat=1e-08,
+    etaS::AbstractFloat=1e-09,
     ϵ::AbstractFloat=1e-03
 )
     if length(ranks) != 2
@@ -252,7 +252,7 @@ function mecm(
         end
         llist[s] = matobj(mardata, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
 
-        if s > 1
+        if s > 1 || (llist[s] < llist[s-1])
             ∇diff = abs(llist[s] - llist[s-1])
             converged = (s == maxiter)
 
