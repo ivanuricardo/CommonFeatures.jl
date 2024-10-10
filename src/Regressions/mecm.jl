@@ -146,10 +146,10 @@ function mecm(
 
             ∇newΣ1 = Σ1grad(mardata, U1, U2, U3, U4, newΣ1, newΣ2, ϕ1, ϕ2, D)
             newΣ1unscaled = newΣ1 + etaS * ∇newΣ1
-            scaledΣ1 = newΣ1unscaled ./ norm(newΣ1unscaled)
-            preΣ1 = scaledΣ1 + etaS * ∇newΣ1
-            eΣ1 = eigen(preΣ1)
-            newΣ1 = eΣ1.vectors * diagm(max.(eΣ1.values, 0)) * eΣ1.vectors' + 1e-06I
+            newΣ1 = newΣ1unscaled ./ norm(newΣ1unscaled)
+            # preΣ1 = Σ1 + etaS * ∇Σ1
+            # eΣ1 = eigen(preΣ1)
+            # Σ1 = eΣ1.vectors * diagm(max.(eΣ1.values, 0)) * eΣ1.vectors' + 1e-06I
 
             ∇U2 = U2grad(mardata, U1, U2, U3, U4, newΣ1, newΣ2, ϕ1, ϕ2, D)
             hU2 = U2hessian(mardata, U1, U3, U4, newΣ1, newΣ2)
@@ -163,10 +163,10 @@ function mecm(
             U4 /= U4[1:ranks[2], 1:ranks[2]]
 
             ∇newΣ2 = Σ2grad(mardata, U1, U2, U3, U4, newΣ1, newΣ2, ϕ1, ϕ2, D)
-            prenewΣ2 = newΣ2 + etaS * ∇newΣ2
-            preΣ2 = prenewΣ2 + etaS * ∇newΣ2
-            eΣ2 = eigen(preΣ2)
-            newΣ2 = eΣ2.vectors * diagm(max.(eΣ2.values, 0)) * eΣ2.vectors' + 1e-06I
+            newΣ2 += etaS * ∇newΣ2
+            # preΣ2 = Σ2 + etaS * ∇Σ2
+            # eΣ2 = eigen(preΣ2)
+            # Σ2 = eΣ2.vectors * diagm(max.(eΣ2.values, 0)) * eΣ2.vectors' + 1e-06I
 
             if p != 0
                 ∇ϕ1 = ϕ1grad(mardata, U1, U2, U3, U4, newΣ1, newΣ2, ϕ1, ϕ2, D)
