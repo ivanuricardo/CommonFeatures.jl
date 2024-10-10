@@ -182,7 +182,7 @@ function mecm(
                 ϕ2 += etaϕ2 * ∇ϕ2
             end
             savell[m] = matobj(mardata, D, U1, U2, U3, U4, newΣ1, newΣ2, ϕ1, ϕ2)
-            if m > 2
+            if m > 1
                 if savell[m] < savell[m-1]
                     break
                 end
