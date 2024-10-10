@@ -127,7 +127,8 @@ function mecm(
     for k in 0:9
         newΣ1 = (0.1 * k + 0.01) * I(N1)
         newΣ2 = (0.1 * k + 0.01) * I(N2)
-        for _ in 1:10
+        savell = fill(NaN, 10)
+        for m in 1:10
 
             ∇D = mecmsumres(mardata, U1, U2, U3, U4, newΣ1, newΣ2, ϕ1, ϕ2, D)
             etaD = 1 / spectralradius((obs) * kron(inv(newΣ2), inv(newΣ1)))
@@ -179,6 +180,10 @@ function mecm(
                 hϕ2 = ϕ2hessian(mardata, ϕ1, newΣ1, newΣ2)
                 etaϕ2 = 1 / spectralradius(hϕ2)
                 ϕ2 += etaϕ2 * ∇ϕ2
+            end
+            savell[m] = matobj(mardata, D, U1, U2, U3, U4, newΣ1, newΣ2, ϕ1, ϕ2)
+            if savell[m] < savell[m-1]
+                break
             end
         end
         newobj = matobj(mardata, D, U1, U2, U3, U4, newΣ1, newΣ2, ϕ1, ϕ2)
