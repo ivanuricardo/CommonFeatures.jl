@@ -252,11 +252,11 @@ function mecm(
         end
         llist[s] = matobj(mardata, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
 
-        if s > 1 || (llist[s] < llist[s-1])
+        if s > 1
             ∇diff = abs(llist[s] - llist[s-1])
             converged = (s == maxiter)
 
-            if (∇diff < ϵ) || converged
+            if (∇diff < ϵ) || converged || (llist[s] < llist[s-1])
                 fullgrads = hcat(trackU1, trackU2, trackU3, trackU4, trackD)
                 converged = (!converged)
                 return (; U1, U2, U3, U4, D, Σ1, Σ2, ϕ1, ϕ2, iters, fullgrads, converged, llist)
