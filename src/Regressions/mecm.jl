@@ -181,9 +181,11 @@ function mecm(
                 etaϕ2 = 1 / spectralradius(hϕ2)
                 ϕ2 += etaϕ2 * ∇ϕ2
             end
-            savell[m+1] = matobj(mardata, D, U1, U2, U3, U4, newΣ1, newΣ2, ϕ1, ϕ2)
-            if savell[m+1] < savell[m]
-                break
+            savell[m] = matobj(mardata, D, U1, U2, U3, U4, newΣ1, newΣ2, ϕ1, ϕ2)
+            if m > 2
+                if savell[m] < savell[m-1]
+                    break
+                end
             end
         end
         newobj = matobj(mardata, D, U1, U2, U3, U4, newΣ1, newΣ2, ϕ1, ϕ2)
