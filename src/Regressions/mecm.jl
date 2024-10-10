@@ -101,7 +101,7 @@ function mecm(
     ranks::AbstractVector;
     p::Int=0,
     maxiter::Int=500,
-    etaS::AbstractFloat=1e-08,
+    etaS::AbstractFloat=1e-09,
     ϵ::AbstractFloat=1e-03
 )
     if length(ranks) != 2
@@ -182,11 +182,11 @@ function mecm(
                 ϕ2 += etaϕ2 * ∇ϕ2
             end
             savell[m] = matobj(mardata, D, U1, U2, U3, U4, newΣ1, newΣ2, ϕ1, ϕ2)
-            # if m > 1
-            #     if savell[m] < savell[m-1]
-            #         break
-            #     end
-            # end
+            if m > 1
+                if savell[m] < savell[m-1]
+                    break
+                end
+            end
         end
         newobj = matobj(mardata, D, U1, U2, U3, U4, newΣ1, newΣ2, ϕ1, ϕ2)
         if newobj > oldobj
