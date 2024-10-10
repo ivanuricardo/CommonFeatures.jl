@@ -102,7 +102,7 @@ function mecm(
     p::Int=0,
     maxiter::Int=500,
     etaS::AbstractFloat=1e-05,
-    ϵ::AbstractFloat=1e-03
+    ϵ::AbstractFloat=1e-03,
     multiplesigma::Bool=false
 )
     if length(ranks) != 2
