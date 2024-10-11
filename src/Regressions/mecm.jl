@@ -218,9 +218,7 @@ function mecm(
         trackU3[s] = etaU3
 
         ∇Σ1 = Σ1grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
-        hessΣ1 = hessian(x -> matobj(mardata, D, U1, U2, U3, U4, x, Σ2, ϕ1, ϕ2), Σ1)
-        etaS1 = 1 / spectralradius(hessΣ1)
-        Σ1unscaled = Σ1 + etaS1 * ∇Σ1
+        Σ1unscaled = Σ1 + etaS * ∇Σ1
         Σ1 = Σ1unscaled ./ norm(Σ1unscaled)
         # preΣ1 = Σ1 + etaS * ∇Σ1
         # eΣ1 = eigen(preΣ1)
@@ -240,9 +238,7 @@ function mecm(
         trackU4[s] = etaU4
 
         ∇Σ2 = Σ2grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
-        hessΣ2 = hessian(x -> matobj(mardata, D, U1, U2, U3, U4, Σ1, x, ϕ1, ϕ2), Σ2)
-        etaS2 = 1 / spectralradius(hessΣ2)
-        Σ2 += etaS2 * ∇Σ2
+        Σ2 += etaS * ∇Σ2
         # preΣ2 = Σ2 + etaS * ∇Σ2
         # eΣ2 = eigen(preΣ2)
         # Σ2 = eΣ2.vectors * diagm(max.(eΣ2.values, 0)) * eΣ2.vectors' + 1e-06I
