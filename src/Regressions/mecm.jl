@@ -124,10 +124,10 @@ function mecm(
 
     iters = 0
 
-    for k in 0:9
-        newΣ1 = (0.1 * k + 0.01) * I(N1)
-        newΣ2 = (0.1 * k + 0.01) * I(N2)
-        savell = fill(NaN, 30)
+    for k in 0:99
+        newΣ1 = (0.01 * k + 0.01) * I(N1)
+        newΣ2 = (0.01 * k + 0.01) * I(N2)
+        savell = fill(NaN, 10)
         for m in 1:10
 
             ∇D = mecmsumres(mardata, U1, U2, U3, U4, newΣ1, newΣ2, ϕ1, ϕ2, D)
