@@ -153,7 +153,7 @@ function mecm(
             S1(X) = matobj(mardata, D, U1, U2, U3, U4, X, newΣ2, ϕ1, ϕ2)
             ∇newΣ1 = Σ1grad(mardata, U1, U2, U3, U4, newΣ1, newΣ2, ϕ1, ϕ2, D)
             s1old = S1(newΣ1)
-            etaS1 = 1e-05
+            etaS1 = 1e-07
             while S1(newΣ1 + etaS1 * ∇newΣ1) > s1old + c * etaS1 * dot(∇newΣ1, ∇newΣ1)
                 etaS1 *= rho
             end
@@ -178,7 +178,7 @@ function mecm(
             S2(X) = matobj(mardata, D, U1, U2, U3, U4, newΣ1, X, ϕ1, ϕ2)
             ∇newΣ2 = Σ2grad(mardata, U1, U2, U3, U4, newΣ1, newΣ2, ϕ1, ϕ2, D)
             s2old = S2(newΣ2)
-            etaS2 = 1e-05
+            etaS2 = 1e-07
             while S2(newΣ2 + etaS2 * ∇newΣ2) > s2old + c * etaS2 * dot(∇newΣ2, ∇newΣ2)
                 etaS2 *= rho
             end
@@ -241,7 +241,7 @@ function mecm(
         S1(X) = matobj(mardata, D, U1, U2, U3, U4, X, Σ2, ϕ1, ϕ2)
         ∇Σ1 = Σ1grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
         s1old = S1(Σ1)
-        etaS1 = 1e-05
+        etaS1 = 1e-07
         while S1(Σ1 + etaS1 * ∇Σ1) > s1old + c * etaS1 * dot(∇Σ1, ∇Σ1)
             etaS1 *= rho
         end
@@ -270,7 +270,7 @@ function mecm(
         S2(X) = matobj(mardata, D, U1, U2, U3, U4, Σ1, X, ϕ1, ϕ2)
         ∇Σ2 = Σ2grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
         s2old = S2(Σ2)
-        etaS2 = 1e-05
+        etaS2 = 1e-07
         while S2(Σ2 + etaS2 * ∇Σ2) > s2old + c * etaS2 * dot(∇Σ2, ∇Σ2)
             etaS2 *= rho
         end
