@@ -299,7 +299,7 @@ function mecm(
             converged = (s == maxiter)
 
             if (∇diff < ϵ) || converged || (llist[s] < llist[s-1])
-                fullgrads = hcat(trackU1, trackU2, trackU3, trackU4, trackD)
+                fullgrads = hcat(trackU1, trackU2, trackU3, trackU4, trackD, trackΣ1, trackΣ2)
                 converged = (!converged)
                 return (; U1, U2, U3, U4, D, Σ1, Σ2, ϕ1, ϕ2, iters, fullgrads, converged, llist)
             end
