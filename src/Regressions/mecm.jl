@@ -153,11 +153,12 @@ function mecm(
             S1(X) = matobj(mardata, D, U1, U2, U3, U4, X, newΣ2, ϕ1, ϕ2)
             ∇newΣ1 = Σ1grad(mardata, U1, U2, U3, U4, newΣ1, newΣ2, ϕ1, ϕ2, D)
             s1old = S1(newΣ1)
-            while S1(newΣ1 + etaS * ∇newΣ1) > s1old + c * etaS * dot(∇newΣ1, ∇newΣ1)
-                etaS *= rho
+            etaS1 = 1e-05
+            while S1(newΣ1 + etaS1 * ∇newΣ1) > s1old + c * etaS1 * dot(∇newΣ1, ∇newΣ1)
+                etaS1 *= rho
             end
 
-            newΣ1unscaled = newΣ1 + etaS * ∇newΣ1
+            newΣ1unscaled = newΣ1 + etaS1 * ∇newΣ1
             newΣ1 = newΣ1unscaled ./ norm(newΣ1unscaled) + 1e-06I
             # preΣ1 = Σ1 + etaS * ∇Σ1
             # eΣ1 = eigen(preΣ1)
@@ -177,12 +178,13 @@ function mecm(
             S2(X) = matobj(mardata, D, U1, U2, U3, U4, newΣ1, X, ϕ1, ϕ2)
             ∇newΣ2 = Σ2grad(mardata, U1, U2, U3, U4, newΣ1, newΣ2, ϕ1, ϕ2, D)
             s2old = S2(newΣ2)
-            while S2(newΣ2 + etaS * ∇newΣ2) > s2old + c * etaS * dot(∇newΣ2, ∇newΣ2)
-                etaS *= rho
+            etaS2 = 1e-05
+            while S2(newΣ2 + etaS2 * ∇newΣ2) > s2old + c * etaS2 * dot(∇newΣ2, ∇newΣ2)
+                etaS2 *= rho
             end
 
             # ∇newΣ2 = Σ2grad(mardata, U1, U2, U3, U4, newΣ1, newΣ2, ϕ1, ϕ2, D)
-            newΣ2 += etaS * ∇newΣ2 + 1e-06I
+            newΣ2 += etaS2 * ∇newΣ2 + 1e-06I
             # preΣ2 = Σ2 + etaS * ∇Σ2
             # eΣ2 = eigen(preΣ2)
             # Σ2 = eΣ2.vectors * diagm(max.(eΣ2.values, 0)) * eΣ2.vectors' + 1e-06I
@@ -239,17 +241,18 @@ function mecm(
         S1(X) = matobj(mardata, D, U1, U2, U3, U4, X, Σ2, ϕ1, ϕ2)
         ∇Σ1 = Σ1grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
         s1old = S1(Σ1)
-        while S1(Σ1 + etaS * ∇Σ1) > s1old + c * etaS * dot(∇Σ1, ∇Σ1)
-            etaS *= rho
+        etaS1 = 1e-05
+        while S1(Σ1 + etaS1 * ∇Σ1) > s1old + c * etaS1 * dot(∇Σ1, ∇Σ1)
+            etaS1 *= rho
         end
 
         # ∇Σ1 = Σ1grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
-        Σ1unscaled = Σ1 + etaS * ∇Σ1
+        Σ1unscaled = Σ1 + etaS1 * ∇Σ1
         Σ1 = Σ1unscaled ./ norm(Σ1unscaled)
         # preΣ1 = Σ1 + etaS * ∇Σ1
         # eΣ1 = eigen(preΣ1)
         # Σ1 = eΣ1.vectors * diagm(max.(eΣ1.values, 0)) * eΣ1.vectors' + 1e-06I
-        trackΣ1[s] = etaS
+        trackΣ1[s] = etaS1
 
         ∇U2 = U2grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
         hU2 = U2hessian(mardata, U1, U3, U4, Σ1, Σ2)
@@ -267,16 +270,17 @@ function mecm(
         S2(X) = matobj(mardata, D, U1, U2, U3, U4, Σ1, X, ϕ1, ϕ2)
         ∇Σ2 = Σ2grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
         s2old = S2(Σ2)
-        while S2(Σ2 + etaS * ∇Σ2) > s2old + c * etaS * dot(∇Σ2, ∇Σ2)
-            etaS *= rho
+        etaS2 = 1e-05
+        while S2(Σ2 + etaS2 * ∇Σ2) > s2old + c * etaS2 * dot(∇Σ2, ∇Σ2)
+            etaS2 *= rho
         end
 
         ∇Σ2 = Σ2grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
-        Σ2 += etaS * ∇Σ2
+        Σ2 += etaS2 * ∇Σ2
         # preΣ2 = Σ2 + etaS * ∇Σ2
         # eΣ2 = eigen(preΣ2)
         # Σ2 = eΣ2.vectors * diagm(max.(eΣ2.values, 0)) * eΣ2.vectors' + 1e-06I
-        trackΣ2[s] = etaS
+        trackΣ2[s] = etaS2
 
         if p != 0
             ∇ϕ1 = ϕ1grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
