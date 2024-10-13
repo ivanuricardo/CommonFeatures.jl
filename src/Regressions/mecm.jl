@@ -146,11 +146,11 @@ function mecm(
             U3 /= U3[1:ranks[1], 1:ranks[1]]
 
             ∇newΣ1 = Σ1grad(mardata, U1, U2, U3, U4, newΣ1, newΣ2, ϕ1, ϕ2, D)
-            newΣ1unscaled = newΣ1 + etaS * ∇newΣ1
+            # newΣ1unscaled = newΣ1 + etaS * ∇newΣ1
+            preΣ1 = newΣ1 + etaS * ∇newΣ1
+            eΣ1 = eigen(preΣ1)
+            newΣ1unscaled = eΣ1.vectors * diagm(max.(eΣ1.values, 0)) * eΣ1.vectors' + 1e-06I
             newΣ1 = newΣ1unscaled ./ norm(newΣ1unscaled) + 1e-06I
-            # preΣ1 = Σ1 + etaS * ∇Σ1
-            # eΣ1 = eigen(preΣ1)
-            # Σ1 = eΣ1.vectors * diagm(max.(eΣ1.values, 0)) * eΣ1.vectors' + 1e-06I
 
             ∇U2 = U2grad(mardata, U1, U2, U3, U4, newΣ1, newΣ2, ϕ1, ϕ2, D)
             hU2 = U2hessian(mardata, U1, U3, U4, newΣ1, newΣ2)
@@ -164,10 +164,10 @@ function mecm(
             U4 /= U4[1:ranks[2], 1:ranks[2]]
 
             ∇newΣ2 = Σ2grad(mardata, U1, U2, U3, U4, newΣ1, newΣ2, ϕ1, ϕ2, D)
-            newΣ2 += etaS * ∇newΣ2 + 1e-06I
-            # preΣ2 = Σ2 + etaS * ∇Σ2
-            # eΣ2 = eigen(preΣ2)
-            # Σ2 = eΣ2.vectors * diagm(max.(eΣ2.values, 0)) * eΣ2.vectors' + 1e-06I
+            preΣ2 = newΣ2 + etaS * ∇newΣ2
+            eΣ2 = eigen(preΣ2)
+            newΣ2 = eΣ2.vectors * diagm(max.(eΣ2.values, 0)) * eΣ2.vectors' + 1e-06I
+            # newΣ2 += etaS * ∇newΣ2 + 1e-06I
 
             if p != 0
                 ∇ϕ1 = ϕ1grad(mardata, U1, U2, U3, U4, newΣ1, newΣ2, ϕ1, ϕ2, D)
@@ -218,11 +218,11 @@ function mecm(
         trackU3[s] = etaU3
 
         ∇Σ1 = Σ1grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
-        Σ1unscaled = Σ1 + etaS * ∇Σ1
+        # Σ1unscaled = Σ1 + etaS * ∇Σ1
+        preΣ1 = Σ1 + etaS * ∇Σ1
+        eΣ1 = eigen(preΣ1)
+        Σ1unscaled = eΣ1.vectors * diagm(max.(eΣ1.values, 0)) * eΣ1.vectors' + 1e-06I
         Σ1 = Σ1unscaled ./ norm(Σ1unscaled)
-        # preΣ1 = Σ1 + etaS * ∇Σ1
-        # eΣ1 = eigen(preΣ1)
-        # Σ1 = eΣ1.vectors * diagm(max.(eΣ1.values, 0)) * eΣ1.vectors' + 1e-06I
 
         ∇U2 = U2grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
         hU2 = U2hessian(mardata, U1, U3, U4, Σ1, Σ2)
@@ -238,10 +238,10 @@ function mecm(
         trackU4[s] = etaU4
 
         ∇Σ2 = Σ2grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
-        Σ2 += etaS * ∇Σ2
-        # preΣ2 = Σ2 + etaS * ∇Σ2
-        # eΣ2 = eigen(preΣ2)
-        # Σ2 = eΣ2.vectors * diagm(max.(eΣ2.values, 0)) * eΣ2.vectors' + 1e-06I
+        preΣ2 = Σ2 + etaS * ∇Σ2
+        eΣ2 = eigen(preΣ2)
+        Σ2 = eΣ2.vectors * diagm(max.(eΣ2.values, 0)) * eΣ2.vectors' + 1e-06I
+        # Σ2 += etaS * ∇Σ2
 
         if p != 0
             ∇ϕ1 = ϕ1grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
