@@ -101,7 +101,7 @@ function mecm(
     ranks::AbstractVector;
     p::Int=0,
     maxiter::Int=100,
-    etaS::AbstractFloat=3e-09,
+    etaS::AbstractFloat=1e-08,
     ϵ::AbstractFloat=1e-02
 )
     if length(ranks) != 2
