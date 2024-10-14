@@ -101,7 +101,7 @@ function mecm(
     ranks::AbstractVector;
     p::Int=0,
     maxiter::Int=500,
-    etaS::AbstractFloat=7e-09,
+    etaS::AbstractFloat=5e-09,
     ϵ::AbstractFloat=1e-03
 )
     if length(ranks) != 2
@@ -222,7 +222,7 @@ function mecm(
         Σ1 = Σ1unscaled ./ norm(Σ1unscaled)
         # preΣ1 = Σ1 + etaS * ∇Σ1
         # eΣ1 = eigen(preΣ1)
-        # Σ1 = eΣ1.vectors * diagm(max.(eΣ1.values, 0)) * eΣ1.vectors' + 1e-06I
+        # Σ1 = eΣ1.vectors * diagm(max.(eΣ1.values, 1e-06)) * eΣ1.vectors'
 
         ∇U2 = U2grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
         hU2 = U2hessian(mardata, U1, U3, U4, Σ1, Σ2)
