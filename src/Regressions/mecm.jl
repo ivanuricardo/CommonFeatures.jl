@@ -100,9 +100,9 @@ function mecm(
     mardata::AbstractArray,
     ranks::AbstractVector;
     p::Int=0,
-    maxiter::Int=500,
+    maxiter::Int=100,
     etaS::AbstractFloat=3e-09,
-    ϵ::AbstractFloat=1e-03
+    ϵ::AbstractFloat=1e-02
 )
     if length(ranks) != 2
         error("ranks must be a vector of length 2")
