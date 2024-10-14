@@ -150,7 +150,9 @@ function mecm(
             preΣ1 = newΣ1 + etaS * ∇newΣ1
             eΣ1 = eigen(preΣ1)
             newΣ1unscaled = eΣ1.vectors * diagm(max.(eΣ1.values, 1e-04)) * eΣ1.vectors'
-            newΣ1 = newΣ1unscaled ./ norm(newΣ1unscaled)
+            newΣ1norm = newΣ1unscaled ./ norm(newΣ1unscaled)
+            enorm = eigen(newΣ1norm)
+            newΣ1 = enorm.vectors * diagm(max.(enorm.values, 1e-15)) * enorm.vectors'
 
             ∇U2 = U2grad(mardata, U1, U2, U3, U4, newΣ1, newΣ2, ϕ1, ϕ2, D)
             hU2 = U2hessian(mardata, U1, U3, U4, newΣ1, newΣ2)
@@ -225,7 +227,9 @@ function mecm(
         eΣ1 = eigen(preΣ1)
         Σ1unscaled = eΣ1.vectors * diagm(max.(eΣ1.values, 1e-04)) * eΣ1.vectors'
         # Σ1unscaled = Σ1 + etaS * ∇Σ1
-        Σ1 = Σ1unscaled ./ norm(Σ1unscaled)
+        Σ1norm = Σ1unscaled ./ norm(Σ1unscaled)
+        enorm = eigen(Σ1norm)
+        Σ1 = enorm.vectors * diagm(max.(enorm.values, 1e-15)) * enorm.vectors'
 
         ∇U2 = U2grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
         hU2 = U2hessian(mardata, U1, U3, U4, Σ1, Σ2)
