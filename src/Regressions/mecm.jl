@@ -168,7 +168,7 @@ function mecm(
             ∇newΣ2 = Σ2grad(mardata, U1, U2, U3, U4, newΣ1, newΣ2, ϕ1, ϕ2, D)
             preΣ2 = newΣ2 + etaS * ∇newΣ2
             eΣ2 = eigen(preΣ2)
-            Σ2 = eΣ2.vectors * diagm(max.(real.(eΣ2.values), 1e-04)) * eΣ2.vectors'
+            newΣ2 = eΣ2.vectors * diagm(max.(real.(eΣ2.values), 1e-04)) * eΣ2.vectors'
             # newΣ2 += etaS * ∇newΣ2
 
             if p != 0
@@ -184,11 +184,6 @@ function mecm(
                 ϕ2 += etaϕ2 * ∇ϕ2
             end
             savell[m] = matobj(mardata, D, U1, U2, U3, U4, newΣ1, newΣ2, ϕ1, ϕ2)
-            # if m > 1
-            #     if savell[m] < savell[m-1]
-            #         break
-            #     end
-            # end
         end
         newobj = matobj(mardata, D, U1, U2, U3, U4, newΣ1, newΣ2, ϕ1, ϕ2)
         if newobj > oldobj
