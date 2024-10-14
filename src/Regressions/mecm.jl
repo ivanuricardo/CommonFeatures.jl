@@ -127,8 +127,8 @@ function mecm(
     for k in 0:19
         newΣ1 = (0.05 * k + 0.01) * I(N1)
         newΣ2 = (0.05 * k + 0.01) * I(N2)
-        savell = fill(NaN, 10)
-        for m in 1:5
+        savell = fill(NaN, 3)
+        for m in 1:3
 
             ∇D = mecmsumres(mardata, U1, U2, U3, U4, newΣ1, newΣ2, ϕ1, ϕ2, D)
             etaD = 1 / spectralradius((obs) * kron(inv(newΣ2), inv(newΣ1)))
