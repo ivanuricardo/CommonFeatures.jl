@@ -201,8 +201,14 @@ function mecm(
         end
         newobj = matobj(mardata, newD, newU1, newU2, newU3, newU4, newΣ1, newΣ2, newϕ1, newϕ2)
         if newobj > oldobj
+            U1 .= newU1
+            U2 .= newU2
+            U3 .= newU3
+            U4 .= newU4
             Σ1 .= newΣ1
             Σ2 .= newΣ2
+            ϕ1 .= newϕ1
+            ϕ2 .= newϕ2
             oldobj = matobj(mardata, newD, newU1, newU2, newU3, newU4, newΣ1, newΣ2, newϕ1, newϕ2)
         end
     end
