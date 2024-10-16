@@ -124,7 +124,7 @@ function mecm(
 
     iters = 0
 
-    for k in 0:19
+    for k in 0:49
         newD = copy(D)
         newU1 = copy(U1)
         newU2 = copy(U2)
@@ -132,8 +132,8 @@ function mecm(
         newU4 = copy(U4)
         newϕ1 = copy(ϕ1)
         newϕ2 = copy(ϕ2)
-        newΣ1 = (0.05 * k + 0.01) * I(N1)
-        newΣ2 = (0.05 * k + 0.01) * I(N2)
+        newΣ1 = (0.02 * k + 0.01) * I(N1)
+        newΣ2 = (0.02 * k + 0.01) * I(N2)
         savell = fill(NaN, 3)
         for m in 1:3
 
