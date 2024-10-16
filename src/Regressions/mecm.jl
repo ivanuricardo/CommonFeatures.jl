@@ -101,7 +101,7 @@ function mecm(
     ranks::AbstractVector;
     p::Int=0,
     maxiter::Int=100,
-    etaS::AbstractFloat=5e-09,
+    etaS::AbstractFloat=2e-08,
     ϵ::AbstractFloat=1e-02
 )
     if length(ranks) != 2
@@ -193,11 +193,11 @@ function mecm(
                 newϕ2 += etaϕ2 * ∇ϕ2
             end
             savell[m] = matobj(mardata, newD, newU1, newU2, newU3, newU4, newΣ1, newΣ2, newϕ1, newϕ2)
-            # if m > 1
-            #     if savell[m] < savell[m-1]
-            #         break
-            #     end
-            # end
+            if m > 1
+                if savell[m] < savell[m-1]
+                    break
+                end
+            end
         end
         newobj = matobj(mardata, newD, newU1, newU2, newU3, newU4, newΣ1, newΣ2, newϕ1, newϕ2)
         if newobj > oldobj
@@ -278,8 +278,8 @@ function mecm(
             ∇diff = abs(llist[s] - llist[s-1])
             converged = (s == maxiter)
 
-            # if (∇diff < ϵ) || converged || (llist[s] < llist[s-1])
-            if (∇diff < ϵ) || converged
+            if (∇diff < ϵ) || converged || (llist[s] < llist[s-1])
+                # if (∇diff < ϵ) || converged
                 fullgrads = hcat(trackU1, trackU2, trackU3, trackU4, trackD)
                 converged = (!converged)
                 return (; U1, U2, U3, U4, D, Σ1, Σ2, ϕ1, ϕ2, iters, fullgrads, converged, llist)
