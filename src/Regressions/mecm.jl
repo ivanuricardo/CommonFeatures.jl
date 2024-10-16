@@ -101,7 +101,7 @@ function mecm(
     ranks::AbstractVector;
     p::Int=0,
     maxiter::Int=100,
-    etaS::AbstractFloat=2e-08,
+    etaS::AbstractFloat=5e-09,
     ϵ::AbstractFloat=1e-02
 )
     if length(ranks) != 2
@@ -125,34 +125,27 @@ function mecm(
     iters = 0
 
     for k in 0:19
-        newD = copy(D)
-        newU1 = copy(U1)
-        newU2 = copy(U2)
-        newU3 = copy(U3)
-        newU4 = copy(U4)
-        newϕ1 = copy(ϕ1)
-        newϕ2 = copy(ϕ2)
         newΣ1 = (0.05 * k + 0.01) * I(N1)
         newΣ2 = (0.05 * k + 0.01) * I(N2)
         savell = fill(NaN, 3)
         for m in 1:3
 
-            ∇D = mecmsumres(mardata, newU1, newU2, newU3, newU4, newΣ1, newΣ2, newϕ1, newϕ2, newD)
+            ∇D = mecmsumres(mardata, U1, U2, U3, U4, newΣ1, newΣ2, ϕ1, ϕ2, D)
             etaD = 1 / spectralradius((obs) * kron(inv(newΣ2), inv(newΣ1)))
-            newD += etaD * ∇D
+            D += etaD * ∇D
 
-            ∇U1 = U1grad(mardata, newU1, newU2, newU3, newU4, newΣ1, newΣ2, newϕ1, newϕ2, newD)
-            hU1 = U1hessian(mardata, newU2, newU3, newU4, newΣ1, newΣ2)
+            ∇U1 = U1grad(mardata, U1, U2, U3, U4, newΣ1, newΣ2, ϕ1, ϕ2, D)
+            hU1 = U1hessian(mardata, U2, U3, U4, newΣ1, newΣ2)
             etaU1 = 1 / spectralradius(hU1)
-            newU1 += etaU1 * ∇U1
+            U1 += etaU1 * ∇U1
 
-            ∇U3 = U3grad(mardata, newU1, newU2, newU3, newU4, newΣ1, newΣ2, newϕ1, newϕ2, newD)
-            hU3 = U3hessian(mardata, newU1, newU2, newU4, newΣ1, newΣ2)
+            ∇U3 = U3grad(mardata, U1, U2, U3, U4, newΣ1, newΣ2, ϕ1, ϕ2, D)
+            hU3 = U3hessian(mardata, U1, U2, U4, newΣ1, newΣ2)
             etaU3 = 1 / spectralradius(hU3)
-            newU3 += etaU3 * ∇U3
-            newU3 /= newU3[1:ranks[1], 1:ranks[1]]
+            U3 += etaU3 * ∇U3
+            U3 /= U3[1:ranks[1], 1:ranks[1]]
 
-            ∇newΣ1 = Σ1grad(mardata, newU1, newU2, newU3, newU4, newΣ1, newΣ2, newϕ1, newϕ2, newD)
+            ∇newΣ1 = Σ1grad(mardata, U1, U2, U3, U4, newΣ1, newΣ2, ϕ1, ϕ2, D)
             # newΣ1unscaled = newΣ1 + etaS * ∇newΣ1
             preΣ1 = newΣ1 + etaS * ∇newΣ1
             eΣ1 = eigen(preΣ1)
@@ -162,18 +155,18 @@ function mecm(
             newΣ1 = enorm.vectors * diagm(real.(max.(real.(enorm.values), 1e-15))) * enorm.vectors'
             newΣ1 = (newΣ1 + newΣ1') / 2
 
-            ∇U2 = U2grad(mardata, newU1, newU2, newU3, newU4, newΣ1, newΣ2, newϕ1, newϕ2, newD)
-            hU2 = U2hessian(mardata, newU1, newU3, newU4, newΣ1, newΣ2)
+            ∇U2 = U2grad(mardata, U1, U2, U3, U4, newΣ1, newΣ2, ϕ1, ϕ2, D)
+            hU2 = U2hessian(mardata, U1, U3, U4, newΣ1, newΣ2)
             etaU2 = 1 / spectralradius(hU2)
-            newU2 += etaU2 * ∇U2
+            U2 += etaU2 * ∇U2
 
-            ∇U4 = U4grad(mardata, newU1, newU2, newU3, newU4, newΣ1, newΣ2, newϕ1, newϕ2, newD)
-            hU4 = U4hessian(mardata, newU1, newU2, newU3, newΣ1, newΣ2)
+            ∇U4 = U4grad(mardata, U1, U2, U3, U4, newΣ1, newΣ2, ϕ1, ϕ2, D)
+            hU4 = U4hessian(mardata, U1, U2, U3, newΣ1, newΣ2)
             etaU4 = 1 / spectralradius(hU4)
             U4 += etaU4 * ∇U4
-            newU4 /= newU4[1:ranks[2], 1:ranks[2]]
+            U4 /= U4[1:ranks[2], 1:ranks[2]]
 
-            ∇newΣ2 = Σ2grad(mardata, newU1, newU2, newU3, newU4, newΣ1, newΣ2, newϕ1, newϕ2, newD)
+            ∇newΣ2 = Σ2grad(mardata, U1, U2, U3, U4, newΣ1, newΣ2, ϕ1, ϕ2, D)
             preΣ2 = newΣ2 + etaS * ∇newΣ2
             eΣ2 = eigen(preΣ2)
             newΣ2 = eΣ2.vectors * diagm(real.(max.(real.(eΣ2.values), 1e-04))) * eΣ2.vectors'
@@ -181,35 +174,29 @@ function mecm(
             newΣ2 = (newΣ2 + newΣ2') / 2
 
             if p != 0
-                ∇ϕ1 = ϕ1grad(mardata, newU1, newU2, newU3, newU4, newΣ1, newΣ2, newϕ1, newϕ2, newD)
-                hϕ1 = ϕ1hessian(mardata, newϕ2, newΣ1, newΣ2)
+                ∇ϕ1 = ϕ1grad(mardata, U1, U2, U3, U4, newΣ1, newΣ2, ϕ1, ϕ2, D)
+                hϕ1 = ϕ1hessian(mardata, ϕ2, newΣ1, newΣ2)
                 etaϕ1 = 1 / spectralradius(hϕ1)
-                ϕ1unscaled = newϕ1 + etaϕ1 * ∇ϕ1
-                newϕ1 = ϕ1unscaled ./ norm(ϕ1unscaled)
+                ϕ1unscaled = ϕ1 + etaϕ1 * ∇ϕ1
+                ϕ1 = ϕ1unscaled ./ norm(ϕ1unscaled)
 
-                ∇ϕ2 = ϕ2grad(mardata, newU1, newU2, newU3, newU4, newΣ1, newΣ2, newϕ1, newϕ2, newD)
-                hϕ2 = ϕ2hessian(mardata, newϕ1, newΣ1, newΣ2)
+                ∇ϕ2 = ϕ2grad(mardata, U1, U2, U3, U4, newΣ1, newΣ2, ϕ1, ϕ2, D)
+                hϕ2 = ϕ2hessian(mardata, ϕ1, newΣ1, newΣ2)
                 etaϕ2 = 1 / spectralradius(hϕ2)
-                newϕ2 += etaϕ2 * ∇ϕ2
+                ϕ2 += etaϕ2 * ∇ϕ2
             end
-            savell[m] = matobj(mardata, newD, newU1, newU2, newU3, newU4, newΣ1, newΣ2, newϕ1, newϕ2)
+            savell[m] = matobj(mardata, D, U1, U2, U3, U4, newΣ1, newΣ2, ϕ1, ϕ2)
             if m > 1
                 if savell[m] < savell[m-1]
                     break
                 end
             end
         end
-        newobj = matobj(mardata, newD, newU1, newU2, newU3, newU4, newΣ1, newΣ2, newϕ1, newϕ2)
+        newobj = matobj(mardata, D, U1, U2, U3, U4, newΣ1, newΣ2, ϕ1, ϕ2)
         if newobj > oldobj
-            U1 .= newU1
-            U2 .= newU2
-            U3 .= newU3
-            U4 .= newU4
             Σ1 .= newΣ1
             Σ2 .= newΣ2
-            ϕ1 .= newϕ1
-            ϕ2 .= newϕ2
-            oldobj = matobj(mardata, newD, newU1, newU2, newU3, newU4, newΣ1, newΣ2, newϕ1, newϕ2)
+            oldobj = matobj(mardata, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
         end
     end
 
