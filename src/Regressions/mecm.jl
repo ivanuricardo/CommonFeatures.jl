@@ -101,7 +101,7 @@ function mecm(
     ranks::AbstractVector;
     p::Int=0,
     maxiter::Int=100,
-    etaS::AbstractFloat=1e-08,
+    etaS::AbstractFloat=3e-08,
     ϵ::AbstractFloat=1e-02
 )
     if length(ranks) != 2
@@ -284,8 +284,8 @@ function mecm(
             ∇diff = abs(llist[s] - llist[s-1])
             converged = (s == maxiter)
 
-            # if (∇diff < ϵ) || converged || (llist[s] < llist[s-1])
-            if (∇diff < ϵ) || converged
+            if (∇diff < ϵ) || converged || (llist[s] < llist[s-1])
+                # if (∇diff < ϵ) || converged
                 fullgrads = hcat(trackU1, trackU2, trackU3, trackU4, trackD)
                 converged = (!converged)
                 return (; U1, U2, U3, U4, D, Σ1, Σ2, ϕ1, ϕ2, iters, fullgrads, converged, llist)
