@@ -101,7 +101,7 @@ function mecm(
     ranks::AbstractVector;
     p::Int=0,
     maxiter::Int=100,
-    etaS::AbstractFloat=3e-08,
+    etaS::AbstractFloat=1e-08,
     ϵ::AbstractFloat=1e-02
 )
     if length(ranks) != 2
@@ -120,7 +120,7 @@ function mecm(
     trackϕ2 = fill(NaN, maxiter)
     llist = fill(NaN, maxiter)
     Σ1, Σ2 = diagm(ones(N1)), diagm(ones(N2))
-    oldobj = matobj(mardata, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
+    # oldobj = matobj(mardata, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
 
     iters = 0
 
