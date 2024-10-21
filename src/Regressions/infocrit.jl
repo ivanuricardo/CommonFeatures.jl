@@ -35,7 +35,7 @@ function tuckerpar(dimvals::AbstractVector, ranks::AbstractVector, p::Integer=1)
 end
 
 function cointpar(N::AbstractVector, r::AbstractVector; p::Integer=0)
-    marpar = p * (N[1]^2 + N[2]^2)
+    marpar = p * (N[1]^2 + N[2]^2 - 1)
     return r[1] * (2 * N[1] - r[1]) + r[2] * (2 * N[2] - r[2]) + marpar
 end
 
