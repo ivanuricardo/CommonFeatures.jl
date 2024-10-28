@@ -135,7 +135,8 @@ function mecm(
         ∇U1 = U1grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
         hU1 = U1hessian(mardata, U2, U3, U4, Σ1, Σ2)
         etaU1 = 1 / spectralradius(hU1)
-        U1 += etaU1 * ∇U1
+        U1norm = U1 + etaU1 * ∇U1
+        U1 = U1norm ./ norm(U1norm)
         trackU1[s] = etaU1
 
         ∇U3 = U3grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
