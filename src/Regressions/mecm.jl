@@ -146,71 +146,17 @@ function mecm(
         U3 /= U3[1:ranks[1], 1:ranks[1]]
         trackU3[s] = etaU3
 
-        # ∇Σ1 = Σ1grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
-        # preΣ1 = Σ1 + etaS * ∇Σ1
-        # eΣ1 = eigen(preΣ1)
-        # Σ1unscaled = eΣ1.vectors * diagm(max.(real.(eΣ1.values), 1e-06)) * eΣ1.vectors'
-        # Σ1 = Σ1unscaled ./ norm(Σ1unscaled)
-
-        # Gradient for Σ1
         ∇Σ1 = Σ1grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
+        preΣ1 = Σ1 + etaS * ∇Σ1
+        eΣ1 = eigen(preΣ1)
+        Σ1unscaled = eΣ1.vectors * diagm(max.(real.(eΣ1.values), 1e-06)) * eΣ1.vectors'
+        Σ1 = Σ1unscaled ./ norm(Σ1unscaled)
 
-        # Initial step size for Σ1
-        etaΣ1 = copy(etaS)  # Initial maximum step size (could be heuristic)
-        α = 0.5       # Reduction factor for backtracking
-        c = 1e-4      # Sufficient increase threshold
-
-        # Perform backtracking line search
-        found_step_size = false
-        while !found_step_size
-            # Tentative update for Σ1
-            preΣ1 = Σ1 + etaΣ1 * ∇Σ1
-            eΣ1 = eigen(preΣ1)
-            Σ1unscaled = eΣ1.vectors * diagm(max.(real.(eΣ1.values), 1e-06)) * eΣ1.vectors'
-            Σ1_new = Σ1unscaled ./ norm(Σ1unscaled)
-
-            # Calculate the new objective function value
-            new_ll = matobj(mardata, D, U1, U2, U3, U4, Σ1_new, Σ2, ϕ1, ϕ2)
-
-            # Check sufficient increase condition
-            if new_ll > llist[s] + c * etaΣ1 * sum(∇Σ1 .* (Σ1_new - Σ1))
-                Σ1 = Σ1_new
-                found_step_size = true
-            else
-                # Reduce etaΣ1 if the increase condition is not met
-                etaΣ1 *= α
-            end
-        end
-
-        # ∇U2 = U2grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
-        # hU2 = U2hessian(mardata, U1, U3, U4, Σ1, Σ2)
-        # etaU2 = 1 / spectralradius(hU2)
-        # U2 += etaU2 * ∇U2
-        # trackU2[s] = etaU2
-
-        # Repeat for Σ2
-        ∇Σ2 = Σ2grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
-        etaΣ2 = copy(etaS)  # Initial maximum step size for Σ2
-        found_step_size = false
-
-        while !found_step_size
-            # Tentative update for Σ2
-            preΣ2 = Σ2 + etaΣ2 * ∇Σ2
-            eΣ2 = eigen(preΣ2)
-            Σ2_new = eΣ2.vectors * diagm(max.(real.(eΣ2.values), 1e-06)) * eΣ2.vectors'
-
-            # Calculate the new objective function value
-            new_ll = matobj(mardata, D, U1, U2, U3, U4, Σ1, Σ2_new, ϕ1, ϕ2)
-
-            # Check sufficient increase condition
-            if new_ll > llist[s] + c * etaΣ2 * sum(∇Σ2 .* (Σ2_new - Σ2))
-                Σ2 = Σ2_new
-                found_step_size = true
-            else
-                # Reduce etaΣ2 if the increase condition is not met
-                etaΣ2 *= α
-            end
-        end
+        ∇U2 = U2grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
+        hU2 = U2hessian(mardata, U1, U3, U4, Σ1, Σ2)
+        etaU2 = 1 / spectralradius(hU2)
+        U2 += etaU2 * ∇U2
+        trackU2[s] = etaU2
 
         ∇U4 = U4grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
         hU4 = U4hessian(mardata, U1, U2, U3, Σ1, Σ2)
