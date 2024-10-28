@@ -150,7 +150,7 @@ function mecm(
         preΣ1 = Σ1 + etaS * ∇Σ1
         eΣ1 = eigen(preΣ1)
         Σ1unscaled = eΣ1.vectors * diagm(max.(real.(eΣ1.values), 1e-06)) * eΣ1.vectors'
-        Σ1 = Σ1unscaled ./ norm(Σ1unscaled)
+        Σ1 = Σ1unscaled ./ Σ1unscaled[1, 1]
         # enorm = eigen(Σ1norm)
         # Σ1 = enorm.vectors * diagm(max.(real.(enorm.values), 1e-15)) * enorm.vectors'
         # Σ1 = (Σ1 + Σ1') / 2
