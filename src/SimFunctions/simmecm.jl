@@ -49,7 +49,7 @@ function mecmstable(U1, U2, U3, U4, ϕ1, ϕ2)
     return abs.(eigvals(companionmatrix))
 end
 
-function generatemecmdata(U1, U2, U3, U4, ϕ1, ϕ2, obs; burnin=100, snr::Real=0.7, matrixnorm=true)
+function generatemecmdata(U1, U2, U3, U4, ϕ1, ϕ2, obs; burnin=100, snr::Real=0.7)
     n1 = size(ϕ1, 1)
     n2 = size(ϕ2, 1)
     Y = zeros(n1 * n2, obs + burnin)
@@ -60,14 +60,9 @@ function generatemecmdata(U1, U2, U3, U4, ϕ1, ϕ2, obs; burnin=100, snr::Real=0
     rho = maximum(compmat)
     diagerr = repeat([rho / snr], n1 * n2)
 
-    if matrixnorm
-        Σ1 = diagm(sqrt.(diagerr[1:n1])) ./ norm(diagm(sqrt.(diagerr[1:n1])))
-        Σ2 = diagm(sqrt.(diagerr[1:n2]))
-        d = MatrixNormal(zeros(n1, n2), Σ1, Σ2)
-    else
-        Σ = diagm(diagerr)
-        d = MultivariateNormal(zeros(n1 * n2), Σ)
-    end
+    Σ1 = diagm(diagerr[1:n1]) ./ norm(diagm(diagerr[1:n1]))
+    Σ2 = diagm(diagerr[1:n2])
+    d = MatrixNormal(zeros(n1, n2), Σ1, Σ2)
 
     for i in 3:(obs+burnin)
         piy = kron21 * kron43' * Y[:, i-1]
@@ -77,17 +72,10 @@ function generatemecmdata(U1, U2, U3, U4, ϕ1, ϕ2, obs; burnin=100, snr::Real=0
     data = matten(Y[:, (burnin+1):end], [1, 2], [3], [n1, n2, obs])
 
     mdy = data[:, :, 2:end] - data[:, :, 1:end-1]
-    my = data[:, :, 1:end-1]
-    N1, N2, obs = size(my)
     flatdata = Y[:, (burnin+1):end]
     D = zeros(size(mdy, 1) * size(mdy, 2))
-    if matrixnorm
-        ll = objmecm(flatdata, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
-        return (; data, flatdata, ll, Σ1, Σ2)
-    else
-        ll = objmecm(flatdata, D, U1, U2, U3, U4, I(N1), I(N2), ϕ1, ϕ2)
-        return (; data, flatdata, ll, Σ)
-    end
+    ll = objmecm(flatdata, D, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2)
+    return (; data, flatdata, ll, Σ1, Σ2)
 
 end
 

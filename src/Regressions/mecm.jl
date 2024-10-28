@@ -119,7 +119,8 @@ function mecm(
     trackϕ1 = fill(NaN, maxiter)
     trackϕ2 = fill(NaN, maxiter)
     llist = fill(NaN, maxiter)
-    Σ1, Σ2 = diagm(ones(N1)), diagm(ones(N2))
+    Σ1 = diagm(ones(N1)) ./ norm(diagm(ones(N1)))
+    Σ2 = diagm(ones(N2))
 
     iters = 0
 
