@@ -124,7 +124,7 @@ function mecm(
 
     iters = 0
 
-    for s in ProgressBar(1:maxiter)
+    for s in 1:maxiter
         iters += 1
 
         ∇D = mecmsumres(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
