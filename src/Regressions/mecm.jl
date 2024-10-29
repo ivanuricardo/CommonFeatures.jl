@@ -102,13 +102,25 @@ function mecm(
     p::Int=0,
     maxiter::Int=100,
     etaS::AbstractFloat=1e-09,
-    ϵ::AbstractFloat=1e-02
+    ϵ::AbstractFloat=1e-02,
+    U1_init::Union{Nothing,AbstractMatrix}=nothing,
+    U2_init::Union{Nothing,AbstractMatrix}=nothing,
+    U3_init::Union{Nothing,AbstractMatrix}=nothing,
+    U4_init::Union{Nothing,AbstractMatrix}=nothing,
+    D_init::Union{Nothing,AbstractMatrix}=nothing,
+    ϕ1_init::Union{Nothing,AbstractMatrix}=nothing,
+    ϕ2_init::Union{Nothing,AbstractMatrix}=nothing
 )
     if length(ranks) != 2
         error("ranks must be a vector of length 2")
     end
 
-    U1, U2, U3, U4, D, ϕ1, ϕ2 = mecminit(mardata, ranks; p)
+    # Initialize with provided matrices or call mecminit
+    if isnothing(U1_init) || isnothing(U2_init) || isnothing(U3_init) || isnothing(U4_init) || isnothing(D_init) || isnothing(ϕ1_init) || isnothing(ϕ2_init)
+        U1, U2, U3, U4, D, ϕ1, ϕ2 = mecminit(mardata, ranks; p)
+    else
+        U1, U2, U3, U4, D, ϕ1, ϕ2 = U1_init, U2_init, U3_init, U4_init, D_init, ϕ1_init, ϕ2_init
+    end
     N1, N2, obs = size(mardata)
 
     trackU1 = fill(NaN, maxiter)
