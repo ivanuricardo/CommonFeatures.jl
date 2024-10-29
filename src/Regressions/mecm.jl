@@ -166,11 +166,9 @@ function mecm(
         trackU4[s] = etaU4
 
         ∇Σ2 = Σ2grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
-        # Σ2 += etaS * ∇Σ2
         preΣ2 = Σ2 + etaS * ∇Σ2
         eΣ2 = eigen(preΣ2)
         Σ2 = eΣ2.vectors * diagm(max.(real.(eΣ2.values), 1e-06)) * eΣ2.vectors'
-        # Σ2 = (Σ2 + Σ2') / 2
 
         if p != 0
             ∇ϕ1 = ϕ1grad(mardata, U1, U2, U3, U4, Σ1, Σ2, ϕ1, ϕ2, D)
