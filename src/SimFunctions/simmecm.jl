@@ -5,7 +5,7 @@ function rorth(n1::Int, n2::Int)
     return Matrix(Q)
 end
 
-function generatemecmparams(n, ranks; genphi=false)
+function generatemecmparams(n, ranks; genphi=false, scale=1)
     Q1 = rorth(n[2], ranks[2])
     Q2 = rorth(n[2], ranks[2])
     Q3 = rorth(n[1], ranks[1])
@@ -22,10 +22,10 @@ function generatemecmparams(n, ranks; genphi=false)
 
     u2, _, u4 = svd(A)
     u1, _, u3 = svd(B)
-    U1 = u1[:, 1:ranks[1]]
-    U2 = u2[:, 1:ranks[2]]
-    U3 = u3[:, 1:ranks[1]]
-    U4 = u4[:, 1:ranks[2]]
+    U1 = scale .* u1[:, 1:ranks[1]]
+    U2 = scale .* u2[:, 1:ranks[2]]
+    U3 = scale .* u3[:, 1:ranks[1]]
+    U4 = scale .* u4[:, 1:ranks[2]]
 
     if genphi
         ϕ2 = Qϕ1 * diagm(randn(n[2])) * Qϕ2'
