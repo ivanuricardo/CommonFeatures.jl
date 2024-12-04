@@ -207,7 +207,7 @@ function fullinfocrit(
     regiters = fill(NaN, prod(r̄) * pmax)
     grid = collect(Iterators.product(1:r̄[1], 1:r̄[2], 1:r̄[3], 1:r̄[4], 1:pmax))
     numconv = 0
-    Threads.@threads for i in ProgressBar(1:(prod(r̄)*pmax))
+    for i in 1:(prod(r̄)*pmax)
         selectedrank = collect(grid[i])
         r1, r2, r3, r4, p = selectedrank
         if !tuckercondition([r1, r2, r3, r4])

@@ -17,20 +17,31 @@ A named tuple containing the following statistics:
 - `freqhigh`: Frequency of ranks higher than the correct rank for each simulation.
 - `freqlow`: Frequency of ranks lower than the correct rank for each simulation.
 """
-function simstats(selectedranks::AbstractMatrix, correctrank::AbstractVector, sims::Int)
-    avgrank = mean(selectedranks, dims=2)
-    stdrank = std(selectedranks, dims=2)
-    numranks = size(selectedranks, 1)
-    freqcorrect = fill(NaN, numranks)
-    freqhigh = fill(NaN, numranks)
-    freqlow = fill(NaN, numranks)
+function simstats(selectedvals::AbstractMatrix, correctval::AbstractVector, sims::Int)
+    avgval = mean(selectedvals, dims=2)
+    stdval = std(selectedvals, dims=2)
+    numvals = size(selectedvals, 1)
+    freqcorrect = fill(NaN, numvals)
+    freqhigh = fill(NaN, numvals)
+    freqlow = fill(NaN, numvals)
 
-    for i in 1:numranks
-        crank = correctrank[i]
-        freqcorrect[i] = count(x -> x == crank, selectedranks[i, :]) / sims
-        freqhigh[i] = count(x -> x > crank, selectedranks[i, :]) / sims
-        freqlow[i] = count(x -> x < crank, selectedranks[i, :]) / sims
+    for i in 1:numvals
+        cval = correctval[i]
+        freqcorrect[i] = count(x -> x == cval, selectedvals[i, :]) / sims
+        freqhigh[i] = count(x -> x > cval, selectedvals[i, :]) / sims
+        freqlow[i] = count(x -> x < cval, selectedvals[i, :]) / sims
     end
 
-    return (; avgrank, stdrank, freqcorrect, freqhigh, freqlow)
+    return (; avgval, stdval, freqcorrect, freqhigh, freqlow)
+end
+
+function simstats(selectedvals::AbstractVector, correctval::Int, sims::Int)
+    avgval = mean(selectedvals)
+    stdval = std(selectedvals)
+
+    freqcorrect = count(x -> x == correctval, selectedvals) / sims
+    freqhigh = count(x -> x > correctval, selectedvals) / sims
+    freqlow = count(x -> x < correctval, selectedvals) / sims
+
+    return (; avgval, stdval, freqcorrect, freqhigh, freqlow)
 end
