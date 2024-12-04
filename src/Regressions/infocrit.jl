@@ -248,13 +248,13 @@ function fullinfocrit(
     nancols = findall(x -> any(isnan, x), eachcol(ictable))
     filteredic = ictable[:, setdiff(1:size(ictable, 2), nancols)]
     aicvec = argmin(filteredic[1, :])
-    aic = Int.(filteredic[4:end, aicvec])
+    aicval = Int.(filteredic[4:end, aicvec])
     bicvec = argmin(filteredic[2, :])
-    bic = Int.(filteredic[4:end, bicvec])
+    bicval = Int.(filteredic[4:end, bicvec])
     hqcvec = argmin(filteredic[3, :])
-    hqc = Int.(filteredic[4:end, hqcvec])
+    hqcval = Int.(filteredic[4:end, hqcvec])
 
-    return (; bic, aic, hqc, ictable, regiters, numconv)
+    return (; bicval, aicval, hqcval, ictable, regiters, numconv)
 end
 
 """
