@@ -13,8 +13,8 @@ Compute tensor ordinary least squares equation by equation.
 function tensorols(Y::AbstractArray, X::AbstractArray)
     fulldims = (size(Y)[1:end-1]..., size(X)[1:end-1]...)
 
-    flaty = tenmat(Y, col=ndims(Y))
-    flatx = tenmat(X, col=ndims(X))
+    flaty = tenmat(Y, col = ndims(Y))
+    flatx = tenmat(X, col = ndims(X))
 
     flatols = flaty * flatx' / (flatx * flatx')
 
@@ -41,19 +41,19 @@ p = 2
 result = art(Y, p)
 ```
 """
-function art(Y::AbstractArray, p::Int=1; center::Bool=true, stdize::Bool=false)
+function art(Y::AbstractArray, p::Int = 1; center::Bool = true, stdize::Bool = false)
     origy, laggedy = tlag(Y, p)
     if stdize
         # Only standardize the lagged values and not the original!
-        stdlagy = (laggedy ./ std(laggedy, dims=4))
-        cenlag = stdlagy .- mean(stdlagy, dims=4)
+        stdlagy = (laggedy ./ std(laggedy, dims = 4))
+        cenlag = stdlagy .- mean(stdlagy, dims = 4)
     elseif center
-        cenorig = origy .- mean(origy, dims=3)
-        cenlag = laggedy .- mean(laggedy, dims=4)
+        cenorig = origy .- mean(origy, dims = 3)
+        cenlag = laggedy .- mean(laggedy, dims = 4)
     end
     tols = tensorols(cenorig, cenlag)
 
-    return (tols=tols, cenorig=cenorig, cenlag=cenlag)
+    return (tols = tols, cenorig = cenorig, cenlag = cenlag)
 end
 
 """
@@ -75,19 +75,19 @@ Compute reduced-rank vector autoregressive (RRVAR) model parameters.
 This function computes the reduced-rank VAR parameters using the method.
 
 """
-function rrvar(vardata::AbstractMatrix, r::Int, p::Int; stdize::Bool=false)
+function rrvar(vardata::AbstractMatrix, r::Int, p::Int; stdize::Bool = false)
     k, obs = size(vardata)
 
     origy = vlag(vardata, p)[1:k, :]
     laggedy = vlag(vardata, p)[(k+1):end, :]
     if stdize
-        stdorigy = (origy ./ std(origy, dims=2))
-        cenorig = stdorigy .- mean(stdorigy, dims=2)
-        stdlagy = (laggedy ./ std(laggedy, dims=2))
-        cenlag = stdlagy .- mean(stdlagy, dims=2)
+        stdorigy = (origy ./ std(origy, dims = 2))
+        cenorig = stdorigy .- mean(stdorigy, dims = 2)
+        stdlagy = (laggedy ./ std(laggedy, dims = 2))
+        cenlag = stdlagy .- mean(stdlagy, dims = 2)
     else
-        cenorig = origy .- mean(origy, dims=2)
-        cenlag = laggedy .- mean(laggedy, dims=2)
+        cenorig = origy .- mean(origy, dims = 2)
+        cenlag = laggedy .- mean(laggedy, dims = 2)
     end
 
     # Compute covariance matrices
@@ -99,7 +99,7 @@ function rrvar(vardata::AbstractMatrix, r::Int, p::Int; stdize::Bool=false)
     weighted_matrix = cov_yx * inv(cov_x) * cov_xy
 
     # Compute eigen decomposition
-    eigen_weighted = eigen(weighted_matrix, permute=false)
+    eigen_weighted = eigen(weighted_matrix, permute = false)
     prevecs = eigen_weighted.vectors[:, end:-1:1]
 
     # Select r eigenvectors
