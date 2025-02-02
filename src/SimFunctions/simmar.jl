@@ -1,9 +1,5 @@
 
-function generatevarcoef(
-    N::Int,
-    p::Int;
-    maxeigen::Real=0.9,
-    coefscale::Real=0.5)
+function generatevarcoef(N::Int, p::Int; maxeigen::Real = 0.9, coefscale::Real = 0.5)
 
     stabit = 0
     A = fill(NaN, N, N * p)
@@ -16,7 +12,7 @@ function generatevarcoef(
             break
         end
     end
-    return (; A, stabit, rho=spectralradius(makecompanion(A)))
+    return (; A, stabit, rho = spectralradius(makecompanion(A)))
 
 end
 
@@ -24,11 +20,12 @@ function simulatevardata(
     N::Int,
     p::Int,
     obs::Int;
-    snr::Real=0.7,
-    coefscale::Real=0.5,
-    maxeigen::Real=0.9,
-    A=nothing,
-    burnin::Int=1)
+    snr::Real = 0.7,
+    coefscale::Real = 0.5,
+    maxeigen::Real = 0.9,
+    A = nothing,
+    burnin::Int = 1,
+)
 
     if isnothing(A)
         A = generatevarcoef(N, p; maxeigen, coefscale)[1]
@@ -41,21 +38,22 @@ function simulatevardata(
     Σ = diagm(repeat([rho / snr], N))
     d = MultivariateNormal(zeros(N), Σ)
 
-    for i in (p+1):obs
-        for j in 1:p
+    for i = (p+1):obs
+        for j = 1:p
             data[:, i] += tenA[:, :, j] * data[:, i-j]
         end
         data[:, i] += rand(d)
     end
-    return (; A, data=data[:, burnin:end])
+    return (; A, data = data[:, burnin:end])
 end
 
 function generaterrvarcoef(
     N::Int,
     r::Int,
     p::Int;
-    maxeigen::Real=0.9,
-    facscale::Real=0.5)
+    maxeigen::Real = 0.9,
+    facscale::Real = 0.5,
+)
 
     stabit = 0
     A = fill(NaN, N, r)
@@ -77,7 +75,7 @@ function generaterrvarcoef(
             break
         end
     end
-    return (A=A[:, 1:r], B=B[:, 1:r], C=C, stabit=stabit)
+    return (A = A[:, 1:r], B = B[:, 1:r], C = C, stabit = stabit)
 
 end
 
@@ -86,10 +84,11 @@ function simulaterrvardata(
     r::Int,
     p::Int,
     obs::Int;
-    C=nothing,
-    snr::Real=0.7,
-    maxeigen::Real=0.9,
-    facscale::Real=0.6)
+    C = nothing,
+    snr::Real = 0.7,
+    maxeigen::Real = 0.9,
+    facscale::Real = 0.6,
+)
     if isnothing(C)
         @unpack C, stabit = generaterrvarcoef(N, r, p; maxeigen, facscale)
     else
@@ -101,9 +100,9 @@ function simulaterrvardata(
     d = MultivariateNormal(zeros(N), Σ)
 
     data = zeros(N, obs)
-    for i in (p+1):obs
+    for i = (p+1):obs
         ϵ = rand(d)
         data[:, i] .= C * data[:, i-1] + ϵ
     end
-    return (; data, stabit, C)
+    return (; data, stabit, C, Σ)
 end
