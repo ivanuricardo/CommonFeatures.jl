@@ -9,18 +9,51 @@ function generatetuckercoef(dimvals, ranks, p; gscale=3, maxeigen=0.9)
     U5 = I(p)
 
     stabit = 0
+
     while true
         stabit += 1
         unscaledG = randn(ranks[1], ranks[2], ranks[3], ranks[4], p)
         G .= rescaleten(unscaledG, gscale)
         randU1 = randn(dimvals[1], ranks[1])
+        U1 .= svd(randU1).U
         randU2 = randn(dimvals[2], ranks[2])
+        U2 .= svd(randU2).U
         randU3 = randn(dimvals[1], ranks[3])
         randU4 = randn(dimvals[2], ranks[4])
 
-        U1 .= svd(randU1).U
-        U2 .= svd(randU2).U
         U3 .= svd(randU3).U
+        U4 .= svd(randU4).U
+
+        hosvdA = ttensor(G, [U1, U2, U3, U4, Matrix(U5)])
+        A .= full(hosvdA)
+        varA = tenmat(A, row=[1, 2])
+        if isstable(varA; maxeigen)
+            break
+        end
+    end
+    return (; A, G, U1, U2, U3, U4, U5, stabit)
+end
+function generatetuckercoef(dimvals, ranks, p, U1; gscale=3, maxeigen=0.9)
+    A = fill(NaN, dimvals[1], dimvals[2], dimvals[1], dimvals[2], p)
+    G = fill(NaN, ranks[1], ranks[2], ranks[3], ranks[4], p)
+    U2 = fill(NaN, dimvals[2], ranks[2])
+    U3 = fill(NaN, dimvals[1], ranks[3])
+    U4 = fill(NaN, dimvals[2], ranks[4])
+    U5 = I(p)
+
+    stabit = 0
+
+    while true
+        stabit += 1
+        unscaledG = randn(ranks[1], ranks[2], ranks[3], ranks[4], p)
+        G .= rescaleten(unscaledG, gscale)
+        randU2 = randn(dimvals[2], ranks[2])
+        U2 .= svd(randU2).U
+
+        randU3 = randn(dimvals[1], ranks[3])
+        U3 .= svd(randU3).U
+
+        randU4 = randn(dimvals[2], ranks[4])
         U4 .= svd(randU4).U
 
         hosvdA = ttensor(G, [U1, U2, U3, U4, Matrix(U5)])
@@ -63,7 +96,8 @@ function simulatetuckerdata(
     obs::Int;
     A=nothing,
     p::Int=1,
-    snr=0.7)
+    snr=0.7,
+)
     if isnothing(A)
         A = generatetuckercoef(dimvals, ranks, p)[1]
     end
@@ -73,17 +107,16 @@ function simulatetuckerdata(
     d = MultivariateNormal(zeros(dimvals[1] * dimvals[2]), Σ)
 
     data = zeros(dimvals[1], dimvals[2], obs)
-    for i in (p+1):obs
+    for i = (p+1):obs
         vecϵ = rand(d)
         ϵ = reshape(vecϵ, (dimvals[1], dimvals[2]))
 
         data[:, :, i] .= contract(A[:, :, :, :, 1], [3, 4], data[:, :, i-1], [1, 2]) + ϵ
 
-        for j in 2:p
+        for j = 2:p
             data[:, :, i] .+= contract(A[:, :, :, :, j], [3, 4], data[:, :, i-j], [1, 2])
         end
     end
 
     return (; data, A, Σ)
 end
-

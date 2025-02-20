@@ -13,7 +13,7 @@ using Parameters
 import TensorToolbox.ttensor
 
 export ReducedRankAutoRegression, LowRankTensorAutoRegression
-export tensorols, art, rrvar
+export tensorols, art, rrvar, var_coef
 export tlag, ridgerankselect, rescaleten, idhosvd, spectralradius, ρ, vlag, ttensor
 export makecompanion, isstable
 export infocrit, tuckerpar, fullinfocrit, rrvaric, aic, bic, hqc, cointpar

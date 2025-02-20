@@ -56,6 +56,25 @@ function art(Y::AbstractArray, p::Int = 1; center::Bool = true, stdize::Bool = f
     return (tols = tols, cenorig = cenorig, cenlag = cenlag)
 end
 
+function var_coef(data, p; stdize = false)
+    k, _ = size(data)
+
+    origy = vlag(data, p)[1:k, :]
+    laggedy = vlag(data, p)[(k+1):end, :]
+    if stdize
+        stdorigy = (origy ./ std(origy, dims = 2))
+        cenorig = stdorigy .- mean(stdorigy, dims = 2)
+        stdlagy = (laggedy ./ std(laggedy, dims = 2))
+        cenlag = stdlagy .- mean(stdlagy, dims = 2)
+    else
+        cenorig = origy .- mean(origy, dims = 2)
+        cenlag = laggedy .- mean(laggedy, dims = 2)
+    end
+    coef = cenorig * cenlag' * inv(cenlag * cenlag')
+
+    return coef
+end
+
 """
     rrvar(Y::AbstractMatrix, r::Int, p::Int)
 
